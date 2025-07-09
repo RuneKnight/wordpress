@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인터랙티브 우주 달력: 138억 년의 여정</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Cosmic Dust -->
+    <!-- Application Structure Plan: 이 애플리케이션은 사용자가 138억 년의 방대한 시간을 직관적으로 탐색할 수 있도록 설계되었습니다. 상단에 고정된 월별 내비게이션을 통해 특정 시대로 즉시 이동할 수 있습니다. 메인 콘텐츠는 수직 타임라인 형태로, 주요 사건들을 카드로 시각화하여 시간의 흐름과 각 사건의 위치를 명확히 보여줍니다. 특히, 인류의 역사가 집중된 '12월 31일'은 별도의 상세 타임라인 섹션으로 구성하여, 변화의 가속도를 극적으로 시각화했습니다. 이 구조는 선형적인 텍스트 읽기에서 벗어나, 사용자가 주도적으로 정보를 탐색하고 우주의 거대한 스케일을 체감하게 만들기 위해 선택되었습니다. -->
+    <!-- Visualization & Content Choices: 
+        - 보고서 정보: 우주 달력의 주요 사건들.
+        - 목표: 시간의 흐름, 사건의 순서 및 중요성 전달, 특히 후반부의 시간 압축 강조.
+        - 시각화/표현 방법: 
+          1. 메인 타임라인 (1월-12월 30일): Tailwind CSS를 이용한 수직 타임라인과 정보 카드. (Goal: Organize, Change)
+          2. 12월 31일 타임라인: HTML/CSS로 구현된 상세 시간대별 타임라인. (Goal: Compare, Change)
+          3. 아이콘: 유니코드 이모지를 사용하여 사건의 성격(천문, 생명, 인류)을 시각적으로 구분. (Goal: Inform)
+        - 상호작용: 월별 내비게이션 클릭 시 해당 섹션으로 부드럽게 스크롤. 카드에 상세 설명과 외부 링크 추가하여 정보 탐색 심화.
+        - 정당성: 이 방식은 텍스트 기반의 보고서를 동적이고 탐색 가능한 경험으로 전환합니다. 특히 12월 31일의 별도 구성은 우주적 관점에서 인류 역사의 찰나성을 효과적으로 전달합니다. 상세 정보와 링크 추가는 사용자의 지적 호기심을 충족시키고 학습 경험을 강화합니다.
+        - 라이브러리/방법: Tailwind CSS, Vanilla JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #fdfbf7;
+            color: #374151;
+        }
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 100%;
+            background-color: #d1d5db;
+        }
+        .timeline-item-dot {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1rem;
+            height: 1rem;
+            border-radius: 9999px;
+            background-color: #fdfbf7;
+            border: 3px solid #60a5fa;
+        }
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-left: calc(50% + 2rem);
+        }
+        .timeline-item:nth-child(odd) .timeline-content {
+            margin-right: calc(50% + 2rem);
+            text-align: right;
+        }
+        .timeline-item:nth-child(odd) .timeline-content .link-container {
+            justify-content: flex-end;
+        }
+        @media (max-width: 768px) {
+            .timeline-line {
+                left: 1rem;
+                transform: translateX(0);
+            }
+            .timeline-item-dot {
+                left: 1rem;
+            }
+            .timeline-item:nth-child(even) .timeline-content,
+            .timeline-item:nth-child(odd) .timeline-content {
+                width: calc(100% - 4rem);
+                margin-left: 3rem;
+                text-align: left;
+            }
+            .timeline-item:nth-child(odd) .timeline-content .link-container {
+                justify-content: flex-start;
+            }
+        }
+        #month-nav button.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <header id="main-header" class="sticky top-0 z-50 bg-white/80 backdrop-blur-sm shadow-md">
+        <div class="container mx-auto px-4 py-3">
+            <h1 class="text-2xl md:text-3xl font-bold text-center text-gray-800">우주 달력: 138억 년의 여정</h1>
+            <nav id="month-nav" class="mt-3 overflow-x-auto whitespace-nowrap pb-2">
+                <div class="flex justify-center space-x-1">
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 md:py-12">
+        <section id="intro" class="text-center mb-16">
+             <p class="text-lg mt-4 max-w-3xl mx-auto">
+                138억 년에 달하는 우주의 역사를 친숙한 1년 달력으로 압축했습니다. 빅뱅은 1월 1일 0시에, 인류의 모든 역사는 12월 31일 마지막 몇 초에 일어납니다. 스크롤을 내려 우주의 장대한 연대기를 탐험하고, 시간 속 우리의 위치를 발견해보세요.
+            </p>
+        </section>
+
+        <div id="calendar-container">
+        </div>
+
+        <section id="december-31" class="pt-16">
+            <h2 class="text-4xl font-bold text-center mb-4 text-blue-600">마지막 날: 12월 31일</h2>
+            <p class="text-lg text-center max-w-3xl mx-auto mb-12">인류의 진화와 문명의 모든 역사는 우주력의 마지막 날, 단 하루에 펼쳐집니다. 시간은 자정에 가까워질수록 극적으로 가속됩니다.</p>
+            <div id="december-31-timeline-container" class="relative mt-8 space-y-4 p-4 bg-blue-50 rounded-xl shadow-inner">
+            </div>
+        </section>
+
+         <section id="conclusion" class="text-center mt-20 py-10 border-t-2 border-gray-200">
+            <h2 class="text-3xl font-bold mb-4">코스모스 속 우리의 순간</h2>
+            <p class="text-lg max-w-3xl mx-auto">
+                우주 달력은 우리 존재가 수많은 우연과 필연, 창조와 파괴의 역사를 거쳐 지금 이 순간에 이르렀음을 보여줍니다. 광막한 시공간 속 '창백한 푸른 점' 위에서 찰나를 함께 살아간다는 것은 실로 경이로운 특권입니다. 이제 막 시작된 우주력 2년, 우리는 어떤 미래를 만들어갈까요?
+            </p>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cosmicEvents = [
+                { month: 1, date: '1월 1일', time: '00:00', event: '빅뱅', icon: '🌌',
+                  description: '시간, 공간, 물질, 에너지가 하나의 점에서 폭발적으로 시작되었습니다.',
+                  details: '우주, 시공간, 그리고 모든 물질과 에너지가 상상할 수 없이 뜨겁고 밀도가 높은 한 점에서 시작되었습니다. 이 대폭발 이후 우주는 계속해서 팽창하고 식어가고 있습니다.',
+                  link: 'https://science.nasa.gov/astrophysics/focus-areas/what-powered-the-big-bang/', linkText: 'NASA: 빅뱅이란?' },
+                { month: 1, date: '1월 1일', time: '00:14', event: '우주가 투명해지다', icon: '✨',
+                  description: '재결합을 통해 빛이 자유롭게 퍼져나가며, 우주 마이크로파 배경 복사가 형성되었습니다.',
+                  details: '빅뱅 후 약 38만 년, 우주의 온도가 충분히 낮아져 전자와 원자핵이 결합해 중성 원자를 형성했습니다. 이로 인해 빛(광자)이 물질에 붙잡히지 않고 자유롭게 퍼져나갈 수 있게 되었으며, 이때의 빛이 현재 ‘우주 마이크로파 배경 복사’로 관측됩니다.',
+                  link: 'https://www.esa.int/Science_Exploration/Space_Science/Planck/Planck_and_the_cosmic_microwave_background', linkText: 'ESA: 우주 마이크로파 배경' },
+                { month: 1, date: '1월 26일', event: '최초의 은하들, 우주를 수놓다', icon: '🌌',
+                  description: '중력에 의해 가스 구름이 뭉쳐 최초의 은하들이 형성되며, 우주 재이온화가 시작되었습니다.',
+                  details: '빅뱅 후 약 4억 년, 중력에 의해 원시 가스 구름이 뭉쳐 최초의 별과 은하들이 탄생하기 시작했습니다. 이 ‘우주 여명기’에 탄생한 천체들이 내뿜는 강력한 자외선은 주변의 중성 수소 가스를 다시 이온화시키며 우주를 현재와 같이 투명하게 만들었습니다.',
+                  link: 'https://webbtelescope.org/contents/news-releases/2023/news-2023-132', linkText: 'Webb Telescope: 초기 은하 관측' },
+                { month: 2, date: '2월 17일', event: "'우주 파괴자' 은하 등장", icon: '💥',
+                  description: "빅뱅 후 약 18억 년, 예상보다 훨씬 거대하고 성숙한 은하들이 발견되어 초기 우주 진화의 격렬함을 보여줍니다.",
+                  details: "제임스 웹 우주 망원경은 초기 우주에서 기존 이론으로는 설명하기 힘든 거대 질량 은하들을 발견했습니다. 이는 은하 형성이 예상보다 훨씬 빠르고 효율적으로 일어났을 가능성을 시사합니다.",
+                  link: 'https://www.nature.com/articles/d41586-023-00475-z', linkText: 'Nature: 초기 우주의 거대 은하들' },
+                { month: 3, date: '3월 16일', event: '우리 은하 탄생', icon: ' Milky_Way',
+                  description: '우리의 우주적 고향인 우리 은하가 작은 원시 은하들의 충돌과 병합으로 형태를 갖추기 시작했습니다.',
+                  details: '수많은 작은 원시 은하와 성단들이 수십억 년에 걸쳐 서로 충돌하고 병합하는 과정을 통해 우리 은하의 기본 구조가 형성되었습니다. 이 과정은 지금도 계속되고 있습니다.',
+                  link: 'https://esa.int/Science_Exploration/Space_Science/Gaia/Gaia_clocks_star_formation_in_Milky_Way', linkText: 'ESA: 우리 은하의 별 형성사' },
+                { month: 4, date: "4월 10일", event: "'우주의 정오(Cosmic Noon)'", icon: '🌟',
+                  description: "우주 전역에서 별의 탄생률이 역사상 최고조에 달하며, 오늘날 은하들의 기본 골격이 완성되었습니다.",
+                  details: "빅뱅 후 약 20~30억 년 사이, 우주는 가장 격렬하게 별을 만들어냈습니다. 이 시기에 형성된 별들이 오늘날 우리가 보는 대부분의 은하를 구성하고 있습니다.",
+                  link: 'https://www.youtube.com/watch?v=K_t0kSImE7E', linkText: 'Deep Sky Videos: 우주의 정오 (영상)' },
+                { month: 9, date: '9월 2일', event: '태양계 형성', icon: '☀️',
+                  description: '이전 세대 별들이 남긴 무거운 원소들로 가득한 성운에서 태양과 행성들이 탄생했습니다.',
+                  details: '약 46억 년 전, 거대한 분자 구름의 일부가 중력 붕괴를 일으켜 중심부에는 원시 태양이, 그 주변의 원반에서는 행성, 소행성, 혜성 등이 형성되었습니다.',
+                  link: 'https://science.nasa.gov/solar-system/our-solar-system/', linkText: 'NASA: 우리 태양계' },
+                { month: 9, date: '9월 21일', event: '최초의 생명체 출현', icon: '🧬',
+                  description: '지구가 안정되자마자, 바다에서 핵이 없는 단세포 원핵생물이 등장했습니다.',
+                  details: '지구 형성 후 약 5억 년이 지난 원시 바다의 열수 분출구나 얕은 연못 등에서 무기물로부터 유기물이 합성되고, 이들이 모여 자기 복제가 가능한 최초의 생명체(원핵생물)가 탄생한 것으로 추정됩니다.',
+                  link: 'https://www.youtube.com/watch?v=K11_iL5iS0A', linkText: 'PBS Eons: 지구 생명의 기원 (영상)' },
+                { month: 10, date: '10월 29일', event: '대기 산소화 사건', icon: '💨',
+                  description: '광합성 박테리아가 뿜어낸 산소가 대기를 채우기 시작하며, 많은 혐기성 생물이 멸종하고 호기성 생물이 진화할 길을 열었습니다.',
+                  details: '시아노박테리아의 광합성으로 생성된 산소가 바다의 철과 반응한 뒤 대기 중에 축적되기 시작했습니다. 이 ‘독성’ 기체는 당시 생명체에게 대재앙이었지만, 산소를 사용하는 새로운 생물의 진화를 이끌었습니다.',
+                  link: 'https://en.wikipedia.org/wiki/Great_Oxidation_Event', linkText: '위키피디아: 대산소화 사건' },
+                { month: 12, date: '12월 14일', event: '캄브리아기 대폭발', icon: '🦀',
+                  description: '오늘날 동물들의 기본 신체 구조 대부분이 이 시기에 폭발적으로 등장하며 바다를 가득 채웠습니다.',
+                  details: '약 5억 4천만 년 전, 비교적 짧은 지질학적 시간 동안 오늘날 동물 문의 조상 대부분이 폭발적으로 출현한 사건입니다. 삼엽충을 비롯한 다양한 형태의 무척추동물이 번성하며 복잡한 해양 생태계를 이루었습니다.',
+                  link: 'https://www.nhm.ac.uk/discover/what-was-the-cambrian-explosion.html', linkText: '영국 자연사박물관: 캄브리아기 대폭발' },
+                { month: 12, date: '12월 25일', event: '공룡 시대 시작', icon: '🦖',
+                  description: '거대한 파충류인 공룡이 지구의 지배자로 군림하는 시대가 열렸습니다.',
+                  details: '페름기-트라이아스기 대멸종 이후 살아남은 파충류에서 진화한 공룡은 약 1억 8천만 년 동안 육상 생태계의 최상위 포식자로 군림했습니다.',
+                  link: 'https://www.youtube.com/watch?v=y_n_b3i_g9g', linkText: 'PBS Eons: 공룡의 부상 (영상)' },
+                { month: 12, date: '12월 30일', time: '06:24', event: '공룡 대멸종', icon: '☄️',
+                  description: '소행성 충돌로 비조류 공룡을 포함한 생명체의 75%가 사라지고, 포유류 시대의 막이 열렸습니다.',
+                  details: '약 6600만 년 전, 멕시코 유카탄 반도에 직경 약 10km의 소행성이 충돌하면서 발생한 전 지구적 재앙입니다. 이 충격으로 비조류 공룡을 포함한 지구상 생물 종의 약 75%가 멸종했으며, 포유류가 새로운 지배자로 부상하는 계기가 되었습니다.',
+                  link: 'https://www.planetary.org/space-missions/chicxulub', linkText: '행성협회: 칙술루브 충돌' },
+            ];
+            
+            const lastDayEvents = [
+                { time: '오후 2:24', event: '인류 조상 분기', icon: '🚶', details: '인류의 조상이 다른 유인원(침팬지)의 계통과 진화적으로 분리되었습니다.', link: 'https://humanorigins.si.edu/evidence/human-family-tree', linkText: '스미소니언: 인류의 계통수' },
+                { time: '밤 10:24', event: '최초의 인류(Homo) 등장, 석기 제작', icon: '🛠️', details: '두 발로 걷고 도구를 사용하기 시작한 호모 하빌리스와 같은 초기 인류가 등장했습니다.', link: 'https://www.australian.museum/learn/science/human-evolution/homo-habilis/', linkText: '호주 박물관: 호모 하빌리스' },
+                { time: '밤 11:44', event: '불의 사용', icon: '🔥', details: '인류가 불을 통제하여 요리, 난방, 방어에 사용하기 시작했습니다. 이는 뇌 용량 증가와 사회 발달에 큰 영향을 미쳤습니다.', link: 'https://www.ox.ac.uk/news/2016-03-14-how-our-ancestors-mastered-fire', linkText: '옥스포드대: 불의 사용' },
+                { time: '밤 11:52', event: '현생 인류(Homo sapiens) 출현', icon: '👨‍👩‍👧‍👦', details: '약 30만 년 전 아프리카에서 출현한 현생 인류는 뛰어난 지능과 언어 능력, 사회적 협력 능력을 바탕으로 전 세계로 퍼져나갔습니다.', link: 'https://humanorigins.si.edu/evidence/human-fossils/species/homo-sapiens', linkText: '스미소니언: 호모 사피엔스' },
+                { time: '밤 11:59:32', event: '농업 혁명, 정착 생활 시작', icon: '🌾', details: '인류는 식물을 재배하고 가축을 길러 수렵-채집 생활에서 벗어나 정착 사회를 이루었습니다. 이는 인구 증가와 문명 발달의 토대가 되었습니다.', link: 'https://www.khanacademy.org/humanities/world-history/world-history-beginnings/birth-agriculture-neolithic-revolution/a/where-did-agriculture-begin', linkText: '칸 아카데미: 농업의 시작' },
+                { time: '밤 11:59:54', event: "'축의 시대' (석가, 공자, 소크라테스)", icon: '🧠', details: '전 세계적으로 주요 종교와 철학 사상이 등장하며 인류의 정신적 토대를 마련했습니다.', link: 'https://ko.wikipedia.org/wiki/%EC%B6%95%EC%9D%98_%EC%8B%9C%EB%8C%80', linkText: '위키피디아: 축의 시대' },
+                { time: '밤 11:59:59', event: '현대사의 모든 것', icon: '💻', details: '르네상스, 과학혁명, 산업혁명, 정보화혁명 등 인류 문명의 모든 것이 우주력의 마지막 1초 동안 일어났습니다.', link: 'https://www.youtube.com/watch?v=y_0_W_i5T0c', linkText: 'Kurzgesagt: 우주력 마지막 1초 (영상)' }
+            ];
+
+            const monthNav = document.getElementById('month-nav').querySelector('div');
+            const calendarContainer = document.getElementById('calendar-container');
+
+            const monthNames = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
+            
+            monthNames.forEach((name, index) => {
+                const month = index + 1;
+                const button = document.createElement('button');
+                button.textContent = name;
+                button.className = 'px-3 py-1 text-sm font-medium text-gray-600 rounded-full hover:bg-blue-100 transition-colors duration-200';
+                button.onclick = () => {
+                    document.getElementById(`month-${month}`).scrollIntoView({ behavior: 'smooth' });
+                };
+                monthNav.appendChild(button);
+
+                const monthSection = document.createElement('section');
+                monthSection.id = `month-${month}`;
+                monthSection.className = 'pt-16';
+
+                const monthHeader = document.createElement('h2');
+                monthHeader.className = 'text-4xl font-bold text-center mb-10 text-blue-500';
+                monthHeader.textContent = name;
+                monthSection.appendChild(monthHeader);
+                
+                const timelineContainer = document.createElement('div');
+                timelineContainer.className = 'relative';
+
+                const timelineLine = document.createElement('div');
+                timelineLine.className = 'timeline-line';
+                timelineContainer.appendChild(timelineLine);
+
+                const eventsThisMonth = cosmicEvents.filter(e => e.month === month);
+
+                if (eventsThisMonth.length > 0) {
+                    eventsThisMonth.forEach(event => {
+                        const item = document.createElement('div');
+                        item.className = 'timeline-item relative mb-8';
+                        const dot = document.createElement('div');
+                        dot.className = 'timeline-item-dot';
+                        const content = document.createElement('div');
+                        content.className = 'timeline-content w-full md:w-5/12 p-4 bg-white rounded-lg shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300';
+                        
+                        const date = document.createElement('p');
+                        date.className = 'font-bold text-blue-500 text-lg';
+                        date.textContent = `${event.date}${event.time ? ' ' + event.time : ''}`;
+                        
+                        const title = document.createElement('h3');
+                        title.className = 'text-xl font-bold mt-1 mb-2 text-gray-800';
+                        title.textContent = `${event.icon} ${event.event}`;
+                        
+                        const desc = document.createElement('p');
+                        desc.className = 'text-gray-600 text-sm';
+                        desc.textContent = event.description;
+
+                        const details = document.createElement('p');
+                        details.className = 'mt-3 text-gray-700 text-base border-t border-gray-200 pt-3';
+                        details.textContent = event.details;
+
+                        const linkContainer = document.createElement('div');
+                        linkContainer.className = 'link-container mt-3 flex items-center';
+
+                        const link = document.createElement('a');
+                        link.href = event.link;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        link.className = 'text-blue-600 hover:text-blue-800 font-semibold text-sm transition-colors duration-200';
+                        link.textContent = `🔗 ${event.linkText}`;
+
+                        linkContainer.appendChild(link);
+                        
+                        content.appendChild(date);
+                        content.appendChild(title);
+                        content.appendChild(desc);
+                        content.appendChild(details);
+                        content.appendChild(linkContainer);
+                        item.appendChild(dot);
+                        item.appendChild(content);
+                        timelineContainer.appendChild(item);
+                    });
+                } else {
+                    const emptyMessage = document.createElement('p');
+                    emptyMessage.className = 'text-center text-gray-500 italic py-10';
+                    emptyMessage.textContent = '이 기간은 은하들이 서서히 형성되고 진화하던, 비교적 조용한 시간이었습니다.';
+                    timelineContainer.appendChild(emptyMessage);
+                }
+                
+                monthSection.appendChild(timelineContainer);
+                calendarContainer.appendChild(monthSection);
+            });
+
+            const dec31Container = document.getElementById('december-31-timeline-container');
+            lastDayEvents.forEach((event, index) => {
+                const item = document.createElement('div');
+                item.className = 'relative pl-12 pb-4';
+                
+                const content = document.createElement('div');
+                content.className = 'p-3 bg-white rounded-lg shadow-md';
+
+                const header = document.createElement('div');
+                header.className = 'flex items-center';
+                const time = document.createElement('span');
+                time.className = 'font-bold text-blue-600';
+                time.textContent = event.time;
+                const title = document.createElement('span');
+                title.className = 'ml-4 text-gray-800 font-semibold';
+                title.textContent = `${event.icon} ${event.event}`;
+                header.appendChild(time);
+                header.appendChild(title);
+
+                const details = document.createElement('p');
+                details.className = 'mt-2 text-sm text-gray-600';
+                details.textContent = event.details;
+
+                const link = document.createElement('a');
+                link.href = event.link;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.className = 'inline-block mt-2 text-blue-600 hover:text-blue-800 font-semibold text-xs transition-colors duration-200';
+                link.textContent = `🔗 ${event.linkText}`;
+
+                content.appendChild(header);
+                content.appendChild(details);
+                content.appendChild(link);
+                
+                const dot = document.createElement('div');
+                dot.className = 'absolute left-0 top-3 w-4 h-4 bg-white border-4 border-blue-500 rounded-full z-10';
+                
+                item.appendChild(content);
+                item.appendChild(dot);
+
+                if (index < lastDayEvents.length - 1) {
+                    const line = document.createElement('div');
+                    line.className = 'absolute left-[7px] top-3 w-px h-full bg-blue-300';
+                    item.appendChild(line);
+                }
+                
+                dec31Container.appendChild(item);
+            });
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const monthId = entry.target.id.split('-')[1];
+                        document.querySelectorAll('#month-nav button').forEach(btn => btn.classList.remove('active'));
+                        document.querySelector(`#month-nav button:nth-child(${monthId})`).classList.add('active');
+                    }
+                });
+            }, { rootMargin: '-50% 0px -50% 0px' });
+
+            document.querySelectorAll('#calendar-container section').forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>
