@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[다국어판] 안녕? 나는 토성이야!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Jua&family=Roboto:wght@400;700&family=Poppins:wght@400;700&family=Bangers&display=swap" rel="stylesheet">
+    
+    <style>
+        html { scroll-behavior: smooth; }
+        body { background-color: #1c1917; color: #f5f5f4; } /* Dark stone/brown theme */
+        
+        /* Font settings per language */
+        .font-ko { font-family: 'Noto Sans KR', sans-serif; }
+        .font-en { font-family: 'Poppins', sans-serif; }
+        .font-de { font-family: 'Roboto', sans-serif; }
+        .font-ko .font-title { font-family: 'Jua', sans-serif; }
+        .font-en .font-title, .font-de .font-title { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+
+        .saturn-container {
+            position: relative;
+            width: 16rem; /* 256px */
+            height: 10rem; /* 160px */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .saturn-planet {
+            width: 8rem; /* 128px */
+            height: 8rem; /* 128px */
+            background-color: #f6e0b5;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 2;
+            animation: spin 15s infinite linear;
+            box-shadow: inset 10px 0 20px rgba(0,0,0,0.2);
+        }
+        .saturn-rings {
+            width: 16rem; /* 256px */
+            height: 1rem; /* 16px */
+            border: 4px solid #d4c4a4;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 1;
+            transform: rotate(-20deg);
+        }
+        @keyframes spin { 
+            from { transform: rotate(0deg); } 
+            to { transform: rotate(360deg); } 
+        }
+        
+        .lang-btn { transition: all 0.3s ease; background-color: #44403c; }
+        .lang-btn.active { background-color: #d6d3d1; color: #1c1917; }
+        
+        .nav-button { transition: all 0.3s ease; background-color: #44403c; color: #d6d3d1; }
+        .nav-button.active { background-color: #c7b299; color: #1c1917; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        
+        .content-section { display: none; background-color: #292524; border: 1px solid #57534e; }
+        .content-section.active { display: block; }
+
+        .quiz-option { transition: all 0.2s; border: 2px solid transparent; background-color: #44403c; }
+        .quiz-option.selected { background-color: #57534e; border-color: #c7b299; }
+        .quiz-option.correct { background-color: #34D399 !important; border-color: #A7F3D0 !important; color: #064E3B; }
+        .quiz-option.wrong { background-color: #F87171 !important; border-color: #FECACA !important; color: #7F1D1D; }
+        
+        .explanation-container { background-color: #44403c; border-left: 4px solid #c7b299; }
+    </style>
+</head>
+<body class="font-ko">
+    <div class="fixed top-4 left-4 z-10">
+        <a href="index.html" class="bg-gray-800 text-white hover:bg-gray-700 transition-colors px-4 py-2 rounded-full shadow-lg">🏠 <span data-lang-key="home_link">메인으로</span></a>
+    </div>
+    <div id="lang-switcher" class="fixed top-4 right-4 z-10 flex gap-2">
+        <button data-lang="ko" class="lang-btn active font-bold py-1 px-3 rounded-full text-sm">🇰🇷</button>
+        <button data-lang="en" class="lang-btn font-bold py-1 px-3 rounded-full text-sm">🇺🇸</button>
+        <button data-lang="de" class="lang-btn font-bold py-1 px-3 rounded-full text-sm">🇩🇪</button>
+    </div>
+
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <header class="text-center mb-12 pt-12">
+            <div class="h-40 mx-auto mb-6 flex items-center justify-center">
+                <div class="saturn-container">
+                    <div class="saturn-planet"></div>
+                    <div class="saturn-rings"></div>
+                </div>
+            </div>
+            <h1 class="text-5xl md:text-6xl font-title text-amber-200" data-lang-key="page_title"></h1>
+            <p class="mt-4 text-lg text-stone-300" data-lang-key="subtitle"></p>
+        </header>
+        
+        <nav class="flex flex-wrap justify-center gap-2 md:gap-4 mb-12">
+             <button data-target="intro" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md active" data-lang-key="nav_intro"></button>
+             <button data-target="features" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md" data-lang-key="nav_features"></button>
+             <button data-target="explore" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md" data-lang-key="nav_explore"></button>
+             <button data-target="quiz" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md" data-lang-key="nav_quiz"></button>
+             <button data-target="glossary" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md" data-lang-key="nav_glossary"></button>
+        </nav>
+
+        <main>
+            <section id="intro" class="content-section active p-6 md:p-8 rounded-2xl shadow-lg">
+                <h2 class="text-4xl font-title text-center mb-6 text-amber-300" data-lang-key="intro_title"></h2>
+                <p data-lang-key="intro_p1"></p>
+            </section>
+            <section id="features" class="content-section p-6 md:p-8 rounded-2xl shadow-lg">
+                 <h2 class="text-4xl font-title text-center mb-6 text-amber-300" data-lang-key="features_title"></h2>
+                 <p data-lang-key="features_p1"></p>
+            </section>
+            <section id="explore" class="content-section p-6 md:p-8 rounded-2xl shadow-lg">
+                 <h2 class="text-4xl font-title text-center mb-6 text-amber-300" data-lang-key="explore_title"></h2>
+                 <p data-lang-key="explore_p1"></p>
+            </section>
+            <section id="quiz" class="content-section p-6 md:p-8 rounded-2xl shadow-lg">
+                <h2 class="text-4xl font-title text-center mb-6 text-amber-300" data-lang-key="quiz_title"></h2>
+                <div id="quiz-container" class="space-y-8"></div>
+                <div id="quiz-controls" class="text-center mt-8"><button id="quiz-submit-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full text-lg" data-lang-key="quiz_submit"></button></div>
+                <div id="quiz-result" class="hidden mt-8 text-center">
+                    <h3 id="quiz-score" class="font-title text-3xl mb-4"></h3>
+                    <p id="quiz-message" class="text-lg"></p>
+                    <button id="quiz-retry-btn" class="mt-6 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-6 rounded-full" data-lang-key="quiz_retry"></button>
+                </div>
+            </section>
+            <section id="glossary" class="content-section p-6 md:p-8 rounded-2xl shadow-lg">
+                <h2 class="text-4xl font-title text-center mb-6 text-amber-300" data-lang-key="glossary_title"></h2>
+                <div class="space-y-6">
+                    <div class="bg-stone-800 p-4 rounded-lg"><h3 class="font-title text-xl text-amber-300" data-lang-key="glossary_1_title"></h3><p data-lang-key="glossary_1_desc"></p></div>
+                    <div class="bg-stone-800 p-4 rounded-lg"><h3 class="font-title text-xl text-amber-300" data-lang-key="glossary_2_title"></h3><p data-lang-key="glossary_2_desc"></p></div>
+                    <div class="bg-stone-800 p-4 rounded-lg"><h3 class="font-title text-xl text-amber-300" data-lang-key="glossary_3_title"></h3><p data-lang-key="glossary_3_desc"></p></div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script>
+        const i18n = {
+            ko: {
+                home_link: "메인으로", page_title: "안녕? 나는 토성이야!", subtitle: "태양계의 보석, 아름다운 나의 고리 이야기를 들어볼래?", nav_intro: "💍 나의 정체", nav_features: "🧊 얼음 고리와 가벼운 몸", nav_explore: "🛰️ 토성 탐사", nav_quiz: "🧠 토성 퀴즈", nav_glossary: "📚 용어사전",
+                intro_title: "고리를 가진 행성", intro_p1: "안녕! 나는 태양계의 여섯 번째 행성이자 목성 다음으로 큰 가스 행성, 토성이야. 무엇보다 나를 상징하는 건 바로 이 크고 아름다운 고리지! 이 고리 덕분에 나는 '태양계의 보석'이라는 멋진 별명을 가지고 있어. 내 이름은 로마 신화의 농업의 신 '사투르누스(Saturnus)'에서 따왔단다.",
+                features_title: "얼음 조각으로 만든 고리와 물에 뜨는 몸", features_p1: "나의 고리는 멀리서 보면 하나의 원반 같지만, 사실 수많은 얼음 조각과 암석 부스러기들이 모여 만들어진 거야. 그리고 나는 태양계 행성 중에서 밀도가 가장 낮아서, 만약 나를 담을 수 있는 아주아주 커다란 욕조가 있다면 물 위에 둥둥 뜰 수도 있단다!",
+                explore_title: "고리의 비밀을 밝힌 카시니호", explore_p1: "많은 탐사선이 나를 스쳐 지나갔지만, 나의 가장 위대한 탐험가는 바로 '카시니-하위헌스호'야. 카시니호는 13년 동안이나 내 주위를 돌면서 고리의 성분을 분석하고, 위성 타이탄에 탐사선을 착륙시키는 등 놀라운 업적을 남겼어. 덕분에 우리는 토성에 대해 아주 많은 것을 알게 되었지.",
+                quiz_title: "도전! 토성 퀴즈", quiz_submit: "정답 확인하기", quiz_retry: "다시 풀기",
+                quiz_data: [
+                    { question: "나의 가장 큰 특징은 무엇일까요?", options: ["붉은색 표면", "아름다운 고리", "가장 빠른 속도"], answer: "아름다운 고리", explanation: "나는 태양계에서 가장 크고 아름다운 고리를 가지고 있어서 '태양계의 보석'이라고 불려." },
+                    { question: "나의 고리는 무엇으로 이루어져 있을까요?", options: ["솜사탕", "구름", "얼음과 암석 조각"], answer: "얼음과 암석 조각", explanation: "나의 고리는 수많은 얼음 알갱이와 작은 암석 조각들이 모여서 만들어진 거야." },
+                    { question: "만약 나를 물에 넣는다면 어떻게 될까요?", options: ["가라앉는다", "물에 뜬다", "녹아버린다"], answer: "물에 뜬다", explanation: "나는 밀도가 물보다도 낮아서, 아주 큰 욕조가 있다면 물 위에 둥둥 뜰 수 있는 유일한 행성이야." }
+                ],
+                quiz_result_message: (score, total) => `총 ${total}문제 중 ${score}문제 정답!`,
+                quiz_perfect: "굉장해! 너는 고리 행성의 달인이구나! 💍", quiz_good: "훌륭해! 토성의 비밀에 대해 많이 알게 되었어!",
+                glossary_title: "용어사전",
+                glossary_1_title: "가스 행성", glossary_1_desc: "암석보다는 수소, 헬륨 같은 가벼운 기체로 대부분 이루어진 거대한 행성을 말해.",
+                glossary_2_title: "행성의 고리", glossary_2_desc: "행성 주위를 도는 수많은 작은 얼음, 암석, 먼지 입자들이 모여 만들어진 얇고 넓은 띠 모양의 구조물이야.",
+                glossary_3_title: "밀도", glossary_3_desc: "물질이 얼마나 빽빽하게 모여 있는지를 나타내는 정도. 밀도가 낮으면 가볍고, 높으면 무거워.",
+            },
+            en: {
+                home_link: "To Main", page_title: "Hello! I'm Saturn!", subtitle: "Want to hear the story of my beautiful rings, the jewel of the Solar System?", nav_intro: "💍 My Identity", nav_features: "🧊 Ice Rings & Light Body", nav_explore: "🛰️ Saturn Exploration", nav_quiz: "🧠 Saturn Quiz", nav_glossary: "📚 Glossary",
+                intro_title: "The Ringed Planet", intro_p1: "Hi! I'm Saturn, the sixth planet from the Sun and the second-largest gas giant after Jupiter. My most defining feature is, of course, my large and beautiful rings! Thanks to these rings, I have the wonderful nickname 'the jewel of the Solar System.' My name comes from 'Saturnus,' the Roman god of agriculture.",
+                features_title: "Rings of Ice and a Body That Floats", features_p1: "My rings look like a single disk from afar, but they are actually made up of countless pieces of ice and rock debris. Also, I have the lowest density of any planet in the Solar System. If there were a bathtub large enough to hold me, I could float on water!",
+                explore_title: "Cassini Uncovered the Secrets of the Rings", explore_p1: "Many probes have flown by me, but my greatest explorer was the 'Cassini-Huygens' mission. For 13 years, Cassini orbited me, analyzing the composition of my rings and landing a probe on my moon Titan, achieving incredible feats. Thanks to it, we learned so much about Saturn.",
+                quiz_title: "Challenge! Saturn Quiz", quiz_submit: "Check Answers", quiz_retry: "Try Again",
+                quiz_data: [
+                    { question: "What is my most famous feature?", options: ["A red surface", "Beautiful rings", "The fastest speed"], answer: "Beautiful rings", explanation: "I am known as the 'jewel of the Solar System' because I have the largest and most beautiful rings." },
+                    { question: "What are my rings made of?", options: ["Cotton candy", "Clouds", "Ice and rock fragments"], answer: "Ice and rock fragments", explanation: "My rings are made up of countless tiny ice grains and small pieces of rock." },
+                    { question: "What would happen if you put me in water?", options: ["I would sink", "I would float", "I would dissolve"], answer: "I would float", explanation: "My density is lower than water, making me the only planet that could float in a giant bathtub!" }
+                ],
+                quiz_result_message: (score, total) => `You got ${score} out of ${total} correct!`,
+                quiz_perfect: "Amazing! You're a master of the ringed planet! 💍", quiz_good: "Great job! You've learned a lot about the secrets of Saturn!",
+                glossary_title: "Glossary",
+                glossary_1_title: "Gas Giant", glossary_1_desc: "A large planet composed mostly of light elements such as hydrogen and helium, rather than rock.",
+                glossary_2_title: "Planetary Ring", glossary_2_desc: "A thin, wide, band-like structure made of countless small particles of ice, rock, and dust orbiting a planet.",
+                glossary_3_title: "Density", glossary_3_desc: "A measure of how tightly packed matter is. Low density means light for its size, high density means heavy.",
+            },
+            de: {
+                home_link: "Zur Hauptseite", page_title: "Hallo! Ich bin Saturn!", subtitle: "Willst du die Geschichte meiner schönen Ringe hören, dem Juwel des Sonnensystems?", nav_intro: "💍 Meine Identität", nav_features: "🧊 Eisringe & Leichter Körper", nav_explore: "🛰️ Saturn-Erkundung", nav_quiz: "🧠 Saturn-Quiz", nav_glossary: "📚 Wörterbuch",
+                intro_title: "Der Ringplanet", intro_p1: "Hallo! Ich bin Saturn, der sechste Planet von der Sonne und nach Jupiter der zweitgrößte Gasriese. Mein hervorstechendstes Merkmal sind natürlich meine großen und schönen Ringe! Dank dieser Ringe habe ich den wunderbaren Spitznamen 'das Juwel des Sonnensystems'. Mein Name kommt von 'Saturnus', dem römischen Gott der Landwirtschaft.",
+                features_title: "Ringe aus Eis und ein Körper, der schwimmt", features_p1: "Meine Ringe sehen von weitem wie eine einzige Scheibe aus, aber sie bestehen tatsächlich aus unzähligen Eis- und Gesteinsbrocken. Außerdem habe ich die geringste Dichte aller Planeten im Sonnensystem. Gäbe es eine Badewanne, die groß genug wäre, um mich aufzunehmen, könnte ich auf dem Wasser schwimmen!",
+                explore_title: "Cassini enthüllte die Geheimnisse der Ringe", explore_p1: "Viele Sonden sind an mir vorbeigeflogen, aber mein größter Entdecker war die Mission 'Cassini-Huygens'. 13 Jahre lang umkreiste Cassini mich, analysierte die Zusammensetzung meiner Ringe und landete eine Sonde auf meinem Mond Titan, was unglaubliche Leistungen vollbrachte. Dank ihr haben wir so viel über den Saturn gelernt.",
+                quiz_title: "Herausforderung! Saturn-Quiz", quiz_submit: "Antworten prüfen", quiz_retry: "Nochmal versuchen",
+                quiz_data: [
+                    { question: "Was ist mein berühmtestes Merkmal?", options: ["Eine rote Oberfläche", "Schöne Ringe", "Die schnellste Geschwindigkeit"], answer: "Schöne Ringe", explanation: "Ich bin als 'das Juwel des Sonnensystems' bekannt, weil ich die größten und schönsten Ringe habe." },
+                    { question: "Woraus bestehen meine Ringe?", options: ["Zuckerwatte", "Wolken", "Eis- und Gesteinsfragmente"], answer: "Eis- und Gesteinsfragmente", explanation: "Meine Ringe bestehen aus unzähligen winzigen Eiskörnern und kleinen Gesteinsstücken." },
+                    { question: "Was würde passieren, wenn man mich ins Wasser legen würde?", options: ["Ich würde sinken", "Ich würde schwimmen", "Ich würde mich auflösen"], answer: "Ich würde schwimmen", explanation: "Meine Dichte ist geringer als die von Wasser, was mich zum einzigen Planeten macht, der in einer riesigen Badewanne schwimmen könnte!" }
+                ],
+                quiz_result_message: (score, total) => `Du hast ${score} von ${total} richtig!`,
+                quiz_perfect: "Fantastisch! Du bist ein Meister des Ringplaneten! 💍", quiz_good: "Tolle Arbeit! Du hast viel über die Geheimnisse des Saturn gelernt!",
+                glossary_title: "Wörterbuch",
+                glossary_1_title: "Gasriese", glossary_1_desc: "Ein großer Planet, der hauptsächlich aus leichten Elementen wie Wasserstoff und Helium und nicht aus Gestein besteht.",
+                glossary_2_title: "Planetenring", glossary_2_desc: "Eine dünne, breite, bandartige Struktur aus unzähligen kleinen Eis-, Gesteins- und Staubpartikeln, die einen Planeten umkreisen.",
+                glossary_3_title: "Dichte", glossary_3_desc: "Ein Maß dafür, wie dicht Materie gepackt ist. Geringe Dichte bedeutet leicht für seine Größe, hohe Dichte bedeutet schwer.",
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentLang = 'ko';
+
+            function applyTranslations() {
+                document.documentElement.lang = currentLang;
+                document.body.className = `font-${currentLang}`;
+                document.querySelectorAll('[data-lang-key]').forEach(el => {
+                    const key = el.dataset.langKey;
+                    if (i18n[currentLang] && i18n[currentLang][key]) {
+                        el.innerHTML = i18n[currentLang][key];
+                    }
+                });
+            }
+
+            function switchLanguage(lang) {
+                currentLang = lang;
+                document.querySelectorAll('.lang-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.lang === lang);
+                });
+                applyTranslations();
+                if(document.querySelector('.nav-button.active')?.dataset.target === 'quiz') loadQuiz();
+            }
+
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchLanguage(btn.dataset.lang));
+            });
+
+            const navButtons = document.querySelectorAll('.nav-button');
+            const contentSections = document.querySelectorAll('.content-section');
+            function switchTab(targetId) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                navButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.target === targetId));
+                contentSections.forEach(section => section.classList.toggle('active', section.id === targetId));
+                if (targetId === 'quiz') loadQuiz();
+            }
+            navButtons.forEach(button => button.addEventListener('click', () => switchTab(button.dataset.target)));
+
+            const quizContainer = document.getElementById('quiz-container');
+            const quizControls = document.getElementById('quiz-controls');
+            const quizResult = document.getElementById('quiz-result');
+            const quizScoreDisplay = document.getElementById('quiz-score');
+            const quizMessageDisplay = document.getElementById('quiz-message');
+            const quizSubmitBtn = document.getElementById('quiz-submit-btn');
+            const quizRetryBtn = document.getElementById('quiz-retry-btn');
+            
+            function loadQuiz() {
+                const quizData = i18n[currentLang].quiz_data;
+                quizContainer.innerHTML = '';
+                quizResult.classList.add('hidden');
+                quizControls.classList.remove('hidden');
+
+                quizData.forEach((q, index) => {
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = 'quiz-question';
+                    questionDiv.innerHTML = `<h3 class="font-title text-xl mb-4">${index + 1}. ${q.question}</h3>`;
+                    
+                    const optionsDiv = document.createElement('div');
+                    optionsDiv.className = 'space-y-3';
+                    
+                    q.options.forEach(optionText => {
+                        const optionBtn = document.createElement('button');
+                        optionBtn.textContent = optionText;
+                        optionBtn.className = 'quiz-option block w-full text-left p-3 rounded-lg';
+                        optionBtn.addEventListener('click', () => {
+                            optionsDiv.querySelectorAll('.quiz-option').forEach(btn => btn.classList.remove('selected'));
+                            optionBtn.classList.add('selected');
+                        });
+                        optionsDiv.appendChild(optionBtn);
+                    });
+                    
+                    const explanationDiv = document.createElement('div');
+                    explanationDiv.className = 'explanation-container hidden p-4 mt-4 rounded-r-lg';
+                    
+                    questionDiv.appendChild(optionsDiv);
+                    questionDiv.appendChild(explanationDiv);
+                    quizContainer.appendChild(questionDiv);
+                });
+            }
+
+            quizSubmitBtn.addEventListener('click', () => {
+                let score = 0;
+                const quizData = i18n[currentLang].quiz_data;
+                const questions = quizContainer.querySelectorAll('.quiz-question');
+
+                questions.forEach((question, index) => {
+                    const selectedOption = question.querySelector('.quiz-option.selected');
+                    const allOptions = question.querySelectorAll('.quiz-option');
+                    const explanationContainer = question.querySelector('.explanation-container');
+                    const correctAnswer = quizData[index].answer;
+
+                    allOptions.forEach(opt => {
+                        opt.disabled = true;
+                        if (opt.textContent === correctAnswer) opt.classList.add('correct');
+                    });
+
+                    if (selectedOption) {
+                        if (selectedOption.textContent === correctAnswer) score++;
+                        else selectedOption.classList.add('wrong');
+                    }
+                    
+                    const explanationPrefix = { ko: "💡 왜냐하면!", en: "💡 Because...", de: "💡 Weil..." };
+                    explanationContainer.innerHTML = `<p><strong class="font-bold text-amber-300">${explanationPrefix[currentLang]}</strong> ${quizData[index].explanation}</p>`;
+                    explanationContainer.classList.remove('hidden');
+                });
+                
+                showResult(score);
+            });
+            
+            function showResult(score) {
+                const quizData = i18n[currentLang].quiz_data;
+                quizControls.classList.add('hidden');
+                quizResult.classList.remove('hidden');
+                quizScoreDisplay.textContent = i18n[currentLang].quiz_result_message(score, quizData.length);
+                
+                if(score === quizData.length) {
+                    quizMessageDisplay.textContent = i18n[currentLang].quiz_perfect;
+                } else {
+                    quizMessageDisplay.textContent = i18n[currentLang].quiz_good;
+                }
+            }
+
+            quizRetryBtn.addEventListener('click', loadQuiz);
+            
+            // Initial Load
+            switchLanguage('ko'); 
+            navButtons[0].click(); 
+        });
+    </script>
+</body>
+</html>
