@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[다국어판] 안녕? 나는 태양이야!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Jua&family=Roboto:wght@400;700&family=Poppins:wght@400;700&family=Bangers&display=swap" rel="stylesheet">
+    
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            background-color: #FFFDF5;
+            color: #4A4A4A;
+        }
+        .font-ko { font-family: 'Noto Sans KR', sans-serif; }
+        .font-en { font-family: 'Poppins', sans-serif; }
+        .font-de { font-family: 'Roboto', sans-serif; }
+        
+        .font-ko .font-title { font-family: 'Jua', sans-serif; }
+        .font-en .font-title, .font-de .font-title { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+
+        .sun-animation {
+            animation: pulse 4s infinite;
+            box-shadow: 0 0 20px #FFC700, 0 0 40px #FFC700, 0 0 60px #FFAA00;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); }
+            50% { transform: scale(1); }
+            100% { transform: scale(0.95); }
+        }
+        .lang-btn, .nav-button {
+            transition: all 0.3s ease;
+        }
+        .lang-btn {
+             background-color: #f3f4f6;
+             color: #374151;
+        }
+        .lang-btn.active {
+            background-color: #FBBF24;
+            color: #4A4A4A;
+        }
+        .nav-button {
+             background-color: #ffffff;
+        }
+        .nav-button.active {
+            background-color: #FFC700;
+            color: #4A4A4A;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .content-section {
+            display: none;
+            background-color: #ffffff;
+        }
+        .content-section.active { display: block; }
+
+        .quiz-option {
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            background-color: #f3f4f6;
+        }
+        .quiz-option.selected { background-color: #FEF3C7; border-color: #FBBF24; }
+        .quiz-option.correct { background-color: #C6F6D5 !important; border-color: #38A169 !important; color: #276749; }
+        .quiz-option.wrong { background-color: #FED7D7 !important; border-color: #C53030 !important; color: #9B2C2C; }
+        .explanation-container { background-color: #FEFCE8; border-left: 4px solid #FBBF24; }
+    </style>
+</head>
+<body class="font-ko">
+
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Language Switcher -->
+        <div id="lang-switcher" class="flex justify-center gap-2 sm:gap-4 mb-8">
+            <button data-lang="ko" class="lang-btn active font-bold py-2 px-4 rounded-full text-sm sm:text-base">🇰🇷 한국어</button>
+            <button data-lang="en" class="lang-btn font-bold py-2 px-4 rounded-full text-sm sm:text-base">🇺🇸 English</button>
+            <button data-lang="de" class="lang-btn font-bold py-2 px-4 rounded-full text-sm sm:text-base">🇩🇪 Deutsch</button>
+        </div>
+
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <div class="w-32 h-32 md:w-40 md:h-40 bg-yellow-400 rounded-full mx-auto mb-6 flex items-center justify-center sun-animation">
+                <div class="w-20 h-20 md:w-24 md:h-24 bg-yellow-300 rounded-full"></div>
+            </div>
+            <h1 class="text-5xl md:text-6xl font-title text-yellow-500" data-lang-key="page_title"></h1>
+            <p class="mt-4 text-lg text-gray-600" data-lang-key="subtitle"></p>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="flex flex-wrap justify-center gap-2 md:gap-4 mb-12">
+            <button data-target="intro" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md active" data-lang-key="nav_intro"></button>
+            <button data-target="gifts" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md" data-lang-key="nav_gifts"></button>
+            <button data-target="compare" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md" data-lang-key="nav_compare"></button>
+            <button data-target="if-not" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md" data-lang-key="nav_if_not"></button>
+            <button data-target="secrets" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md" data-lang-key="nav_secrets"></button>
+            <button data-target="quiz" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md" data-lang-key="nav_quiz"></button>
+            <button data-target="glossary" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md" data-lang-key="nav_glossary"></button>
+            <button data-target="playground" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md" data-lang-key="nav_playground"></button>
+        </nav>
+
+        <!-- Content Sections -->
+        <main>
+            <section id="intro" class="content-section active p-6 md:p-8 rounded-2xl shadow-lg">
+                <h2 class="text-4xl font-title text-center mb-6 text-orange-500" data-lang-key="intro_title"></h2>
+                <div class="text-lg leading-relaxed space-y-4">
+                    <p data-lang-key="intro_p1"></p>
+                    <p class="p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg" data-lang-key="intro_p2"></p>
+                </div>
+            </section>
+            
+            <section id="gifts" class="content-section p-6 md:p-8 rounded-2xl shadow-lg">
+                <h2 class="text-4xl font-title text-center mb-6 text-orange-500" data-lang-key="gifts_title"></h2>
+                <div class="space-y-6">
+                    <div class="bg-orange-50 p-6 rounded-xl"><h3 class="font-title text-2xl mb-3 text-orange-600" data-lang-key="gifts_1_title"></h3><p data-lang-key="gifts_1_desc"></p></div>
+                    <div class="bg-green-50 p-6 rounded-xl"><h3 class="font-title text-2xl mb-3 text-green-600" data-lang-key="gifts_2_title"></h3><p data-lang-key="gifts_2_desc"></p></div>
+                    <div class="bg-blue-50 p-6 rounded-xl"><h3 class="font-title text-2xl mb-3 text-blue-600" data-lang-key="gifts_3_title"></h3><p data-lang-key="gifts_3_desc"></p></div>
+                    <div class="bg-rose-50 p-6 rounded-xl"><h3 class="font-title text-2xl mb-3 text-rose-600" data-lang-key="gifts_4_title"></h3><p data-lang-key="gifts_4_desc"></p></div>
+                </div>
+            </section>
+
+            <section id="compare" class="content-section p-6 md:p-8 rounded-2xl shadow-lg">
+                <h2 class="text-4xl font-title text-center mb-6 text-orange-500" data-lang-key="compare_title"></h2>
+                <p class="text-center text-lg mb-8 text-gray-600" data-lang-key="compare_p1"></p>
+                <div class="chart-container mb-8"><canvas id="sizeChart"></canvas></div>
+                <div class="grid md:grid-cols-2 gap-6 text-center">
+                    <div class="bg-gray-100 p-4 rounded-lg"><h3 class="font-title text-xl mb-2" data-lang-key="compare_mass_title"></h3><p data-lang-key="compare_mass_desc"></p></div>
+                    <div class="bg-gray-100 p-4 rounded-lg"><h3 class="font-title text-xl mb-2" data-lang-key="compare_gravity_title"></h3><p data-lang-key="compare_gravity_desc"></p></div>
+                </div>
+            </section>
+            
+            <section id="if-not" class="content-section p-6 md:p-8 rounded-2xl shadow-lg">
+                <h2 class="text-4xl font-title text-center mb-6 text-orange-500" data-lang-key="if_not_title"></h2>
+                <p class="text-center text-lg mb-8 text-gray-600" data-lang-key="if_not_p1"></p>
+                <div class="flex justify-center flex-wrap gap-3 mb-6">
+                    <button class="if-not-btn bg-blue-200 hover:bg-blue-300 text-blue-800 font-bold py-2 px-4 rounded-full" data-step="1"></button>
+                    <button class="if-not-btn bg-indigo-200 hover:bg-indigo-300 text-indigo-800 font-bold py-2 px-4 rounded-full" data-step="2"></button>
+                    <button class="if-not-btn bg-purple-200 hover:bg-purple-300 text-purple-800 font-bold py-2 px-4 rounded-full" data-step="3"></button>
+                    <button class="if-not-btn bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-full" data-step="4"></button>
+                </div>
+                <div id="if-not-display" class="p-6 rounded-lg text-center transition-all duration-500 bg-gray-800 text-white min-h-[200px] flex flex-col justify-center items-center">
+                    <div id="if-not-icon" class="text-5xl mb-4">🤔</div><h3 id="if-not-title-display" class="text-2xl font-title mb-2"></h3><p id="if-not-text"></p>
+                </div>
+            </section>
+
+            <section id="secrets" class="content-section p-6 md:p-8 rounded-2xl shadow-lg">
+                <h2 class="text-4xl font-title text-center mb-6 text-orange-500" data-lang-key="secrets_title"></h2>
+                <p class="text-center text-lg mb-8 text-gray-600" data-lang-key="secrets_p1"></p>
+                <div class="flex flex-wrap border-b mb-6">
+                    <button class="secret-tab-btn flex-1 py-2 text-md md:text-lg font-title border-b-4 border-yellow-400 text-yellow-500" data-secret="sunspot" data-lang-key="secrets_tab1"></button>
+                    <button class="secret-tab-btn flex-1 py-2 text-md md:text-lg font-title border-b-4 border-transparent text-gray-500" data-secret="flare" data-lang-key="secrets_tab2"></button>
+                    <button class="secret-tab-btn flex-1 py-2 text-md md:text-lg font-title border-b-4 border-transparent text-gray-500" data-secret="wind" data-lang-key="secrets_tab3"></button>
+                    <button class="secret-tab-btn flex-1 py-2 text-md md:text-lg font-title border-b-4 border-transparent text-gray-500" data-secret="eclipse" data-lang-key="secrets_tab4"></button>
+                </div>
+                <div id="sunspot" class="secret-content"><h3 class="font-title text-2xl mb-3 text-gray-700" data-lang-key="secrets_1_title"></h3><p data-lang-key="secrets_1_desc"></p></div>
+                <div id="flare" class="secret-content hidden"><h3 class="font-title text-2xl mb-3 text-red-600" data-lang-key="secrets_2_title"></h3><p data-lang-key="secrets_2_desc"></p></div>
+                <div id="wind" class="secret-content hidden"><h3 class="font-title text-2xl mb-3 text-cyan-600" data-lang-key="secrets_3_title"></h3><p data-lang-key="secrets_3_desc"></p></div>
+                <div id="eclipse" class="secret-content hidden"><h3 class="font-title text-2xl mb-3 text-indigo-600" data-lang-key="secrets_4_title"></h3><p data-lang-key="secrets_4_desc"></p></div>
+            </section>
+            
+            <section id="quiz" class="content-section p-6 md:p-8 rounded-2xl shadow-lg">
+                <h2 class="text-4xl font-title text-center mb-6 text-orange-500" data-lang-key="quiz_title"></h2>
+                <p class="text-center text-lg mb-8 text-gray-600" data-lang-key="quiz_p1"></p>
+                <div id="quiz-container" class="space-y-8"></div>
+                <div id="quiz-controls" class="text-center mt-8"><button id="quiz-submit-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full text-lg" data-lang-key="quiz_submit"></button></div>
+                <div id="quiz-result" class="hidden mt-8 text-center">
+                    <h3 id="quiz-score" class="font-title text-3xl mb-4"></h3>
+                    <p id="quiz-message" class="text-lg"></p>
+                    <button id="quiz-retry-btn" class="mt-6 bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-2 px-6 rounded-full" data-lang-key="quiz_retry"></button>
+                </div>
+            </section>
+
+            <section id="glossary" class="content-section p-6 md:p-8 rounded-2xl shadow-lg">
+                <h2 class="text-4xl font-title text-center mb-6 text-orange-500" data-lang-key="glossary_title"></h2>
+                <div class="space-y-6">
+                    <div class="bg-gray-50 p-4 rounded-lg"><h3 class="font-title text-xl text-blue-700" data-lang-key="glossary_1_title"></h3><p data-lang-key="glossary_1_desc"></p></div>
+                    <div class="bg-gray-50 p-4 rounded-lg"><h3 class="font-title text-xl text-blue-700" data-lang-key="glossary_2_title"></h3><p data-lang-key="glossary_2_desc"></p></div>
+                    <div class="bg-gray-50 p-4 rounded-lg"><h3 class="font-title text-xl text-green-700" data-lang-key="glossary_3_title"></h3><p data-lang-key="glossary_3_desc"></p></div>
+                    <div class="bg-gray-50 p-4 rounded-lg"><h3 class="font-title text-xl text-purple-700" data-lang-key="glossary_4_title"></h3><p data-lang-key="glossary_4_desc"></p></div>
+                    <div class="bg-gray-50 p-4 rounded-lg"><h3 class="font-title text-xl text-red-700" data-lang-key="glossary_5_title"></h3><p data-lang-key="glossary_5_desc"></p></div>
+                </div>
+            </section>
+
+            <section id="playground" class="content-section p-6 md:p-8 rounded-2xl shadow-lg">
+                <h2 class="text-4xl font-title text-center mb-6 text-orange-500" data-lang-key="playground_title"></h2>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-amber-50 p-6 rounded-lg">
+                        <h3 class="font-title text-2xl mb-4 text-amber-600" data-lang-key="playground_1_title"></h3>
+                        <p data-lang-key="playground_1_desc"></p>
+                    </div>
+                    <div class="bg-sky-50 p-6 rounded-lg">
+                        <h3 class="font-title text-2xl mb-4 text-sky-600" data-lang-key="playground_2_title"></h3>
+                        <div data-lang-key="playground_2_desc"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const i18n = {
+            ko: {
+                page_title: "안녕? 나는 태양이야!",
+                subtitle: "나에 대해 더 깊고 자세한 이야기를 들려줄게! 진짜 우주 탐험을 시작해보자!",
+                nav_intro: "☀️ 나의 정체", nav_gifts: "🎁 상세한 선물", nav_compare: "💪 크기와 힘", nav_if_not: "🤔 내가 없다면?", nav_secrets: "🤫 깊은 비밀", nav_quiz: "🧠 태양 퀴즈", nav_glossary: "📚 어려운 말 풀이", nav_playground: "🎨 놀이터",
+                intro_title: "나의 진짜 정체!",
+                intro_p1: "나는 너희가 사는 태양계의 유일한 '별(Star)'이야. 스스로 빛과 열을 내뿜는 거대한 가스 덩어리지! 내 몸은 대부분 <strong>수소</strong>와 <strong>헬륨</strong>이라는 가스로 이루어져 있어. 내 중심부에서는 상상도 못 할 만큼 뜨거운 온도로 인해 수소들이 서로 합체해서 헬륨으로 변신하는데, 이 과정을 '핵융합 반응'이라고 불러. 바로 이때 어마어마한 빛과 열 에너지가 만들어지는 거야!",
+                intro_p2: "✔️ 내 표면 온도는 약 <strong>6,000℃</strong>나 되고, 중심부 온도는 무려 <strong>1,500만℃</strong>에 달해! 정말 뜨겁지?",
+                gifts_title: "내가 주는 상세한 선물 목록",
+                gifts_1_title: "🌟 8분 20초의 여행, 빛과 따뜻함", gifts_1_desc: "내가 보낸 빛은 약 1억 5천만 km를 날아서 지구까지 가는 데 <strong>8분 20초</strong>가 걸려. 너희가 지금 보고 있는 햇빛은 내가 8분 20초 전에 보낸 거란다! 나의 온기는 지구가 평균 15℃를 유지하게 해서 생명체가 살기 좋은 환경을 만들어줘.",
+                gifts_2_title: "🌿 모든 생명의 시작, 광합성 에너지", gifts_2_desc: "식물은 내 빛 에너지로 물과 이산화탄소를 사용해 포도당(양분)과 산소를 만들어. 이것이 바로 '광합성'이야. 풀을 먹는 초식동물, 그 동물을 먹는 육식동물까지, 모든 생명체의 에너지는 바로 나에게서 시작되는 셈이지. 이걸 '먹이 사슬'이라고 해.",
+                gifts_3_title: "💧 지구를 순환시키는 물의 여행", gifts_3_desc: "내 열에너지로 바다와 강의 물이 증발해서 수증기가 되어 하늘로 올라가(<strong>증발</strong>). 이 수증기들이 모여 구름이 되고(<strong>응결</strong>), 무거워지면 비나 눈으로 다시 땅에 내려와(<strong>강수</strong>). 이렇게 물이 계속 여행하는 '물의 순환'을 내가 돕고 있어.",
+                gifts_4_title: "💪 뼈를 튼튼하게! 비타민 D", gifts_4_desc: "너희들이 햇볕을 쬐면 피부에서 '비타민 D'라는 중요한 영양소가 만들어져. 비타민 D는 뼈를 튼튼하게 만드는 데 꼭 필요하단다. 적당한 햇볕은 너희들의 건강에 아주 좋은 선물이야!",
+                compare_title: "나의 어마어마한 크기와 힘",
+                compare_p1: "내 크기가 얼마나 대단한지, 그리고 그 힘이 얼마나 강력한지 자세히 알려줄게!",
+                compare_mass_title: "질량 (무게)", compare_mass_desc: "나는 태양계 전체 질량의 <strong class='text-2xl font-title text-purple-600'>99.8%</strong>를 차지해! 지구를 포함한 모든 행성, 소행성들을 다 합쳐도 0.2%밖에 안 된단다. 정말 압도적이지?",
+                compare_gravity_title: "중력 (끌어당기는 힘)", compare_gravity_desc: "이렇게 무겁기 때문에 나는 아주 강력한 '중력'을 가지고 있어. 이 힘으로 지구와 다른 행성들이 우주 멀리 날아가지 않고 내 주위를 돌도록 꽉 붙잡고 있는 거야!",
+                if_not_title: "만약 내가 사라진다면? (심화)",
+                if_not_p1: "내가 없다면 지구는 어떻게 될까? 조금 더 자세하게 상상해보자. 아래 버튼을 눌러 시간대별로 일어나는 일을 확인해봐.",
+                if_not_btn1_text: "8분 후", if_not_btn2_text: "일주일 후", if_not_btn3_text: "몇 주 후", if_not_btn4_text: "1년 후",
+                if_not_data: {
+                    '1': { icon: '캄캄..', title: '8분 뒤: 암흑과 직선 운동', text: '내 중력이 사라져 지구가 우주 공간으로 직선으로 날아가기 시작하고, 세상은 빛을 잃어 깜깜해질거야.' },
+                    '2': { icon: '꽁꽁!', title: '일주일 후: 급격한 온도 하강', text: '지구 평균 온도가 영하 17℃까지 떨어져. 아직 지구 중심의 열 때문에 완전히 얼지는 않아.' },
+                    '3': { icon: '시들시들', title: '몇 주 후: 식물들의 작별인사', text: '광합성을 못하게 된 대부분의 식물들이 죽기 시작해. 먹이 사슬의 기초가 무너지는 거지.' },
+                    '4': { icon: '❄️', title: '1년 후: 영하 70도의 얼음 왕국', text: '지구 표면은 완전히 얼어붙고, 바다 깊은 곳의 미생물들만 살아남는 극한의 환경이 될거야.' }
+                },
+                if_not_initial_title: "버튼을 눌러 확인해봐!", if_not_initial_text: "내가 없으면 지구가 어떻게 변할까?",
+                secrets_title: "나의 깊고 놀라운 비밀들",
+                secrets_p1: "조용해 보이지만 내 안에서는 아주 활발한 일들이 일어나고 있어. 나의 비밀스러운 모습들을 더 자세히 들여다볼까?",
+                secrets_tab1: "흑점", secrets_tab2: "플레어", secrets_tab3: "태양풍", secrets_tab4: "일식",
+                secrets_1_title: "☀️ 11년 주기의 흑점", secrets_1_desc: "내 얼굴의 주근깨 '흑점'은 약 11년을 주기로 많아졌다가 적어지기를 반복해. 흑점이 많아지는 시기를 '태양 활동 극대기'라고 부르는데, 이때는 플레어나 태양풍 같은 현상도 더 활발해진단다. 흑점은 내 건강 상태를 알려주는 신호와도 같아!",
+                secrets_2_title: "💥 지구에 영향을 주는 플레어", secrets_2_desc: "나의 강력한 재채기 '플레어'가 일어나면 강력한 에너지와 입자들이 지구로 날아와. 이 때문에 지구의 통신을 방해(라디오가 안 들리거나, GPS가 오작동)하거나 인공위성을 고장내기도 해. 이 현상이 만들어내는 아름다운 선물이 바로 '오로라'야.",
+                secrets_3_title: "💨 멈추지 않는 태양풍", secrets_3_desc: "'태양풍'은 내가 계속해서 우주 공간으로 내뿜는 뜨거운 가스 입자의 흐름이야. 마치 내가 계속 숨을 내쉬는 것과 같지. 지구의 자기장이 이 태양풍을 막아주는 든든한 방패 역할을 해서 우리가 안전하게 살 수 있는 거란다.",
+                secrets_4_title: "🌙 내가 사라지는 마술, 일식", secrets_4_desc: "가끔 달이 지구와 나 사이에 정확히 위치해서 나를 가리는 현상이 일어나. 이걸 '일식'이라고 해. 낮인데도 갑자기 밤처럼 어두워지는 신기한 현상이지. 내가 달보다 400배나 크지만, 달이 400배 더 가까이 있어서 크기가 비슷하게 보이는 거야!",
+                quiz_title: "도전! 태양 퀴즈",
+                quiz_p1: "나에 대해 얼마나 잘 알게 되었는지 확인해볼까? 정답을 골라봐!",
+                quiz_submit: "정답 확인하기", quiz_retry: "다시 풀기",
+                quiz_data: [
+                    { question: "내가 보낸 빛이 지구까지 오는 데 걸리는 시간은?", options: ["1초", "8분 20초", "1시간"], answer: "8분 20초", explanation: "나는 빛의 속도로 여행하지만, 우주는 아주 넓어! 1억 5천만 km를 여행해서 너에게 도착하는 데는 8분 20초가 걸린단다." },
+                    { question: "내 몸을 이루는 가장 많은 가스는 무엇일까?", options: ["산소", "헬륨", "수소"], answer: "수소", explanation: "나는 거대한 가스 덩어리이고, 그 가스의 대부분은 수소야. 내 중심에서 이 수소를 헬륨으로 바꾸면서 모든 에너지를 만들지." },
+                    { question: "식물이 내 빛으로 양분을 만드는 과정의 이름은?", options: ["광합성", "소화", "물의 순환"], answer: "광합성", explanation: "식물은 정말 대단해! 내 빛을 이용해서 물과 공기로부터 스스로 '요리'를 해서 양분을 만들어. 이 과정을 광합성이라고 불러." },
+                    { question: "내 표면에서 일어나는 거대한 폭발을 무엇이라고 부를까?", options: ["태양풍", "태양 플레어", "오로라"], answer: "태양 플레어", explanation: "가끔 내 표면에 에너지가 쌓이면 태양 플레어라고 불리는 거대한 폭발이 일어나. 거대한 태양 재채기 같은 거야!" }
+                ],
+                quiz_result_message: (score, total) => `총 ${total}문제 중 ${score}문제 정답!`,
+                quiz_perfect: "완벽해! 너는 태양 박사님이구나! ☀️",
+                quiz_good: "훌륭해! 해설을 읽고 더 똑똑해졌구나!",
+                glossary_title: "어려운 말 풀이 사전",
+                glossary_1_title: "별 (항성)", glossary_1_desc: "스스로 빛과 열을 내는 거대한 가스 덩어리. 밤하늘에 반짝이는 대부분의 별들이 바로 태양과 같은 항성이야.",
+                glossary_2_title: "핵융합 반응", glossary_2_desc: "태양의 중심에서 수소처럼 아주 가벼운 알갱이들이 서로 합체해서 조금 더 무거운 헬륨 알갱이로 변하는 현상. 이때 엄청난 에너지가 만들어져!",
+                glossary_3_title: "광합성", glossary_3_desc: "식물이 햇빛 에너지를 이용해서, 물과 공기 속 이산화탄소로 자신에게 필요한 밥(양분)을 만드는 마법 같은 과정이야.",
+                glossary_4_title: "중력", glossary_4_desc: "모든 물건이 서로를 끌어당기는 힘. 태양의 강력한 중력 덕분에 지구가 우주 멀리 날아가지 않고 태양 주위를 돌 수 있어.",
+                glossary_5_title: "태양 플레어", glossary_5_desc: "태양 표면에서 일어나는 거대한 폭발 현상. 태양이 '에취!'하고 강력한 재채기를 하는 것과 비슷해.",
+                playground_title: "신나는 태양 놀이터",
+                playground_1_title: "🎨 나를 그려줘!", playground_1_desc: "<strong>종이접시 태양:</strong> 노란 종이접시에 웃는 얼굴을 그리고, 색종이로 햇살을 만들어 붙여봐!<br><strong>포크 햇살 그림:</strong> 도화지에 노란 물감을 짜고, 포크로 쭉쭉 밀어서 멋진 햇살을 표현해봐!",
+                playground_2_title: "🎤 노래 불러줘!", playground_2_desc: `<div class="space-y-4"><div><h4 class="font-bold">🎵 둥근 해가 떴습니다</h4><p class="text-gray-600 text-sm">"둥근 해가 떴습니다~ 자리에서 일어나서~"</p></div><div><h4 class="font-bold">🎵 햇볕은 쨍쨍</h4><p class="text-gray-600 text-sm">"햇볕은 쨍쨍 모래알은 반짝~"</p></div></div>`
+            },
+            en: {
+                page_title: "Hello! I'm the Sun!",
+                subtitle: "I'll tell you a more detailed story about me! Let's start a real space adventure!",
+                nav_intro: "☀️ Who I Am", nav_gifts: "🎁 My Gifts", nav_compare: "💪 Size & Power", nav_if_not: "🤔 Without Me?", nav_secrets: "🤫 Deep Secrets", nav_quiz: "🧠 Sun Quiz", nav_glossary: "📚 Glossary", nav_playground: "🎨 Playground",
+                intro_title: "My True Identity!",
+                intro_p1: "I'm the one and only 'Star' in your solar system. I'm a giant ball of gas that makes its own light and heat! My body is mostly made of gases called <strong>hydrogen</strong> and <strong>helium</strong>. In my core, it's so incredibly hot that hydrogen atoms fuse together to become helium. This process is called 'nuclear fusion.' That's when an enormous amount of light and heat energy is created!",
+                intro_p2: "✔️ My surface temperature is about <strong>6,000°C</strong> (11,000°F), and the temperature at my core is a whopping <strong>15 million°C</strong> (27 million°F)! So hot, right?",
+                gifts_title: "My Special Gifts",
+                gifts_1_title: "🌟 An 8-minute, 20-second Journey", gifts_1_desc: "The light I send travels about 150 million kilometers (93 million miles) to reach Earth, and it takes <strong>8 minutes and 20 seconds</strong>. The sunlight you see right now was sent by me 8 minutes and 20 seconds ago! My warmth keeps Earth at an average temperature of 15°C (59°F), creating a pleasant environment for life.",
+                gifts_2_title: "🌿 The Start of All Life", gifts_2_desc: "Plants use my light energy, water, and carbon dioxide to make glucose (food) and oxygen. This is called 'photosynthesis.' From herbivores that eat plants to carnivores that eat those animals, the energy for all life begins with me. This is called the 'food chain.'",
+                gifts_3_title: "💧 The Water Cycle", gifts_3_desc: "My heat energy causes water from oceans and rivers to turn into vapor and rise into the sky (<strong>evaporation</strong>). These vapors gather to form clouds (<strong>condensation</strong>), and when they get heavy, they fall back to the ground as rain or snow (<strong>precipitation</strong>). I help water on Earth to keep traveling like this.",
+                gifts_4_title: "💪 Strong Bones with Vitamin D", gifts_4_desc: "When you bask in the sunlight, your skin produces an important nutrient called 'Vitamin D.' Vitamin D is essential for making your bones strong. A moderate amount of sunshine is a very good gift for your health!",
+                compare_title: "My Enormous Size and Power",
+                compare_p1: "Let me tell you in detail how magnificent my size is and how powerful my strength is!",
+                compare_mass_title: "Mass (Weight)", compare_mass_desc: "I account for <strong class='text-2xl font-title text-purple-600'>99.8%</strong> of the total mass of the entire solar system! All the planets, including Earth, and asteroids combined only make up 0.2%. Truly overwhelming, isn't it?",
+                compare_gravity_title: "Gravity (Pulling Force)", compare_gravity_desc: "Because I'm so heavy, I have a very strong 'gravity.' With this force, I hold on tight to Earth and other planets so they don't fly away into space and instead orbit around me!",
+                if_not_title: "What if I Disappeared?",
+                if_not_p1: "What would happen to Earth if I vanished? Let's imagine it in more detail. Click the buttons below to see what happens over time.",
+                if_not_btn1_text: "After 8 mins", if_not_btn2_text: "After 1 week", if_not_btn3_text: "After a few weeks", if_not_btn4_text: "After 1 year",
+                if_not_data: {
+                    '1': { icon: 'Dark...', title: 'After 8 mins: Darkness & Straight Line', text: 'My gravity disappears, so Earth starts flying in a straight line into space, and the world becomes dark without my light.' },
+                    '2': { icon: 'Freezing!', title: 'After 1 week: Rapid Temperature Drop', text: 'Earth\'s average temperature drops to -17°C (0°F). It doesn\'t completely freeze yet because of Earth\'s internal heat.' },
+                    '3': { icon: 'Wilting...', title: 'After a few weeks: Goodbye, Plants', text: 'Most plants, unable to photosynthesize, start to die. The foundation of the food chain collapses.' },
+                    '4': { icon: '❄️', title: 'After 1 year: Ice Kingdom at -73°C', text: 'Earth\'s surface completely freezes over. Only microorganisms in the deep sea might survive in the extreme environment.' }
+                },
+                if_not_initial_title: "Click a button to find out!", if_not_initial_text: "How would Earth change without me?",
+                secrets_title: "My Deep and Amazing Secrets",
+                secrets_p1: "I may look calm, but very active things are happening inside me. Want a closer look at my secret sides?",
+                secrets_tab1: "Sunspots", secrets_tab2: "Flares", secrets_tab3: "Solar Wind", secrets_tab4: "Solar Eclipse",
+                secrets_1_title: "☀️ Sunspots: My 11-Year Freckles", secrets_1_desc: "The dark spots on my face, 'sunspots,' increase and decrease in number over an 11-year cycle. When there are many sunspots, it's called a 'solar maximum,' and events like flares and solar winds become more active. Sunspots are like a sign of my health!",
+                secrets_2_title: "💥 Flares That Affect Earth", secrets_2_desc: "When my powerful sneeze, a 'flare,' happens, strong energy and particles fly towards Earth. This can disrupt communications on Earth (like radio or GPS) or damage satellites. The beautiful gift created by this phenomenon is the 'aurora.'",
+                secrets_3_title: "💨 The Never-Ending Solar Wind", secrets_3_desc: "'Solar wind' is a stream of hot gas particles that I continuously breathe out into space. Earth's magnetic field acts as a sturdy shield, protecting us from this solar wind so we can live safely.",
+                secrets_4_title: "🌙 My Disappearing Act: Solar Eclipse", secrets_4_desc: "Sometimes, the Moon passes exactly between Earth and me, blocking my light. This is called a 'solar eclipse.' It's a strange phenomenon where daytime suddenly turns dark like night. I'm 400 times bigger than the Moon, but the Moon is 400 times closer, so we appear to be the same size!",
+                quiz_title: "Challenge! Sun Quiz!",
+                quiz_p1: "Let's see how much you've learned about me! Read the questions carefully and choose the correct answer!",
+                quiz_submit: "Check Answers", quiz_retry: "Try Again",
+                quiz_data: [
+                    { question: "How long does it take for my light to reach Earth?", options: ["1 second", "8 minutes 20 seconds", "1 hour"], answer: "8 minutes 20 seconds", explanation: "My light travels incredibly fast, but space is huge! It takes 8 minutes and 20 seconds for my light to travel the 150 million km to Earth." },
+                    { question: "What is the main gas I am made of?", options: ["Oxygen", "Helium", "Hydrogen"], answer: "Hydrogen", explanation: "I'm a giant ball of gas, and most of that gas is hydrogen. In my core, I turn this hydrogen into helium, which creates all my energy." },
+                    { question: "What is the name of the process where plants use my light to make food?", options: ["Photosynthesis", "Digestion", "Water Cycle"], answer: "Photosynthesis", explanation: "Plants are amazing! They use my light to 'cook' their own food from water and air. This process is called photosynthesis." },
+                    { question: "What do you call a huge explosion on my surface?", options: ["Solar Wind", "Solar Flare", "Aurora"], answer: "Solar Flare", explanation: "Sometimes, energy builds up on my surface and causes a massive explosion called a solar flare. It's like a giant solar sneeze!" }
+                ],
+                quiz_result_message: (score, total) => `You got ${score} out of ${total} correct!`,
+                quiz_perfect: "Perfect! You're a Sun expert! ☀️",
+                quiz_good: "Great job! You learned a lot more after reading the explanations!",
+                glossary_title: "Glossary",
+                glossary_1_title: "Star", glossary_1_desc: "A giant ball of hot gas that makes its own light and heat. Most of the twinkling lights you see in the night sky are stars, just like me.",
+                glossary_2_title: "Nuclear Fusion", glossary_2_desc: "The process in my core where very light particles, like hydrogen, combine to form slightly heavier particles, like helium. This creates a huge amount of energy!",
+                glossary_3_title: "Photosynthesis", glossary_3_desc: "A magical process where plants use my light energy, water, and carbon dioxide from the air to make their own food (glucose).",
+                glossary_4_title: "Gravity", glossary_4_desc: "The force that pulls all objects towards each other. Thanks to my strong gravity, Earth orbits around me instead of flying off into space.",
+                glossary_5_title: "Solar Flare", glossary_5_desc: "A huge explosion that happens on my surface. It's like I'm letting out a powerful sneeze, 'Achoo!'",
+                playground_title: "Creative Playground",
+                playground_1_title: "🎨 Draw Me!", playground_1_desc: "<strong>Paper Plate Sun:</strong> Draw a smiley face on a yellow paper plate and glue on paper sunbeams!<br><strong>Fork-Painted Sun:</strong> Squeeze yellow paint onto paper and use a fork to drag it outwards, creating cool sun rays!",
+                playground_2_title: "🎤 Sing a Song!", playground_2_desc: `<div class="space-y-4"><div><h4 class="font-bold">🎵 You Are My Sunshine</h4><p class="text-gray-600 text-sm">"You are my sunshine, my only sunshine..."</p></div><div><h4 class="font-bold">🎵 Mr. Sun</h4><p class="text-gray-600 text-sm">"Oh Mr. Sun, Sun, Mr. Golden Sun, please shine down on me..."</p></div></div>`
+            },
+            de: {
+                page_title: "Hallo! Ich bin die Sonne!",
+                subtitle: "Ich erzähle dir eine genauere Geschichte über mich! Lass uns ein echtes Weltraumabenteuer beginnen!",
+                nav_intro: "☀️ Wer ich bin", nav_gifts: "🎁 Meine Geschenke", nav_compare: "💪 Größe & Kraft", nav_if_not: "🤔 Ohne mich?", nav_secrets: "🤫 Tiefe Geheimnisse", nav_quiz: "🧠 Sonnen-Quiz", nav_glossary: "📚 Wörterbuch", nav_playground: "🎨 Spielplatz",
+                intro_title: "Meine wahre Identität!",
+                intro_p1: "Ich bin der einzige 'Stern' in deinem Sonnensystem. Ich bin eine riesige Gaskugel, die ihr eigenes Licht und ihre eigene Wärme erzeugt! Mein Körper besteht hauptsächlich aus Gasen namens <strong>Wasserstoff</strong> und <strong>Helium</strong>. In meinem Kern ist es so unglaublich heiß, dass Wasserstoffatome zu Helium verschmelzen. Dieser Prozess wird 'Kernfusion' genannt. Genau dann wird eine enorme Menge an Licht- und Wärmeenergie erzeugt!",
+                intro_p2: "✔️ Meine Oberflächentemperatur beträgt etwa <strong>6.000°C</strong>, und die Temperatur in meinem Kern ist gigantische <strong>15 Millionen°C</strong>! Ganz schön heiß, oder?",
+                gifts_title: "Meine besonderen Geschenke",
+                gifts_1_title: "🌟 Eine Reise von 8 Minuten und 20 Sekunden", gifts_1_desc: "Das Licht, das ich sende, reist etwa 150 Millionen Kilometer, um die Erde zu erreichen, und es dauert <strong>8 Minuten und 20 Sekunden</strong>. Das Sonnenlicht, das du gerade siehst, wurde von mir vor 8 Minuten und 20 Sekunden gesendet! Meine Wärme hält die Erde auf einer Durchschnittstemperatur von 15°C und schafft eine angenehme Umgebung für das Leben.",
+                gifts_2_title: "🌿 Der Anfang allen Lebens", gifts_2_desc: "Pflanzen nutzen meine Lichtenergie, Wasser und Kohlendioxid, um Glukose (Nahrung) und Sauerstoff herzustellen. Das nennt man 'Photosynthese'. Von Pflanzenfressern, die Pflanzen essen, bis zu Fleischfressern, die diese Tiere fressen – die Energie für alles Leben beginnt bei mir. Das nennt man die 'Nahrungskette'.",
+                gifts_3_title: "💧 Der Wasserkreislauf", gifts_3_desc: "Meine Wärmeenergie bewirkt, dass Wasser aus Ozeanen und Flüssen zu Dampf wird und in den Himmel steigt (<strong>Verdunstung</strong>). Dieser Dampf sammelt sich zu Wolken (<strong>Kondensation</strong>), und wenn sie schwer werden, fallen sie als Regen oder Schnee auf die Erde zurück (<strong>Niederschlag</strong>). Ich helfe dem Wasser auf der Erde, so weiterzureisen.",
+                gifts_4_title: "💪 Starke Knochen mit Vitamin D", gifts_4_desc: "Wenn du dich in der Sonne aufhältst, produziert deine Haut einen wichtigen Nährstoff namens 'Vitamin D'. Vitamin D ist wichtig für starke Knochen. Eine moderate Menge an Sonnenschein ist ein sehr gutes Geschenk für deine Gesundheit!",
+                compare_title: "Meine enorme Größe und Kraft",
+                compare_p1: "Ich erzähle dir im Detail, wie großartig meine Größe ist und wie stark meine Kraft ist!",
+                compare_mass_title: "Masse (Gewicht)", compare_mass_desc: "Ich mache <strong class='text-2xl font-title text-purple-600'>99,8%</strong> der Gesamtmasse des gesamten Sonnensystems aus! Alle Planeten, einschließlich der Erde, und Asteroiden zusammen machen nur 0,2% aus. Wirklich überwältigend, oder?",
+                compare_gravity_title: "Schwerkraft (Anziehungskraft)", compare_gravity_desc: "Weil ich so schwer bin, habe ich eine sehr starke 'Schwerkraft'. Mit dieser Kraft halte ich die Erde und andere Planeten fest, damit sie nicht ins All fliegen, sondern mich umkreisen!",
+                if_not_title: "Was wäre, wenn ich verschwände?",
+                if_not_p1: "Was würde mit der Erde passieren, wenn ich verschwände? Stellen wir es uns genauer vor. Klicke auf die Schaltflächen, um zu sehen, was im Laufe der Zeit passiert.",
+                if_not_btn1_text: "Nach 8 Min.", if_not_btn2_text: "Nach 1 Woche", if_not_btn3_text: "Nach ein paar Wochen", if_not_btn4_text: "Nach 1 Jahr",
+                if_not_data: {
+                    '1': { icon: 'Dunkel...', title: 'Nach 8 Min: Dunkelheit & Gerade Linie', text: 'Meine Schwerkraft verschwindet, die Erde fliegt in einer geraden Linie ins All, und die Welt wird dunkel ohne mein Licht.' },
+                    '2': { icon: 'Eiskalt!', title: 'Nach 1 Woche: Schneller Temperaturabfall', text: 'Die Durchschnittstemperatur der Erde sinkt auf -17°C. Sie gefriert nicht vollständig wegen der inneren Wärme der Erde.' },
+                    '3': { icon: 'Verwelken...', title: 'Nach ein paar Wochen: Abschied von den Pflanzen', text: 'Die meisten Pflanzen, die nicht mehr photosynthetisieren können, sterben ab. Die Grundlage der Nahrungskette bricht zusammen.' },
+                    '4': { icon: '❄️', title: 'Nach 1 Jahr: Eisreich bei -73°C', text: 'Die Erdoberfläche friert vollständig zu. Nur Mikroorganismen in der Tiefsee könnten überleben.' }
+                },
+                if_not_initial_title: "Klicke einen Button!", if_not_initial_text: "Wie würde sich die Erde ohne mich verändern?",
+                secrets_title: "Meine tiefen und erstaunlichen Geheimnisse",
+                secrets_p1: "Ich mag ruhig aussehen, aber in mir drin passieren sehr aktive Dinge. Willst du einen genaueren Blick auf meine geheimen Seiten werfen?",
+                secrets_tab1: "Sonnenflecken", secrets_tab2: "Eruptionen", secrets_tab3: "Sonnenwind", secrets_tab4: "Sonnenfinsternis",
+                secrets_1_title: "☀️ Sonnenflecken: Meine 11-jährigen Sommersprossen", secrets_1_desc: "Die dunklen Flecken auf meinem Gesicht, 'Sonnenflecken', nehmen über einen 11-Jahres-Zyklus zu und ab. Wenn es viele Sonnenflecken gibt, nennt man das 'solare Maximum', und Ereignisse wie Eruptionen und Sonnenwinde werden aktiver. Sonnenflecken sind wie ein Zeichen meiner Gesundheit!",
+                secrets_2_title: "💥 Eruptionen, die die Erde beeinflussen", secrets_2_desc: "Wenn mein starkes Niesen, eine 'Eruption', stattfindet, fliegen starke Energie und Teilchen zur Erde. Dies kann die Kommunikation auf der Erde stören (wie Radio oder GPS) oder Satelliten beschädigen. Das schöne Geschenk, das durch dieses Phänomen entsteht, ist das 'Polarlicht' (Aurora).",
+                secrets_3_title: "💨 Der unendliche Sonnenwind", secrets_3_desc: "Der 'Sonnenwind' ist ein Strom heißer Gasteilchen, den ich ständig in den Weltraum ausatme. Das Magnetfeld der Erde wirkt wie ein stabiler Schild und schützt uns vor diesem Sonnenwind, damit wir sicher leben können.",
+                secrets_4_title: "🌙 Mein Verschwindetrick: Sonnenfinsternis", secrets_4_desc: "Manchmal bewegt sich der Mond genau zwischen die Erde und mich und blockiert mein Licht. Das nennt man 'Sonnenfinsternis'. Es ist ein seltsames Phänomen, bei dem der Tag plötzlich dunkel wie die Nacht wird. Ich bin 400-mal größer als der Mond, aber der Mond ist 400-mal näher, also erscheinen wir gleich groß!",
+                quiz_title: "Herausforderung! Sonnen-Quiz!",
+                quiz_p1: "Mal sehen, wie viel du über mich gelernt hast! Lies die Fragen sorgfältig und wähle die richtige Antwort!",
+                quiz_submit: "Antworten prüfen", quiz_retry: "Nochmal versuchen",
+                quiz_data: [
+                    { question: "Wie lange braucht mein Licht, um die Erde zu erreichen?", options: ["1 Sekunde", "8 Minuten 20 Sekunden", "1 Stunde"], answer: "8 Minuten 20 Sekunden", explanation: "Mein Licht reist unglaublich schnell, aber das Weltall ist riesig! Es dauert 8 Minuten und 20 Sekunden, bis mein Licht die 150 Millionen km zur Erde zurückgelegt hat." },
+                    { question: "Aus welchem Gas bestehe ich hauptsächlich?", options: ["Sauerstoff", "Helium", "Wasserstoff"], answer: "Wasserstoff", explanation: "Ich bin eine riesige Gaskugel, und der größte Teil dieses Gases ist Wasserstoff. In meinem Kern verwandle ich diesen Wasserstoff in Helium, was meine ganze Energie erzeugt." },
+                    { question: "Wie nennt man den Prozess, bei dem Pflanzen mein Licht zur Herstellung von Nahrung nutzen?", options: ["Photosynthese", "Verdauung", "Wasserkreislauf"], answer: "Photosynthese", explanation: "Pflanzen sind erstaunlich! Sie nutzen mein Licht, um ihre eigene Nahrung aus Wasser und Luft zu 'kochen'. Dieser Prozess wird Photosynthese genannt." },
+                    { question: "Wie nennt man eine riesige Explosion auf meiner Oberfläche?", options: ["Sonnenwind", "Sonneneruption", "Polarlicht"], answer: "Sonneneruption", explanation: "Manchmal baut sich Energie auf meiner Oberfläche auf und verursacht eine massive Explosion, die als Sonneneruption bezeichnet wird. Es ist wie ein riesiger Sonnen-Nieser!" }
+                ],
+                quiz_result_message: (score, total) => `Du hast ${score} von ${total} richtig!`,
+                quiz_perfect: "Perfekt! Du bist ein Sonnen-Experte! ☀️",
+                quiz_good: "Tolle Arbeit! Du hast nach dem Lesen der Erklärungen viel mehr gelernt!",
+                glossary_title: "Wörterbuch",
+                glossary_1_title: "Stern", glossary_1_desc: "Eine riesige Kugel aus heißem Gas, die ihr eigenes Licht und ihre eigene Wärme erzeugt. Die meisten funkelnden Lichter am Nachthimmel sind Sterne, genau wie ich.",
+                glossary_2_title: "Kernfusion", glossary_2_desc: "Der Prozess in meinem Inneren, bei dem sehr leichte Teilchen wie Wasserstoff zu etwas schwereren Teilchen wie Helium verschmelzen.",
+                glossary_3_title: "Photosynthese", glossary_3_desc: "Ein magischer Prozess, bei dem Pflanzen meine Lichtenergie, Wasser und Kohlendioxid nutzen, um ihre eigene Nahrung herzustellen.",
+                glossary_4_title: "Schwerkraft", glossary_4_desc: "Die Kraft, die alle Objekte zueinander hinzieht. Dank meiner starken Schwerkraft umkreist die Erde mich.",
+                glossary_5_title: "Sonneneruption", glossary_5_desc: "Eine riesige Explosion, die auf meiner Oberfläche stattfindet. Es ist, als ob ich ein kräftiges 'Hatschi!' mache.",
+                playground_title: "Kreativer Spielplatz",
+                playground_1_title: "🎨 Male mich!", playground_1_desc: "<strong>Pappteller-Sonne:</strong> Male ein Gesicht auf einen gelben Pappteller und klebe Sonnenstrahlen aus Papier darauf!<br><strong>Gabel-Sonne:</strong> Drücke gelbe Farbe auf Papier und ziehe sie mit einer Gabel nach außen.",
+                playground_2_title: "🎤 Sing ein Lied!", playground_2_desc: `<div class="space-y-4"><div><h4 class="font-bold">🎵 Sonne, liebe Sonne</h4><p class="text-gray-600 text-sm">"Sonne, liebe Sonne, komm ein bisschen runter, lass den Regen oben..."</p></div></div>`
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentLang = 'ko';
+            let myChart = null;
+
+            function switchLanguage(lang) {
+                currentLang = lang;
+                document.documentElement.lang = lang;
+                document.body.className = `font-${lang}`;
+
+                document.querySelectorAll('[data-lang-key]').forEach(el => {
+                    const key = el.dataset.langKey;
+                    if (i18n[lang][key]) {
+                        el.innerHTML = i18n[lang][key];
+                    }
+                });
+
+                document.querySelectorAll('.lang-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.lang === lang);
+                });
+
+                // Update dynamic sections
+                updateIfNotButtons();
+                setupChart();
+
+                const activeNav = document.querySelector('.nav-button.active');
+                if (activeNav && activeNav.dataset.target === 'quiz') {
+                    loadQuiz();
+                }
+            }
+            
+            function updateIfNotButtons() {
+                const langData = i18n[currentLang];
+                const btn1 = document.querySelector('.if-not-btn[data-step="1"]');
+                const btn2 = document.querySelector('.if-not-btn[data-step="2"]');
+                const btn3 = document.querySelector('.if-not-btn[data-step="3"]');
+                const btn4 = document.querySelector('.if-not-btn[data-step="4"]');
+                
+                if(btn1) btn1.textContent = langData.if_not_btn1_text;
+                if(btn2) btn2.textContent = langData.if_not_btn2_text;
+                if(btn3) btn3.textContent = langData.if_not_btn3_text;
+                if(btn4) btn4.textContent = langData.if_not_btn4_text;
+                
+                document.getElementById('if-not-title-display').textContent = langData.if_not_initial_title;
+                document.getElementById('if-not-text').textContent = langData.if_not_initial_text;
+            }
+
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchLanguage(btn.dataset.lang));
+            });
+
+            const navButtons = document.querySelectorAll('.nav-button');
+            const contentSections = document.querySelectorAll('.content-section');
+            function switchTab(targetId) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                navButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.target === targetId));
+                contentSections.forEach(section => section.classList.toggle('active', section.id === targetId));
+                if (targetId === 'quiz') {
+                    loadQuiz();
+                }
+            }
+            navButtons.forEach(button => button.addEventListener('click', () => switchTab(button.dataset.target)));
+
+            function setupChart() {
+                const sizeChartCtx = document.getElementById('sizeChart');
+                if (!sizeChartCtx) return;
+
+                const labels = {
+                    ko: ['지구 (지름: 1)', '태양 (지름: 109)'],
+                    en: ['Earth (Diameter: 1)', 'Sun (Diameter: 109)'],
+                    de: ['Erde (Durchmesser: 1)', 'Sonne (Durchmesser: 109)']
+                };
+                const titles = {
+                    ko: '크기 (지구=1)',
+                    en: 'Size (Earth=1)',
+                    de: 'Größe (Erde=1)'
+                };
+
+                if (myChart) {
+                    myChart.destroy();
+                }
+                
+                myChart = new Chart(sizeChartCtx, { 
+                    type: 'bar', 
+                    data: { 
+                        labels: labels[currentLang], 
+                        datasets: [{ data: [1, 109], backgroundColor: ['rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)'], borderColor: ['rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)'], borderWidth: 1 }] 
+                    }, 
+                    options: { 
+                        indexAxis: 'y', 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { legend: { display: false } }, 
+                        scales: { x: { beginAtZero: true, title: { display: true, text: titles[currentLang] } } } 
+                    } 
+                });
+            }
+
+            const ifNotButtons = document.querySelectorAll('.if-not-btn');
+            const ifNotDisplay = {
+                icon: document.getElementById('if-not-icon'),
+                title: document.getElementById('if-not-title-display'),
+                text: document.getElementById('if-not-text'),
+                container: document.getElementById('if-not-display')
+            };
+            ifNotButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const step = button.dataset.step;
+                    const data = i18n[currentLang].if_not_data[step];
+                    if(!data) return;
+                    ifNotDisplay.container.className = `p-6 rounded-lg text-center transition-all duration-500 text-white min-h-[200px] flex flex-col justify-center items-center bg-gray-800`;
+                    ifNotDisplay.icon.textContent = data.icon;
+                    ifNotDisplay.title.textContent = data.title;
+                    ifNotDisplay.text.textContent = data.text;
+                });
+            });
+            
+            const secretTabs = document.querySelectorAll('.secret-tab-btn');
+            const secretContents = document.querySelectorAll('.secret-content');
+            secretTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetId = tab.dataset.secret;
+                    secretTabs.forEach(t => {
+                        const isActive = t.dataset.secret === targetId;
+                        t.classList.toggle('border-yellow-400', isActive);
+                        t.classList.toggle('text-yellow-500', isActive);
+                        t.classList.toggle('border-transparent', !isActive);
+                        t.classList.toggle('text-gray-500', !isActive);
+                    });
+                    secretContents.forEach(content => content.classList.toggle('hidden', content.id !== targetId));
+                });
+            });
+
+            const quizContainer = document.getElementById('quiz-container');
+            const quizControls = document.getElementById('quiz-controls');
+            const quizResult = document.getElementById('quiz-result');
+            const quizScoreDisplay = document.getElementById('quiz-score');
+            const quizMessageDisplay = document.getElementById('quiz-message');
+            const quizSubmitBtn = document.getElementById('quiz-submit-btn');
+            const quizRetryBtn = document.getElementById('quiz-retry-btn');
+            
+            function loadQuiz() {
+                const quizData = i18n[currentLang].quiz_data;
+                quizContainer.innerHTML = '';
+                quizResult.classList.add('hidden');
+                quizControls.classList.remove('hidden');
+
+                quizData.forEach((q, index) => {
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = 'quiz-question';
+                    questionDiv.innerHTML = `<h3 class="font-title text-xl mb-4">${index + 1}. ${q.question}</h3>`;
+                    
+                    const optionsDiv = document.createElement('div');
+                    optionsDiv.className = 'space-y-3';
+                    
+                    q.options.forEach(optionText => {
+                        const optionBtn = document.createElement('button');
+                        optionBtn.textContent = optionText;
+                        optionBtn.className = 'quiz-option block w-full text-left p-3 rounded-lg';
+                        optionBtn.addEventListener('click', () => {
+                            optionsDiv.querySelectorAll('.quiz-option').forEach(btn => btn.classList.remove('selected'));
+                            optionBtn.classList.add('selected');
+                        });
+                        optionsDiv.appendChild(optionBtn);
+                    });
+                    
+                    const explanationDiv = document.createElement('div');
+                    explanationDiv.className = 'explanation-container hidden p-4 mt-4 rounded-r-lg';
+                    
+                    questionDiv.appendChild(optionsDiv);
+                    questionDiv.appendChild(explanationDiv);
+                    quizContainer.appendChild(questionDiv);
+                });
+            }
+
+            quizSubmitBtn.addEventListener('click', () => {
+                let score = 0;
+                const quizData = i18n[currentLang].quiz_data;
+                const questions = quizContainer.querySelectorAll('.quiz-question');
+
+                questions.forEach((question, index) => {
+                    const selectedOption = question.querySelector('.quiz-option.selected');
+                    const allOptions = question.querySelectorAll('.quiz-option');
+                    const explanationContainer = question.querySelector('.explanation-container');
+                    const correctAnswer = quizData[index].answer;
+
+                    allOptions.forEach(opt => {
+                        opt.disabled = true;
+                        if (opt.textContent === correctAnswer) opt.classList.add('correct');
+                    });
+
+                    if (selectedOption) {
+                        if (selectedOption.textContent === correctAnswer) {
+                            score++;
+                        } else {
+                            selectedOption.classList.add('wrong');
+                        }
+                    }
+                    
+                    const explanationPrefix = { ko: "💡 왜냐하면!", en: "💡 Because...", de: "💡 Weil..." };
+                    explanationContainer.innerHTML = `<p><strong class="font-bold text-yellow-700">${explanationPrefix[currentLang]}</strong> ${quizData[index].explanation}</p>`;
+                    explanationContainer.classList.remove('hidden');
+                });
+                
+                showResult(score);
+            });
+            
+            function showResult(score) {
+                const quizData = i18n[currentLang].quiz_data;
+                quizControls.classList.add('hidden');
+                quizResult.classList.remove('hidden');
+                quizScoreDisplay.textContent = i18n[currentLang].quiz_result_message(score, quizData.length);
+                
+                if(score === quizData.length) {
+                    quizMessageDisplay.textContent = i18n[currentLang].quiz_perfect;
+                } else {
+                    quizMessageDisplay.textContent = i18n[currentLang].quiz_good;
+                }
+            }
+
+            quizRetryBtn.addEventListener('click', loadQuiz);
+            
+            switchLanguage('ko'); // Initial load
+            switchTab('intro');
+        });
+    </script>
+</body>
+</html>
