@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>레벨업! 어린이 원소 탐험대</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Gowun Dodum', sans-serif;
+            background-color: #FFFBEB; /* Light Cream */
+            color: #262626; /* Soft Black */
+        }
+        .periodic-table {
+            display: grid;
+            grid-template-columns: repeat(18, minmax(0, 1fr));
+            gap: 4px;
+        }
+        .element-cell {
+            grid-column: span 1;
+            transition: all 0.3s ease-in-out;
+            aspect-ratio: 1 / 1;
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .element-cell.locked {
+            opacity: 0.15;
+            filter: grayscale(100%);
+            cursor: not-allowed;
+            transform: scale(0.95);
+        }
+        .element-cell:not(.locked):hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+        .element-cell.selected {
+            transform: scale(1.15) !important;
+            box-shadow: 0 0 0 4px #FB923C; /* Orange-400 */
+            z-index: 20;
+            border-color: #FB923C;
+        }
+        .group-metal { background-color: #7DD3FC; }
+        .group-gas { background-color: #FCD34D; }
+        .group-life { background-color: #86EFAC; }
+        .group-special { background-color: #F472B6; }
+        .group-unknown { background-color: #E5E7EB; }
+        
+        .highlight {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(251, 146, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(251, 146, 60, 0); }
+        }
+        .dimmed {
+            opacity: 0.3;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 45vh;
+        }
+        .content-card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .level-btn, .filter-btn {
+            transition: all 0.2s;
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .level-btn:hover, .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .level-btn-active, .filter-btn-active {
+            transform: translateY(1px);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+            background-color: #F97316 !important; /* Orange-500 */
+            color: white !important;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-6">
+            <h1 class="text-5xl font-bold text-amber-600" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">레벨업! 어린이 원소 탐험대</h1>
+            <p class="mt-3 text-xl text-slate-700">레벨을 골라 신기한 원소 친구들을 만나보아요!</p>
+        </header>
+        
+        <div class="content-card mb-6">
+            <h3 class="font-bold text-2xl mb-3 text-center text-orange-500">레벨 선택</h3>
+            <div class="flex flex-wrap gap-3 justify-center" id="level-selector">
+                <button data-level="1" class="level-btn bg-green-400 text-white">🌱 씨앗 레벨</button>
+                <button data-level="2" class="level-btn bg-sky-400 text-white">🌿 새싹 레벨</button>
+                <button data-level="3" class="level-btn bg-red-400 text-white">🌳 나무 레벨</button>
+            </div>
+        </div>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+                <div class="content-card mb-4">
+                    <h3 class="font-bold text-2xl mb-3 text-center text-pink-500">재미있는 묶어보기</h3>
+                    <div class="flex flex-wrap gap-3 justify-center" id="theme-filters">
+                        <button data-theme="all" class="filter-btn bg-slate-300 text-slate-800">모든 친구들</button>
+                        <button data-theme="metal" class="filter-btn bg-slate-300 text-slate-800">반짝반짝 금속</button>
+                        <button data-theme="gas" class="filter-btn bg-slate-300 text-slate-800">둥실둥실 공기</button>
+                        <button data-theme="life" class="filter-btn bg-slate-300 text-slate-800">우리 몸 구성</button>
+                        <button data-theme="tech" class="filter-btn bg-slate-300 text-slate-800">스마트폰 속</button>
+                    </div>
+                </div>
+
+                <div id="periodic-table-container" class="periodic-table p-2 sm:p-4">
+                    <!-- Elements will be generated by JS -->
+                </div>
+            </div>
+
+            <div id="content-display" class="lg:col-span-1">
+                <div id="welcome-content" class="content-card min-h-[400px] flex flex-col justify-center items-center text-center">
+                     <div id="welcome-icon" class="text-6xl mb-4">🌱</div>
+                     <h3 id="welcome-title" class="text-2xl font-bold text-slate-800">씨앗 레벨에 온 걸 환영해!</h3>
+                    <p id="welcome-text" class="mt-2 text-slate-600">왼쪽 표에서 궁금한 원소 친구를 콕! 눌러주면, 그 친구가 자기를 소개해 줄 거야.</p>
+                </div>
+                <div id="element-content" tabindex="-1" class="hidden content-card min-h-[400px] outline-none focus:ring-4 focus:ring-orange-400 focus:ring-offset-2"></div>
+            </div>
+        </main>
+        
+        <section id="comparison-section" class="mt-8 content-card">
+            <h2 class="text-3xl font-bold text-center mb-2 text-orange-500">누가누가 더 무거울까?</h2>
+            <p class="text-center text-slate-600 mb-6">원소 친구들의 몸무게를 비교해봐요! 아래에서 보고 싶은 그룹을 선택하세요.</p>
+            <div class="flex justify-center mb-6">
+                <select id="comparison-group-select" class="p-3 border-2 border-slate-300 rounded-lg bg-white shadow-sm text-lg focus:ring-2 focus:ring-blue-500">
+                </select>
+            </div>
+            <div class="chart-container">
+                <canvas id="comparison-chart"></canvas>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const allElementsData = [
+            { number: 1, symbol: 'H', name: '수소', mass: 1, group: 'gas', theme: ['life', 'gas'], level: 1 },
+            { number: 2, symbol: 'He', name: '헬륨', mass: 4, group: 'gas', theme: ['gas'], level: 2 },
+            { number: 3, symbol: 'Li', name: '리튬', mass: 7, group: 'metal', theme: ['tech'], level: 2 },
+            { number: 4, symbol: 'Be', name: '베릴륨', mass: 9, group: 'metal', level: 3 },
+            { number: 5, symbol: 'B', name: '붕소', mass: 11, group: 'special', theme: ['tech'], level: 3 },
+            { number: 6, symbol: 'C', name: '탄소', mass: 12, group: 'life', theme: ['life'], level: 1 },
+            { number: 7, symbol: 'N', name: '질소', mass: 14, group: 'gas', theme: ['life', 'gas'], level: 1 },
+            { number: 8, symbol: 'O', name: '산소', mass: 16, group: 'gas', theme: ['life', 'gas'], level: 1 },
+            { number: 9, symbol: 'F', name: '플루오린', mass: 19, group: 'gas', level: 3 },
+            { number: 10, symbol: 'Ne', name: '네온', mass: 20, group: 'gas', theme: ['gas'], level: 2 },
+            { number: 11, symbol: 'Na', name: '나트륨', mass: 23, group: 'metal', theme: ['life'], level: 2 },
+            { number: 12, symbol: 'Mg', name: '마그네슘', mass: 24, group: 'metal', theme: ['life'], level: 2 },
+            { number: 13, symbol: 'Al', name: '알루미늄', mass: 27, group: 'metal', theme: ['metal'], level: 2 },
+            { number: 14, symbol: 'Si', name: '규소', mass: 28, group: 'special', theme: ['tech'], level: 1 },
+            { number: 15, symbol: 'P', name: '인', mass: 31, group: 'life', theme: ['life'], level: 2 },
+            { number: 16, symbol: 'S', name: '황', mass: 32, group: 'life', theme: ['life'], level: 2 },
+            { number: 17, symbol: 'Cl', name: '염소', mass: 35, group: 'gas', level: 3 },
+            { number: 18, symbol: 'Ar', name: '아르곤', mass: 40, group: 'gas', theme: ['gas'], level: 3 },
+            { number: 19, symbol: 'K', name: '칼륨', mass: 39, group: 'metal', theme: ['life'], level: 2 },
+            { number: 20, symbol: 'Ca', name: '칼슘', mass: 40, group: 'metal', theme: ['life'], level: 1 },
+            { number: 26, symbol: 'Fe', name: '철', mass: 56, group: 'metal', theme: ['life', 'metal'], level: 1 },
+            { number: 29, symbol: 'Cu', name: '구리', mass: 64, group: 'metal', theme: ['metal', 'tech'], level: 1 },
+            { number: 47, symbol: 'Ag', name: '은', mass: 108, group: 'metal', theme: ['metal'], level: 2 },
+            { number: 50, symbol: 'Sn', name: '주석', mass: 119, group: 'metal', theme: ['tech'], level: 2 },
+            { number: 79, symbol: 'Au', name: '금', mass: 197, group: 'metal', theme: ['metal', 'tech'], level: 1 },
+            { number: 80, symbol: 'Hg', name: '수은', mass: 201, group: 'metal', level: 3 },
+            { number: 82, symbol: 'Pb', name: '납', mass: 207, group: 'metal', level: 3 },
+            { number: 92, symbol: 'U', name: '우라늄', mass: 238, group: 'special', level: 3 },
+        ];
+        
+        const contentData = {
+            'H': { 1: { intro: "안녕! 나는 우주 대장, 수소야!", uses: [{ i: '☀️', t: '태양을 빛나게 해' }, { i: '💧', t: '물이 되는 재료야' }] }, 2: { intro: "나는 수소! 제일 가벼운 공기 친구지.", uses: [{ i: '☀️', t: '태양의 연료' }, { i: '💧', t: '물(H₂O)의 구성원' }, { i: '🚀', t: '로켓 연료' }] }, 3: { intro: "나는 원자번호 1번, 수소(H)야.", uses: [{ i: '⚖️', t: '몸무게: 1' }, { i: '🔥', t: '깨끗한 에너지원' }, { i: '⚛️', t: '모든 원소의 시작' }] } },
+            'C': { 1: { intro: "나는 탄소! 너랑 나를 만드는 재료야.", uses: [{ i: '✏️', t: '연필심' }, { i: '💎', t: '다이아몬드' }] }, 2: { intro: "나는 탄소! 생명체의 기본 재료야.", uses: [{ i: '✏️', t: '연필심(흑연)' }, { i: '💎', t: '다이아몬드' }, { i: '🧑', t: '우리 몸의 구성원' }] }, 3: { intro: "나는 원자번호 6번, 탄소(C)야.", uses: [{ i: '⚖️', t: '몸무게: 12' }, { i: '🔗', t: '다양한 원소와 결합' }, { i: '🌿', t: '유기물의 뼈대' }] } },
+            'O': { 1: { intro: "나는 산소! 네가 숨 쉴 때마다 내가 필요해.", uses: [{ i: '😮', t: '숨 쉴 때 필요해' }, { i: '🔥', t: '불을 활활 타게 해' }] }, 2: { intro: "나는 산소! 없으면 살 수 없는 중요한 공기야.", uses: [{ i: '😮', t: '호흡에 필수' }, { i: '💧', t: '물의 구성원' }, { i: '🌎', t: '지구 대기의 21%' }] }, 3: { intro: "나는 원자번호 8번, 산소(O)야.", uses: [{ i: '⚖️', t: '몸무게: 16' }, { i: '⚡', t: '강력한 산화제' }, { i: '🏥', t: '의료용으로 사용' }] } },
+            'Fe': { 1: { intro: "나는 철! 튼튼해서 자동차랑 건물을 만들어.", uses: [{ i: '🚗', t: '자동차 뼈대' }, { i: '🩸', t: '우리 피를 빨갛게 해' }] }, 2: { intro: "나는 철! 산업의 쌀이라고 불릴 만큼 중요해.", uses: [{ i: '🚗', t: '자동차, 다리, 건물' }, { i: '🩸', t: '헤모글로빈의 중심' }, { i: '🧲', t: '자석이 될 수 있어' }] }, 3: { intro: "나는 원자번호 26번, 철(Fe)이야.", uses: [{ i: '⚖️', t: '몸무게: 56' }, { i: '🏗️', t: '가장 많이 쓰는 금속' }, { i: '🌍', t: '지구 핵의 주성분' }] } },
+            'Au': { 1: { intro: "나는 금! 반짝반짝 빛나서 모두가 날 좋아해.", uses: [{ i: '🥇', t: '금메달의 주인공' }, { i: '💍', t: '아름다운 보석' }] }, 2: { intro: "나는 금! 아주 귀하고 잘 변하지 않아.", uses: [{ i: '🥇', t: '1등 상징, 금메달' }, { i: '💍', t: '장신구 재료' }, { i: '📱', t: '첨단 기기 부품' }] }, 3: { intro: "나는 원자번호 79번, 금(Au)이야.", uses: [{ i: '⚖️', t: '몸무게: 197' }, { i: '✨', t: '녹슬지 않아' }, { i: '💰', t: '귀금속의 왕' }] } },
+        };
+
+        let currentLevel = 1;
+        let comparisonChart;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.querySelector('.container');
+            if (!container) return;
+
+            const tableContainer = container.querySelector('#periodic-table-container');
+            const elementContentDiv = container.querySelector('#element-content');
+            const welcomeContentDiv = container.querySelector('#welcome-content');
+            
+            function generatePeriodicTable() {
+                const periodicLayout = [
+                    {n:1, r:1, c:1}, {n:2, r:1, c:18},
+                    {n:3, r:2, c:1}, {n:4, r:2, c:2}, {n:5, r:2, c:13}, {n:6, r:2, c:14}, {n:7, r:2, c:15}, {n:8, r:2, c:16}, {n:9, r:2, c:17}, {n:10, r:2, c:18},
+                    {n:11, r:3, c:1}, {n:12, r:3, c:2}, {n:13, r:3, c:13}, {n:14, r:3, c:14}, {n:15, r:3, c:15}, {n:16, r:3, c:16}, {n:17, r:3, c:17}, {n:18, r:3, c:18},
+                    {n:19, r:4, c:1}, {n:20, r:4, c:2}, {n:26, r:4, c:8}, {n:29, r:4, c:11},
+                    {n:47, r:5, c:11}, {n:50, r:5, c:14},
+                    {n:79, r:6, c:11}, {n:80, r:6, c:12}, {n:82, r:6, c:14},
+                    {n:92, r:7, c:6} 
+                ];
+                
+                tableContainer.innerHTML = '';
+                allElementsData.forEach(el => {
+                    const pos = periodicLayout.find(p => p.n === el.number);
+                    if(!pos) return;
+
+                    const isLocked = el.level > currentLevel;
+                    const cell = document.createElement('div');
+                    cell.id = `element-${el.number}`;
+                    cell.className = `element-cell group-${el.group} ${isLocked ? 'locked' : ''}`;
+                    cell.style.gridRow = pos.r;
+                    cell.style.gridColumn = pos.c;
+                    cell.dataset.number = el.number;
+                    cell.innerHTML = `<div class="font-bold text-lg">${el.symbol}</div><div class="text-xs">${el.name}</div>`;
+                    tableContainer.appendChild(cell);
+                });
+            }
+
+            function showElementDetails(elementNumber) {
+                const element = allElementsData.find(e => e.number == elementNumber);
+                if (!element || element.level > currentLevel) return;
+                
+                container.querySelectorAll('.element-cell').forEach(cell => cell.classList.remove('selected'));
+                container.querySelector(`#element-${element.number}`).classList.add('selected');
+
+                const details = contentData[element.symbol] ? contentData[element.symbol][currentLevel] : { intro: `안녕! 나는 ${element.name}이야.`, uses: [{i:'⚖️', t:`몸무게: ${element.mass}`}] };
+                
+                let usesHtml = details.uses.map(use => `<li class="flex items-center gap-3"><span class="text-2xl">${use.i}</span><span>${use.t}</span></li>`).join('');
+
+                elementContentDiv.innerHTML = `
+                    <div class="text-center">
+                        <div class="text-7xl font-bold text-slate-800">${element.symbol}</div>
+                        <h3 class="text-3xl font-bold mt-2">${element.name} #${element.number}</h3>
+                        <p class="mt-4 text-lg bg-yellow-100 p-3 rounded-lg">${details.intro}</p>
+                    </div>
+                    <div class="mt-6">
+                        <h4 class="font-bold text-xl text-pink-500">어디에 쓰일까?</h4>
+                        <ul class="mt-2 space-y-2 text-lg">${usesHtml}</ul>
+                    </div>
+                `;
+                welcomeContentDiv.classList.add('hidden');
+                elementContentDiv.classList.remove('hidden');
+                elementContentDiv.focus();
+            }
+            
+            tableContainer.addEventListener('click', (e) => {
+                const targetElement = e.target.closest('.element-cell');
+                if (targetElement && !targetElement.classList.contains('locked') && targetElement.dataset.number) {
+                    showElementDetails(targetElement.dataset.number);
+                }
+            });
+
+            container.querySelector('#level-selector').addEventListener('click', e => {
+                if(e.target.tagName !== 'BUTTON') return;
+                currentLevel = parseInt(e.target.dataset.level);
+                
+                container.querySelectorAll('#level-selector button').forEach(btn => btn.classList.remove('level-btn-active'));
+                e.target.classList.add('level-btn-active');
+                
+                const welcomeMessages = {
+                    1: { icon: '🌱', title: '씨앗 레벨에 온 걸 환영해!', text: '가장 친한 원소 친구들을 만나봐!' },
+                    2: { icon: '🌿', title: '새싹 레벨로 레벨 업!', text: '더 많은 친구들이 기다리고 있어!' },
+                    3: { icon: '🌳', title: '나무 레벨! 원소 박사님!', text: '이제 모든 원소 친구들을 만날 수 있어!' }
+                };
+                container.querySelector('#welcome-icon').textContent = welcomeMessages[currentLevel].icon;
+                container.querySelector('#welcome-title').textContent = welcomeMessages[currentLevel].title;
+                container.querySelector('#welcome-text').textContent = welcomeMessages[currentLevel].text;
+                
+                welcomeContentDiv.classList.remove('hidden');
+                elementContentDiv.classList.add('hidden');
+
+                generatePeriodicTable();
+                updateComparisonOptions();
+                container.querySelector('#theme-filters button[data-theme="all"]').click();
+            });
+
+            container.querySelector('#theme-filters').addEventListener('click', e => {
+                if(e.target.tagName !== 'BUTTON') return;
+                const theme = e.target.dataset.theme;
+
+                container.querySelectorAll('#theme-filters button').forEach(btn => btn.classList.remove('filter-btn-active'));
+                e.target.classList.add('filter-btn-active');
+
+                container.querySelectorAll('.element-cell:not(.locked)').forEach(cell => {
+                    cell.classList.remove('dimmed', 'highlight');
+                    const elNum = cell.dataset.number;
+                    if (!elNum) return;
+
+                    const element = allElementsData.find(e => e.number == elNum);
+                    if (theme === 'all') { /* do nothing */ }
+                    else if (theme === 'metal' && element.group === 'metal') { cell.classList.add('highlight'); }
+                    else if (theme === 'gas' && element.group === 'gas') { cell.classList.add('highlight'); }
+                    else if (element.theme && element.theme.includes(theme)) { cell.classList.add('highlight'); }
+                    else { cell.classList.add('dimmed'); }
+                });
+            });
+
+            function updateComparisonChart() {
+                const selectEl = container.querySelector('#comparison-group-select');
+                const group = selectEl.value;
+                if (!group) return;
+
+                const groupData = allElementsData.filter(el => el.level <= currentLevel && el.theme && el.theme.includes(group));
+                groupData.sort((a, b) => a.mass - b.mass);
+
+                const labels = groupData.map(el => el.name);
+                const data = groupData.map(el => el.mass);
+                const backgroundColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF'];
+
+                if (comparisonChart) { comparisonChart.destroy(); }
+                comparisonChart = new Chart(container.querySelector('#comparison-chart').getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: '몸무게 (무거움의 정도)',
+                            data: data,
+                            backgroundColor: labels.map((_, i) => backgroundColors[i % backgroundColors.length]),
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                        plugins: { legend: { display: false }, title: { display: true, text: `'${selectEl.options[selectEl.selectedIndex].text}' 친구들 몸무게 비교`, font: { size: 18 } } },
+                        scales: { x: { title: { display: true, text: '몸무게 (숫자가 클수록 무거워요!)' } } }
+                    }
+                });
+            }
+            
+            function updateComparisonOptions() {
+                const select = container.querySelector('#comparison-group-select');
+                const options = [
+                    { value: 'life', text: '우리 몸을 만드는 친구들' },
+                    { value: 'gas', text: '둥실둥실 공기 친구들' },
+                    { value: 'tech', text: '스마트폰 속 친구들' },
+                    { value: 'metal', text: '반짝반짝 금속 친구들' }
+                ];
+                select.innerHTML = '';
+                options.forEach(opt => {
+                    const isAvailable = allElementsData.some(el => el.level <= currentLevel && el.theme && el.theme.includes(opt.value));
+                    if (isAvailable) {
+                        const optionEl = document.createElement('option');
+                        optionEl.value = opt.value;
+                        optionEl.textContent = opt.text;
+                        select.appendChild(optionEl);
+                    }
+                });
+                updateComparisonChart();
+            }
+
+            container.querySelector('#comparison-group-select').addEventListener('change', updateComparisonChart);
+
+            // Initial setup
+            container.querySelector('#level-selector button[data-level="1"]').click();
+        });
+    </script>
+</body>
+</html>
