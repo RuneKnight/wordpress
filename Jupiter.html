@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안녕? 나는 목성이야!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Jua&family=Roboto:wght@400;700&family=Poppins:wght@400;700&family=Bangers&display=swap" rel="stylesheet">
+    
+    <style>
+        html { scroll-behavior: smooth; }
+        body { background-color: #2e2118; color: #f3e8d9; } /* Dark, warm brown theme */
+        
+        /* Font settings per language */
+        .font-ko { font-family: 'Noto Sans KR', sans-serif; }
+        .font-en { font-family: 'Poppins', sans-serif; }
+        .font-de { font-family: 'Roboto', sans-serif; }
+        .font-ko .font-title { font-family: 'Jua', sans-serif; }
+        .font-en .font-title, .font-de .font-title { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+
+        .jupiter-animation {
+            animation: slow-spin 10s infinite linear;
+            box-shadow: 0 0 30px #e0c4a4;
+        }
+        @keyframes slow-spin { 
+            from { transform: rotate(0deg); } 
+            to { transf8orm: rotate(360deg); } 
+        }
+        
+        .lang-btn { transition: all 0.3s ease; background-color: #5c4130; }
+        .lang-btn.active { background-color: #e0c4a4; color: #2e2118; }
+        
+        .nav-button { transition: all 0.3s ease; background-color: #5c4130; color: #f3e8d9; }
+        .nav-button.active { background-color: #d28a5d; color: #2e2118; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        
+        .content-section { display: none; background-color: #4a3426; border: 1px solid #7a5843; }
+        .content-section.active { display: block; }
+
+        .quiz-option { transition: all 0.2s; border: 2px solid transparent; background-color: #5c4130; }
+        .quiz-option.selected { background-color: #7a5843; border-color: #e0c4a4; }
+        .quiz-option.correct { background-color: #34D399 !important; border-color: #A7F3D0 !important; color: #064E3B; }
+        .quiz-option.wrong { background-color: #F87171 !important; border-color: #FECACA !important; color: #7F1D1D; }
+        
+        .explanation-container { background-color: #5c4130; border-left: 4px solid #d28a5d; }
+    </style>
+</head>
+<body class="font-ko">
+    <div id="lang-switcher" class="fixed top-4 right-4 z-10 flex gap-2">
+        <button data-lang="ko" class="lang-btn active font-bold py-1 px-3 rounded-full text-sm">🇰🇷</button>
+        <button data-lang="en" class="lang-btn font-bold py-1 px-3 rounded-full text-sm">🇺🇸</button>
+        <button data-lang="de" class="lang-btn font-bold py-1 px-3 rounded-full text-sm">🇩🇪</button>
+    </div>
+
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <header class="text-center mb-12 pt-12">
+            <div class="w-32 h-32 md:w-40 md:h-40 bg-orange-800 rounded-full mx-auto mb-6 flex items-center justify-center jupiter-animation">
+                <div class="w-12 h-6 bg-red-800 rounded-full opacity-75"></div>
+            </div>
+            <h1 class="text-5xl md:text-6xl font-title text-orange-300" data-lang-key="page_title"></h1>
+            <p class="mt-4 text-lg text-orange-100" data-lang-key="subtitle"></p>
+        </header>
+        
+        <nav class="flex flex-wrap justify-center gap-2 md:gap-4 mb-12">
+             <button data-target="intro" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md active" data-lang-key="nav_intro"></button>
+             <button data-target="features" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md" data-lang-key="nav_features"></button>
+             <button data-target="explore" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md" data-lang-key="nav_explore"></button>
+             <button data-target="quiz" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md" data-lang-key="nav_quiz"></button>
+             <button data-target="glossary" class="nav-button font-title text-lg px-4 py-2 rounded-full shadow-md" data-lang-key="nav_glossary"></button>
+        </nav>
+
+        <main>
+            <section id="intro" class="content-section active p-6 md:p-8 rounded-2xl shadow-lg">
+                <h2 class="text-4xl font-title text-center mb-6 text-orange-300" data-lang-key="intro_title"></h2>
+                <p data-lang-key="intro_p1"></p>
+            </section>
+            <section id="features" class="content-section p-6 md:p-8 rounded-2xl shadow-lg">
+                 <h2 class="text-4xl font-title text-center mb-6 text-orange-300" data-lang-key="features_title"></h2>
+                 <p data-lang-key="features_p1"></p>
+            </section>
+            <section id="explore" class="content-section p-6 md:p-8 rounded-2xl shadow-lg">
+                 <h2 class="text-4xl font-title text-center mb-6 text-orange-300" data-lang-key="explore_title"></h2>
+                 <p data-lang-key="explore_p1"></p>
+            </section>
+            <section id="quiz" class="content-section p-6 md:p-8 rounded-2xl shadow-lg">
+                <h2 class="text-4xl font-title text-center mb-6 text-orange-300" data-lang-key="quiz_title"></h2>
+                <div id="quiz-container" class="space-y-8"></div>
+                <div id="quiz-controls" class="text-center mt-8"><button id="quiz-submit-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full text-lg" data-lang-key="quiz_submit"></button></div>
+                <div id="quiz-result" class="hidden mt-8 text-center">
+                    <h3 id="quiz-score" class="font-title text-3xl mb-4"></h3>
+                    <p id="quiz-message" class="text-lg"></p>
+                    <button id="quiz-retry-btn" class="mt-6 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-full" data-lang-key="quiz_retry"></button>
+                </div>
+            </section>
+            <section id="glossary" class="content-section p-6 md:p-8 rounded-2xl shadow-lg">
+                <h2 class="text-4xl font-title text-center mb-6 text-orange-300" data-lang-key="glossary_title"></h2>
+                <div class="space-y-6">
+                    <div class="bg-orange-900 p-4 rounded-lg"><h3 class="font-title text-xl text-orange-300" data-lang-key="glossary_1_title"></h3><p data-lang-key="glossary_1_desc"></p></div>
+                    <div class="bg-orange-900 p-4 rounded-lg"><h3 class="font-title text-xl text-orange-300" data-lang-key="glossary_2_title"></h3><p data-lang-key="glossary_2_desc"></p></div>
+                    <div class="bg-orange-900 p-4 rounded-lg"><h3 class="font-title text-xl text-orange-300" data-lang-key="glossary_3_title"></h3><p data-lang-key="glossary_3_desc"></p></div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script>
+        const i18n = {
+            ko: {
+                home_link: "메인으로", page_title: "안녕? 나는 목성이야!", subtitle: "태양계의 거인, 나의 거대한 이야기를 들어볼래?", nav_intro: "👑 나의 정체", nav_features: "🌪️ 거대한 특징", nav_explore: "🛰️ 목성 탐사", nav_quiz: "🧠 목성 퀴즈", nav_glossary: "📚 용어사전",
+                intro_title: "태양계의 왕, 거인 행성", intro_p1: "안녕! 나는 태양계의 다섯 번째 행성이자 가장 큰 행성, 목성이야. 얼마나 크냐면, 태양계의 다른 모든 행성을 합친 것보다도 2.5배나 더 무겁단다. 나는 단단한 땅이 없는 '가스 행성'으로, 대부분 수소와 헬륨으로 이루어져 있어. 내 이름은 로마 신화의 왕 '유피테르(Jupiter)'에서 따왔지.",
+                features_title: "거대한 폭풍과 수많은 달", features_p1: "내 표면에는 '대적점'이라고 불리는 거대한 소용돌이가 있어. 지구보다도 훨씬 큰 이 폭풍은 수백 년 동안 계속되고 있단다. 그리고 나는 90개가 넘는 아주 많은 위성(달)을 거느리고 있어. 그중에서도 이오, 유로파, 가니메데, 칼리스토는 '갈릴레이 위성'이라고 불리며 아주 유명해.",
+                explore_title: "탐사선들이 밝혀낸 나의 모습", explore_p1: "나는 아주 멀리 있지만, 인류는 나에 대한 궁금증을 풀기 위해 탐사선을 보냈어. '파이어니어호'와 '보이저호'가 처음으로 내 곁을 지나갔고, '갈릴레오호'는 내 주위를 돌며 자세히 관찰했지. 지금은 '주노' 탐사선이 내 구름 속과 강력한 자기장을 연구하며 새로운 비밀을 밝혀내고 있단다.",
+                quiz_title: "도전! 목성 퀴즈", quiz_submit: "정답 확인하기", quiz_retry: "다시 풀기",
+                quiz_data: [
+                    { question: "내가 '가스 행성'이라고 불리는 이유는 무엇일까요?", options: ["냄새가 나서", "대부분 가스로 이루어져서", "항상 바람이 불어서"], answer: "대부분 가스로 이루어져서", explanation: "나는 지구처럼 단단한 땅이 거의 없고, 대부분 수소와 헬륨 같은 가스로 이루어져 있기 때문이야." },
+                    { question: "내 표면에 있는 거대한 붉은 점은 무엇일까요?", options: ["커다란 화산", "붉은색 바다", "거대한 폭풍"], answer: "거대한 폭풍", explanation: "대적점은 지구보다도 큰 거대한 폭풍(소용돌이)이야. 이 폭풍이 수백 년 넘게 계속되고 있단다." },
+                    { question: "나의 4대 위성을 처음 발견한 사람은 누구일까요?", options: ["뉴턴", "아인슈타인", "갈릴레오 갈릴레이"], answer: "갈릴레오 갈릴레이", explanation: "1610년, 이탈리아의 과학자 갈릴레오 갈릴레이가 망원경으로 이오, 유로파, 가니메데, 칼리스토를 처음 발견했어." }
+                ],
+                quiz_result_message: (score, total) => `총 ${total}문제 중 ${score}문제 정답!`,
+                quiz_perfect: "굉장해! 너는 목성 대왕이야! 👑", quiz_good: "훌륭해! 태양계의 거인에 대해 많이 알게 되었구나!",
+                glossary_title: "용어사전",
+                glossary_1_title: "가스 행성", glossary_1_desc: "암석보다는 수소, 헬륨 같은 가벼운 기체로 대부분 이루어진 거대한 행성을 말해.",
+                glossary_2_title: "대적점 (Great Red Spot)", glossary_2_desc: "목성 남반구에 있는 거대한 붉은색 소용돌이. 지구보다 큰 강력한 폭풍이야.",
+                glossary_3_title: "갈릴레이 위성", glossary_3_desc: "목성의 가장 큰 네 개의 위성(이오, 유로파, 가니메데, 칼리스토)으로, 1610년 갈릴레오 갈릴레이가 발견했어.",
+            },
+            en: {
+                home_link: "To Main", page_title: "Hello! I'm Jupiter!", subtitle: "Want to hear the grand story of the giant of the Solar System?", nav_intro: "👑 My Identity", nav_features: "🌪️ Giant Features", nav_explore: "🛰️ Jupiter Exploration", nav_quiz: "🧠 Jupiter Quiz", nav_glossary: "📚 Glossary",
+                intro_title: "King of the Planets, the Giant Planet", intro_p1: "Hi! I'm Jupiter, the fifth and largest planet in the Solar System. I'm so big that I'm 2.5 times more massive than all the other planets in the Solar System combined. I am a 'gas giant,' which means I don't have a solid surface and am mostly made of hydrogen and helium. My name comes from 'Jupiter,' the king of the Roman gods.",
+                features_title: "A Great Storm and Many Moons", features_p1: "On my surface, there's a giant storm called the 'Great Red Spot.' This storm, much larger than Earth, has been raging for hundreds of years. I also have more than 90 moons. Among them, Io, Europa, Ganymede, and Callisto are the most famous and are called the 'Galilean moons.'",
+                explore_title: "What Probes Have Revealed About Me", explore_p1: "I'm very far away, but humanity has sent probes to solve the mysteries about me. 'Pioneer' and 'Voyager' were the first to fly by me, and 'Galileo' orbited me for detailed observation. Currently, the 'Juno' probe is studying my clouds and powerful magnetic field, uncovering new secrets.",
+                quiz_title: "Challenge! Jupiter Quiz", quiz_submit: "Check Answers", quiz_retry: "Try Again",
+                quiz_data: [
+                    { question: "Why am I called a 'gas giant'?", options: ["Because I smell", "Because I'm mostly made of gas", "Because it's always windy"], answer: "Because I'm mostly made of gas", explanation: "It's because I have almost no solid ground like Earth and am mostly made of gases like hydrogen and helium." },
+                    { question: "What is the giant red spot on my surface?", options: ["A huge volcano", "A red ocean", "A giant storm"], answer: "A giant storm", explanation: "The Great Red Spot is a giant storm (a vortex) larger than Earth. This storm has been going on for over hundreds of years." },
+                    { question: "Who first discovered my four largest moons?", options: ["Newton", "Einstein", "Galileo Galilei"], answer: "Galileo Galilei", explanation: "In 1610, the Italian scientist Galileo Galilei first discovered Io, Europa, Ganymede, and Callisto with his telescope." }
+                ],
+                quiz_result_message: (score, total) => `You got ${score} out of ${total} correct!`,
+                quiz_perfect: "Awesome! You're the king of Jupiter knowledge! 👑", quiz_good: "Great job! You've learned a lot about the giant of the Solar System!",
+                glossary_title: "Glossary",
+                glossary_1_title: "Gas Giant", glossary_1_desc: "A large planet composed mostly of light elements such as hydrogen and helium, rather than rock.",
+                glossary_2_title: "Great Red Spot", glossary_2_desc: "A giant, long-lived storm in Jupiter's southern hemisphere. It's a powerful anticyclonic storm larger than Earth.",
+                glossary_3_title: "Galilean Moons", glossary_3_desc: "The four largest moons of Jupiter (Io, Europa, Ganymede, and Callisto), discovered by Galileo Galilei in 1610.",
+            },
+            de: {
+                home_link: "Zur Hauptseite", page_title: "Hallo! Ich bin Jupiter!", subtitle: "Willst du die große Geschichte des Riesen des Sonnensystems hören?", nav_intro: "👑 Meine Identität", nav_features: "🌪️ Riesige Merkmale", nav_explore: "🛰️ Jupiter-Erkundung", nav_quiz: "🧠 Jupiter-Quiz", nav_glossary: "📚 Wörterbuch",
+                intro_title: "König der Planeten, der Riesenplanet", intro_p1: "Hallo! Ich bin Jupiter, der fünfte und größte Planet im Sonnensystem. Ich bin so groß, dass ich 2,5-mal massereicher bin als alle anderen Planeten im Sonnensystem zusammen. Ich bin ein 'Gasriese', das heißt, ich habe keine feste Oberfläche und bestehe hauptsächlich aus Wasserstoff und Helium. Mein Name kommt von 'Jupiter', dem König der römischen Götter.",
+                features_title: "Ein großer Sturm und viele Monde", features_p1: "Auf meiner Oberfläche gibt es einen riesigen Sturm, der 'Großer Roter Fleck' genannt wird. Dieser Sturm, viel größer als die Erde, tobt seit Hunderten von Jahren. Ich habe auch mehr als 90 Monde. Unter ihnen sind Io, Europa, Ganymed und Kallisto die berühmtesten und werden die 'Galileischen Monde' genannt.",
+                explore_title: "Was Sonden über mich enthüllt haben", explore_p1: "Ich bin sehr weit weg, aber die Menschheit hat Sonden geschickt, um die Geheimnisse über mich zu lüften. 'Pioneer' und 'Voyager' waren die ersten, die an mir vorbeiflogen, und 'Galileo' umkreiste mich zur detaillierten Beobachtung. Derzeit untersucht die 'Juno'-Sonde meine Wolken und mein starkes Magnetfeld und deckt neue Geheimnisse auf.",
+                quiz_title: "Herausforderung! Jupiter-Quiz", quiz_submit: "Antworten prüfen", quiz_retry: "Nochmal versuchen",
+                quiz_data: [
+                    { question: "Warum werde ich 'Gasriese' genannt?", options: ["Weil ich rieche", "Weil ich hauptsächlich aus Gas bestehe", "Weil es immer windig ist"], answer: "Weil ich hauptsächlich aus Gas bestehe", explanation: "Das liegt daran, dass ich fast keinen festen Boden wie die Erde habe und hauptsächlich aus Gasen wie Wasserstoff und Helium bestehe." },
+                    { question: "Was ist der große rote Fleck auf meiner Oberfläche?", options: ["Ein riesiger Vulkan", "Ein rotes Meer", "Ein riesiger Sturm"], answer: "Ein riesiger Sturm", explanation: "Der Große Rote Fleck ist ein riesiger Sturm (ein Wirbel), der größer als die Erde ist. Dieser Sturm tobt seit über Hunderten von Jahren." },
+                    { question: "Wer hat meine vier größten Monde zuerst entdeckt?", options: ["Newton", "Einstein", "Galileo Galilei"], answer: "Galileo Galilei", explanation: "1610 entdeckte der italienische Wissenschaftler Galileo Galilei mit seinem Teleskop als Erster Io, Europa, Ganymed und Kallisto." }
+                ],
+                quiz_result_message: (score, total) => `Du hast ${score} von ${total} richtig!`,
+                quiz_perfect: "Fantastisch! Du bist der König des Jupiter-Wissens! 👑", quiz_good: "Tolle Arbeit! Du hast viel über den Riesen des Sonnensystems gelernt!",
+                glossary_title: "Wörterbuch",
+                glossary_1_title: "Gasriese", glossary_1_desc: "Ein großer Planet, der hauptsächlich aus leichten Elementen wie Wasserstoff und Helium besteht und nicht aus Gestein.",
+                glossary_2_title: "Großer Roter Fleck", glossary_2_desc: "Ein riesiger, langlebiger Sturm in der südlichen Hemisphäre des Jupiter. Es ist ein starker antizyklonischer Sturm, der größer als die Erde ist.",
+                glossary_3_title: "Galileische Monde", glossary_3_desc: "Die vier größten Monde des Jupiter (Io, Europa, Ganymed und Kallisto), die 1610 von Galileo Galilei entdeckt wurden.",
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentLang = 'ko';
+
+            function applyTranslations() {
+                document.documentElement.lang = currentLang;
+                document.body.className = `font-${currentLang}`;
+                document.querySelectorAll('[data-lang-key]').forEach(el => {
+                    const key = el.dataset.langKey;
+                    if (i18n[currentLang] && i18n[currentLang][key]) {
+                        el.innerHTML = i18n[currentLang][key];
+                    }
+                });
+            }
+
+            function switchLanguage(lang) {
+                currentLang = lang;
+                document.querySelectorAll('.lang-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.lang === lang);
+                });
+                applyTranslations();
+                if(document.querySelector('.nav-button.active')?.dataset.target === 'quiz') loadQuiz();
+            }
+
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchLanguage(btn.dataset.lang));
+            });
+
+            const navButtons = document.querySelectorAll('.nav-button');
+            const contentSections = document.querySelectorAll('.content-section');
+            function switchTab(targetId) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                navButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.target === targetId));
+                contentSections.forEach(section => section.classList.toggle('active', section.id === targetId));
+                if (targetId === 'quiz') loadQuiz();
+            }
+            navButtons.forEach(button => button.addEventListener('click', () => switchTab(button.dataset.target)));
+
+            const quizContainer = document.getElementById('quiz-container');
+            const quizControls = document.getElementById('quiz-controls');
+            const quizResult = document.getElementById('quiz-result');
+            const quizScoreDisplay = document.getElementById('quiz-score');
+            const quizMessageDisplay = document.getElementById('quiz-message');
+            const quizSubmitBtn = document.getElementById('quiz-submit-btn');
+            const quizRetryBtn = document.getElementById('quiz-retry-btn');
+            
+            function loadQuiz() {
+                const quizData = i18n[currentLang].quiz_data;
+                quizContainer.innerHTML = '';
+                quizResult.classList.add('hidden');
+                quizControls.classList.remove('hidden');
+
+                quizData.forEach((q, index) => {
+                    const questionDiv = document.createElement('div');
+                    questionDiv.className = 'quiz-question';
+                    questionDiv.innerHTML = `<h3 class="font-title text-xl mb-4">${index + 1}. ${q.question}</h3>`;
+                    
+                    const optionsDiv = document.createElement('div');
+                    optionsDiv.className = 'space-y-3';
+                    
+                    q.options.forEach(optionText => {
+                        const optionBtn = document.createElement('button');
+                        optionBtn.textContent = optionText;
+                        optionBtn.className = 'quiz-option block w-full text-left p-3 rounded-lg';
+                        optionBtn.addEventListener('click', () => {
+                            optionsDiv.querySelectorAll('.quiz-option').forEach(btn => btn.classList.remove('selected'));
+                            optionBtn.classList.add('selected');
+                        });
+                        optionsDiv.appendChild(optionBtn);
+                    });
+                    
+                    const explanationDiv = document.createElement('div');
+                    explanationDiv.className = 'explanation-container hidden p-4 mt-4 rounded-r-lg';
+                    
+                    questionDiv.appendChild(optionsDiv);
+                    questionDiv.appendChild(explanationDiv);
+                    quizContainer.appendChild(questionDiv);
+                });
+            }
+
+            quizSubmitBtn.addEventListener('click', () => {
+                let score = 0;
+                const quizData = i18n[currentLang].quiz_data;
+                const questions = quizContainer.querySelectorAll('.quiz-question');
+
+                questions.forEach((question, index) => {
+                    const selectedOption = question.querySelector('.quiz-option.selected');
+                    const allOptions = question.querySelectorAll('.quiz-option');
+                    const explanationContainer = question.querySelector('.explanation-container');
+                    const correctAnswer = quizData[index].answer;
+
+                    allOptions.forEach(opt => {
+                        opt.disabled = true;
+                        if (opt.textContent === correctAnswer) opt.classList.add('correct');
+                    });
+
+                    if (selectedOption) {
+                        if (selectedOption.textContent === correctAnswer) score++;
+                        else selectedOption.classList.add('wrong');
+                    }
+                    
+                    const explanationPrefix = { ko: "💡 왜냐하면!", en: "💡 Because...", de: "💡 Weil..." };
+                    explanationContainer.innerHTML = `<p><strong class="font-bold text-orange-300">${explanationPrefix[currentLang]}</strong> ${quizData[index].explanation}</p>`;
+                    explanationContainer.classList.remove('hidden');
+                });
+                
+                showResult(score);
+            });
+            
+            function showResult(score) {
+                const quizData = i18n[currentLang].quiz_data;
+                quizControls.classList.add('hidden');
+                quizResult.classList.remove('hidden');
+                quizScoreDisplay.textContent = i18n[currentLang].quiz_result_message(score, quizData.length);
+                
+                if(score === quizData.length) {
+                    quizMessageDisplay.textContent = i18n[currentLang].quiz_perfect;
+                } else {
+                    quizMessageDisplay.textContent = i18n[currentLang].quiz_good;
+                }
+            }
+
+            quizRetryBtn.addEventListener('click', loadQuiz);
+            
+            // Initial Load
+            switchLanguage('ko'); 
+            navButtons[0].click(); 
+        });
+    </script>
+</body>
+</html>
