@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>블랙홀 탐사: 아이콘 기반 인터랙티브 보고서</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #0a0a1a;
+            color: #e0e0e0;
+        }
+        .content-section {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .content-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .hero {
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: radial-gradient(circle, #1e1b4b 0%, #0a0a1a 70%);
+        }
+        .hero-icon {
+            font-size: 5rem;
+            color: #a5b4fc;
+            margin-bottom: 2rem;
+            animation: spin 20s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .section-title {
+            border-left: 4px solid #4f46e5;
+            padding-left: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .icon-feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+        }
+        .icon-feature .icon {
+            font-size: 2.5rem;
+            color: #818cf8;
+            width: 50px;
+            flex-shrink: 0;
+            text-align: center;
+        }
+        #scrollToTopBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: none;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Hero Section -->
+    <header class="hero text-white p-4">
+        <i class="fas fa-atom hero-icon"></i>
+        <h1 class="text-4xl md:text-6xl font-bold mb-4">빛나는 어둠: 블랙홀 심층 탐사</h1>
+        <p class="text-lg md:text-2xl font-light max-w-3xl">빛조차 삼키는 우주 최강의 괴물, 그 심연으로의 여정. 이미지 없이, 아이콘으로 명료하게 탐험합니다.</p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-16 md:py-24 space-y-24">
+
+        <!-- 서론 -->
+        <section class="content-section">
+            <h2 class="section-title text-3xl font-bold text-indigo-300">서론: 수학적 호기심에서 관측 가능한 현실로</h2>
+            <div class="icon-feature">
+                <div class="icon"><i class="fa-solid fa-satellite-dish"></i></div>
+                <div class="space-y-4 text-lg leading-relaxed">
+                    <p>"빛조차 삼키는 우주 최강의 괴물." 이 매혹적이면서도 두려움을 자아내는 묘사는 블랙홀에 대한 인류의 오랜 상상력을 자극해왔습니다. 블랙홀은 미지의 심연에 대한 원초적 공포와 우주의 궁극적 법칙을 향한 지적 호기심을 동시에 불러일으키는, 현대 천체물리학의 가장 상징적인 존재입니다.</p>
+                    <p>오늘날 우리는 사건의 지평선 망원경(EHT)과 중력파 관측소(LIGO)를 통해 블랙홀의 그림자를 직접 보고, 시공간의 울림을 들을 수 있는 '다중 신호 천문학'의 황금기를 살고 있습니다. 이 보고서는 블랙홀이 단순한 파괴자가 아니라, 우주의 진화를 이끌고 물리학의 새로운 지평을 여는 '빛나는 어둠'임을 탐험합니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 1부: 심연의 해부학 -->
+        <section class="content-section">
+            <h2 class="section-title text-3xl font-bold text-indigo-300">1부: 심연의 해부학 - 블랙홀의 정의</h2>
+            <div class="space-y-12">
+                <div class="icon-feature">
+                    <div class="icon"><i class="fa-solid fa-ban"></i></div>
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-2 text-cyan-300">1.1 돌아올 수 없는 경계: 사건의 지평선</h3>
+                        <p class="text-lg leading-relaxed">블랙홀의 가장 핵심적인 특징은 '사건의 지평선(Event Horizon)'입니다. 이는 물리적인 표면이 아니라 시공간에 그어진 보이지 않는 경계선으로, 한번 넘어가면 빛조차 다시는 빠져나올 수 없는 일방통행로입니다. 이 경계에서 탈출 속도는 빛의 속도를 초과합니다.</p>
+                    </div>
+                </div>
+                <div class="icon-feature">
+                    <div class="icon"><i class="fa-solid fa-ruler-vertical"></i></div>
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-2 text-cyan-300">1.3 우주적 낙하: 스파게티화와 관찰자의 시점</h3>
+                        <p class="text-lg leading-relaxed">'스파게티화(Spaghettification)'는 블랙홀에 가까워질수록 신체의 각 부분에 작용하는 중력의 차이, 즉 '조석력'이 극심해지기 때문에 발생합니다. 발부터 떨어진다면 발에 가해지는 중력이 머리보다 훨씬 강해져 몸이 국수 가락처럼 가늘고 길게 늘어납니다. 멀리서 보는 관찰자에게는 낙하하는 물체의 시간이 점점 느려져 지평선 위에서 영원히 멈춘 것처럼 보입니다.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 2부: 블랙홀의 분류 -->
+        <section class="content-section">
+            <h2 class="section-title text-3xl font-bold text-indigo-300">2부: 우주적 동물우화집 - 블랙홀의 탄생과 분류</h2>
+            <p class="text-xl mb-8 text-center">블랙홀은 질량과 기원에 따라 다양한 '종'으로 나뉘며, 각각은 우주 진화의 다른 단계를 보여주는 화석과도 같습니다.</p>
+            <div class="grid md:grid-cols-3 gap-8 text-center">
+                <div class="card p-6 rounded-lg">
+                    <i class="fas fa-star text-4xl mb-4 text-red-300"></i>
+                    <h3 class="text-xl font-bold mb-2">항성 질량 블랙홀</h3>
+                    <p>태양보다 20배 이상 무거운 별이 죽음을 맞이하며 초신성 폭발 후 남기는 블랙홀입니다.</p>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <i class="fas fa-circle-nodes text-4xl mb-4 text-orange-300"></i>
+                    <h3 class="text-xl font-bold mb-2">중간 질량 블랙홀</h3>
+                    <p>항성 질량과 초거대 질량 사이의 '잃어버린 고리'로, 구상성단 등에서 발견될 것으로 추정됩니다.</p>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <i class="fas fa-galactic-republic text-4xl mb-4 text-indigo-300"></i>
+                    <h3 class="text-xl font-bold mb-2">초거대 질량 블랙홀</h3>
+                    <p>거의 모든 거대 은하의 중심에 존재하며 은하의 진화를 조절하는 거대한 블랙홀입니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3부: 블랙홀 탐지 기술 -->
+        <section class="content-section">
+            <h2 class="section-title text-3xl font-bold text-indigo-300">3부: 보이지 않는 것을 보다 - 블랙홀 탐지의 기술</h2>
+            <div class="space-y-8">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-3 text-green-300"><i class="fas fa-search-location mr-3"></i>간접적 증거: 중력의 단서들</h3>
+                    <p>우리 은하 중심 별들의 궤도를 추적하거나, 블랙홀이 동반성의 가스를 빨아들이며 형성하는 '강착 원반'에서 나오는 강력한 X선을 관측하여 블랙홀의 존재를 증명합니다.</p>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-3 text-green-300"><i class="fas fa-wave-square mr-3"></i>직접적 증거: 우주를 향한 새로운 창</h3>
+                    <p>21세기 들어 우리는 중력파를 통해 블랙홀의 충돌을 '듣고', 사건의 지평선 망원경으로 그 '그림자'를 직접 '보는' 혁명적인 시대에 살고 있습니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4부: 우리의 우주적 이웃 -->
+        <section class="content-section">
+            <h2 class="section-title text-3xl font-bold text-indigo-300">4부: 우리의 우주적 이웃 - 블랙홀과 지구</h2>
+             <div class="icon-feature">
+                <div class="icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="space-y-4 text-lg leading-relaxed">
+                    <p>우리 은하에는 약 1억 개의 항성 질량 블랙홀이 존재할 것으로 추정됩니다. 하지만 걱정 마세요, 지구는 안전합니다. 현재까지 발견된 가장 가까운 블랙홀 '가이아 BH1'조차도 약 1,560광년이라는 엄청난 거리에 떨어져 있습니다.</p>
+                    <p>블랙홀은 우주를 무작위로 떠도는 진공청소기가 아니며, 중력 법칙에 따라 안정적인 궤도를 돌고 있습니다. 태양계는 우리 은하의 매우 안정적인 공간에 위치해 있어 직접적인 위협은 사실상 없습니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5부: 물리학의 최전선 -->
+        <section class="content-section">
+            <h2 class="section-title text-3xl font-bold text-indigo-300">5부: 지식의 경계에서 - 물리학의 최전선</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-bold mb-2"><i class="fas fa-radiation mr-2 text-red-400"></i>호킹 복사와 정보 역설</h3>
+                    <p>스티븐 호킹은 블랙홀이 '호킹 복사'를 통해 서서히 증발한다고 예측했습니다. 이 과정에서 정보가 영원히 사라지는지는 '블랙홀 정보 역설'이라는 거대한 퍼즐을 남겼습니다.</p>
+                </div>
+                <div class="card p-6 rounded-lg">
+                    <h3 class="text-xl font-bold mb-2"><i class="fas fa-cubes mr-2 text-sky-400"></i>양자 중력 이론 엿보기</h3>
+                    <p>정보 역설을 해결하려는 노력은 '홀로그래피 원리' 등 우리의 현실 인식을 뒤바꿀 수 있는 급진적인 아이디어들을 탄생시켰습니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 결론 -->
+        <section class="content-section text-center">
+            <h2 class="section-title text-3xl font-bold text-indigo-300 inline-block">결론: 빛나는 어둠의 끝없는 매혹</h2>
+            <div class="max-w-4xl mx-auto text-lg leading-relaxed space-y-4">
+                <p>블랙홀은 단순한 '괴물'이 아니라, 시공간의 본질과 정보의 실체에 대해 묻는 거대한 질문입니다. 블랙홀이라는 '어둠'은 우리 지식의 가장 밝은 등불들이 충돌하고 새로운 빛을 잉태하는 장소입니다.</p>
+                <p>블랙홀의 그림자를 쫓는 인류의 탐사는 단지 먼 우주의 한 천체를 연구하는 것을 넘어, 우리가 발 딛고 있는 이 현실 자체의 근본 구조를 이해하려는 위대한 지적 모험입니다. 그 빛나는 어둠 속에는 우리가 아직 알지 못하는 우주의 가장 깊은 비밀이 숨겨져 있으며, 그 비밀을 향한 우리의 여정은 이제 막 시작되었을 뿐입니다.</p>
+            </div>
+            <div class="mt-12 text-5xl text-indigo-400">
+                <i class="fas fa-infinity"></i>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTopBtn" title="맨 위로 이동"><i class="fas fa-arrow-up"></i></button>
+
+    <footer class="text-center p-8 mt-16 border-t border-gray-800">
+        <p>&copy; 2024 Interactive Black Hole Report. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // JavaScript for scroll animations
+        const sections = document.querySelectorAll('.content-section');
+        const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+
+        // Scroll to top button logic
+        window.onscroll = function() {
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                scrollToTopBtn.style.display = "block";
+            } else {
+                scrollToTopBtn.style.display = "none";
+            }
+        };
+
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+
+</body>
+</html>
