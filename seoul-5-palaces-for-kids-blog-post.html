@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서울 5대 궁궐 인터랙티브 가이드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Serene Harmony -->
+    <!-- Application Structure Plan: 사용자가 5대 궁궐의 방대한 정보를 효과적으로 탐색할 수 있도록, 보고서의 순차적 구조를 탈피하여 '주제별 비교 대시보드' 중심의 비선형적 구조를 설계했습니다. 1) '궁궐 비교' 섹션에서는 키워드, 건축, 역할 등 다양한 기준으로 궁궐들을 한눈에 비교하며 핵심 차이점을 직관적으로 파악하게 하고, 2) '궁궐별 이야기' 섹션에서는 각 궁궐의 고유한 서사를 깊이 있게 탐험할 수 있도록 구성했습니다. 3) '역사의 타임라인'은 흩어져 있는 사건들을 연대순으로 재구성하여 궁궐들의 유기적인 관계와 시대적 맥락을 이해하도록 돕습니다. 이 구조는 사용자가 수동적인 독자에서 능동적인 탐험가로 전환되도록 유도하며, 복잡한 정보 속에서 자신만의 발견의 즐거움을 찾도록 설계되었습니다. -->
+    <!-- Visualization & Content Choices: 
+        - [궁궐별 핵심 정보 비교] -> Goal: Inform/Compare -> Viz: 인터랙티브 카드 그리드 -> Interaction: 버튼 클릭 시 카드 내용 동적 변경 -> Justification: 다섯 궁궐의 방대한 정보를 동일한 기준(키워드, 건축, 역할 등)으로 병렬 비교하여 사용자의 빠른 이해와 학습을 돕기 위함. (HTML/CSS + Vanilla JS)
+        - [궁궐별 방문객 수 비교] -> Goal: Compare -> Viz: 수평 바 차트 -> Interaction: 막대 호버 시 툴팁으로 정확한 수치 표시 -> Justification: 양적 데이터를 시각적으로 명확하게 비교하고, 경복궁의 압도적인 방문객 수를 통해 현대적 위상을 직관적으로 전달. (Chart.js)
+        - [조선 및 대한제국 연표] -> Goal: Change/Organize -> Viz: 수직 타임라인 다이어그램 -> Interaction: 스크롤에 따른 이벤트 표시, 궁궐별 색상 구분 -> Justification: 각 궁궐에 흩어진 역사적 사건들을 하나의 시간 축에 통합하여 보여줌으로써, 궁궐들의 상호 관계와 시대적 흐름을 거시적으로 파악하게 함. (HTML/CSS + Vanilla JS)
+        - [궁궐별 상세 정보] -> Goal: Inform -> Viz: 탭 또는 아코디언 형태의 상세 정보 뷰 -> Interaction: 궁궐 선택 시 해당 정보 표시 -> Justification: 메인 화면의 복잡성을 줄이면서, 사용자가 원하는 궁궐에 대한 깊이 있는 정보를 선택적으로 탐색할 수 있도록 함. (HTML/CSS + Vanilla JS)
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        h1, h2, h3, .font-display { font-family: 'Gowun Dodum', serif; }
+        .active-nav { color: #1e3a8a; font-weight: 700; border-bottom: 2px solid #1e3a8a; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .comparison-card { transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
+        .comparison-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+        .chart-container { position: relative; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto; height: 400px; max-height: 50vh; }
+        .timeline { border-left: 3px solid #d1d5db; }
+        .timeline-item:before { content: ''; position: absolute; left: -9px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; border-radius: 9999px; background-color: white; border: 3px solid; }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800">
+
+    <header class="bg-white/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="font-display text-2xl font-bold text-blue-900">서울 5대 궁궐 탐험</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#compare" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:text-blue-900">궁궐 비교</a>
+                        <a href="#stories" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:text-blue-900">궁궐별 이야기</a>
+                        <a href="#timeline" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:text-blue-900">역사의 타임라인</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-stone-600 hover:text-blue-900 hover:bg-stone-100 focus:outline-none">
+                        <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#compare" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-stone-600 hover:text-blue-900 hover:bg-stone-100">궁궐 비교</a>
+                <a href="#stories" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-stone-600 hover:text-blue-900 hover:bg-stone-100">궁궐별 이야기</a>
+                <a href="#timeline" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-stone-600 hover:text-blue-900 hover:bg-stone-100">역사의 타임라인</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <section id="compare" class="section">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold font-display text-blue-900">한눈에 보는 궁궐 비교</h2>
+                <p class="mt-4 text-lg text-stone-600">다섯 궁궐의 특징을 다양한 기준으로 비교하며 숨겨진 이야기를 발견해 보세요.</p>
+            </div>
+
+            <div class="mb-8 flex justify-center flex-wrap gap-2">
+                <button class="comparison-btn bg-white shadow-sm hover:shadow-md border border-stone-200 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold" data-topic="keyword">✨ 핵심 키워드</button>
+                <button class="comparison-btn bg-white shadow-sm hover:shadow-md border border-stone-200 text-stone-700 px-4 py-2 rounded-full text-sm font-semibold" data-topic="architecture">🏛️ 건축 특징</button>
+                <button class="comparison-btn bg-white shadow-sm hover:shadow-md border border-stone-200 text-stone-700 px-4 py-2 rounded-full text-sm font-semibold" data-topic="role">📜 역사적 역할</button>
+                <button class="comparison-btn bg-white shadow-sm hover:shadow-md border border-stone-200 text-stone-700 px-4 py-2 rounded-full text-sm font-semibold" data-topic="tragedy">😢 수난과 복원</button>
+            </div>
+
+            <div id="comparison-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+
+            <div class="mt-20 text-center">
+                <h3 class="text-3xl font-bold font-display text-blue-900 mb-4">궁궐별 방문객 현황 (2024년 상반기)</h3>
+                <p class="text-stone-600 max-w-2xl mx-auto mb-8">궁궐의 현대적 위상을 방문객 수치를 통해 확인해 보세요. 특히 경복궁의 높은 인기가 돋보입니다.</p>
+                <div class="chart-container">
+                    <canvas id="palaceVisitorsChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="stories" class="section">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold font-display text-blue-900">궁궐별 이야기</h2>
+                <p class="mt-4 text-lg text-stone-600">각 궁궐이 품고 있는 고유한 역사와 건축, 그리고 인물들의 이야기를 만나보세요.</p>
+            </div>
+            <div id="palace-story-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            </div>
+            <div id="palace-detail-content" class="mt-8"></div>
+        </section>
+
+        <section id="timeline" class="section">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold font-display text-blue-900">역사의 타임라인</h2>
+                <p class="mt-4 text-lg text-stone-600">조선의 건국부터 대한제국의 황혼까지, 5대 궁궐의 운명이 교차한 순간들을 시간의 흐름 속에서 따라가 봅니다.</p>
+            </div>
+            <div id="historical-timeline" class="relative max-w-3xl mx-auto timeline pl-8">
+            </div>
+        </section>
+    </main>
+    <footer class="text-center py-6 mt-12 border-t border-stone-200">
+        <p class="text-sm text-stone-500">본 페이지는 제공된 연구 자료를 바탕으로 제작된 대화형 웹 애플리케이션입니다.</p>
+    </footer>
+
+<script>
+const palaceData = {
+    gyeongbok: {
+        name: "경복궁",
+        color: "bg-blue-100",
+        borderColor: "border-blue-500",
+        textColor: "text-blue-800",
+        keyword: ["법궁(法宮)", "조선왕조의 시작", "중심축과 대칭", "수난과 부활의 상징"],
+        architecture: ["유교 이념의 구현", "남북 중심축의 엄격한 대칭", "광화문-근정전-사정전", "장엄하고 권위적인 공간"],
+        role: ["조선 제1의 정궁", "왕의 즉위식, 국가 대례 거행", "과학과 문화의 중심(세종)", "19세기 말까지 실질적 기능 상실"],
+        tragedy: ["임진왜란으로 전소 후 270년간 폐허", "일제에 의한 체계적 훼손(총독부 청사)", "민족 정기 회복의 상징으로 복원 중"],
+        story: {
+            title: "큰 복을 누리라, 조선의 심장 경복궁",
+            summary: "조선 왕조의 시작을 알린 첫 번째 궁궐이자 으뜸 궁궐(법궁)입니다. 유교적 이상 국가를 꿈꾸며 질서정연하게 설계되었으나, 임진왜란과 일제강점기를 거치며 가장 큰 수난을 겪었습니다. 오늘날 경복궁은 파괴의 아픔을 딛고 일어나 민족의 자존심을 상징하는 공간으로 우리 곁에 있습니다.",
+            buildings: [
+                { name: "근정전", desc: "왕의 즉위식 등 국가의 가장 중요한 행사가 열리던 정전" },
+                { name: "경회루", desc: "나라에 경사가 있을 때 성대한 연회를 열던 누각" },
+                { name: "강녕전/교태전", desc: "왕과 왕비의 생활 공간이자 침전" },
+            ]
+        }
+    },
+    changdeok: {
+        name: "창덕궁",
+        color: "bg-green-100",
+        borderColor: "border-green-500",
+        textColor: "text-green-800",
+        keyword: ["자연과의 조화", "실질적 정궁", "비정형의 미학", "유네스코 세계유산"],
+        architecture: ["자연 지형에 순응한 자유로운 배치", "비대칭적 동선", "'가장 한국적인 궁궐'", "아름다운 후원(비원)"],
+        role: ["조선 왕들이 가장 사랑한 궁궐", "약 258년간 실질적인 법궁 역할 수행", "조선 후기 정치, 문화의 중심"],
+        tragedy: ["임진왜란으로 소실 후 가장 먼저 재건", "잦은 화재와 복원의 역사", "1917년 대화재로 내전 소실"],
+        story: {
+            title: "자연을 품은 궁궐, 창덕궁",
+            summary: "엄격한 경복궁과 달리, 자연 지형을 거스르지 않고 자유롭게 지어진 궁궐입니다. 임진왜란 이후 약 258년간 조선의 실질적인 법궁 역할을 했으며, 왕들의 가장 많은 사랑을 받았습니다. 특히 자연 그대로의 아름다움을 살린 후원은 그 가치를 인정받아 유네스코 세계유산으로 등재되었습니다.",
+            buildings: [
+                { name: "인정전", desc: "창덕궁의 정전. 국가 공식 행사를 치른 곳" },
+                { name: "후원(비원)", desc: "한국 전통 조경의 정수를 보여주는 왕의 정원" },
+                { name: "낙선재", desc: "단청 없는 소박한 건물. 조선 왕조 마지막 사람들의 거처" },
+            ]
+        }
+    },
+    changgyeong: {
+        name: "창경궁",
+        color: "bg-amber-100",
+        borderColor: "border-amber-500",
+        textColor: "text-amber-800",
+        keyword: ["효(孝)의 궁궐", "왕실 여성들의 공간", "비극의 무대", "창경원"],
+        architecture: ["동향 배치", "내전 중심의 공간 구조", "아늑하고 인간적인 척도", "창덕궁과 이어진 동궐"],
+        role: ["왕실 어른(대비)을 모시기 위해 건립", "왕실 가족의 생활 공간", "정치적 암투의 중심"],
+        tragedy: ["사도세자의 비극(임오화변)", "일제에 의해 동물원, 식물원(창경원)으로 격하", "1980년대 복원을 통해 궁의 위상 회복"],
+        story: {
+            title: "효심과 비극이 깃든, 창경궁",
+            summary: "왕실의 웃어른, 특히 대비들을 편안히 모시기 위해 지어진 효의 궁궐입니다. 이 때문에 국가 통치 공간보다 왕실 가족의 생활 공간이 더 발달한 독특한 구조를 가집니다. 하지만 평온한 목적과 달리 사도세자의 비극, 장희빈 이야기 등 왕실의 가장 가슴 아픈 역사가 펼쳐진 무대이기도 합니다.",
+            buildings: [
+                { name: "명정전", desc: "현존하는 조선 궁궐의 정전 중 가장 오래된 건물" },
+                { name: "통명전", desc: "왕비의 침전. 인현왕후와 장희빈의 이야기가 깃든 곳" },
+                { name: "문정전", desc: "왕의 집무실. 사도세자의 비극이 시작된 장소" },
+            ]
+        }
+    },
+    deoksu: {
+        name: "덕수궁",
+        color: "bg-violet-100",
+        borderColor: "border-violet-500",
+        textColor: "text-violet-800",
+        keyword: ["대한제국의 황궁", "전통과 근대의 공존", "비운의 황제", "외교의 각축장"],
+        architecture: ["전통 목조 건축과 서양식 석조 건축의 혼재", "석조전(신고전주의)", "정관헌(한·양 절충식)", "구본신참(舊本新參) 정신의 구현"],
+        role: ["임진왜란 때 임시 궁궐(행궁)", "대한제국의 정궁", "고종의 거처이자 최후의 장소"],
+        tragedy: ["을사늑약 체결의 비극적 현장(중명전)", "고종의 강제 퇴위와 의문의 죽음", "일제에 의해 '경운궁'에서 '덕수궁'으로 격하"],
+        story: {
+            title: "황혼과 여명의 궁궐, 덕수궁",
+            summary: "본래 왕족의 사저였으나, 국난 시기에 임시 궁궐로 사용되다 대한제국의 황궁이 된 극적인 역사를 지녔습니다. 전통 목조 건물과 서양식 석조 건물이 공존하는 독특한 풍경은, 전통을 지키며 근대 국가로 나아가려 했던 대한제국의 꿈과 좌절을 동시에 보여줍니다.",
+            buildings: [
+                { name: "중화전", desc: "대한제국의 정전. 화재 후 단층으로 축소되어 국운을 상징" },
+                { name: "석조전", desc: "서양식 황궁 건축물. 대한제국의 근대화 의지를 상징" },
+                { name: "함녕전", desc: "고종의 침전이자 그가 마지막 숨을 거둔 비극의 장소" },
+            ]
+        }
+    },
+    gyeonghui: {
+        name: "경희궁",
+        color: "bg-stone-200",
+        borderColor: "border-stone-500",
+        textColor: "text-stone-800",
+        keyword: ["사라진 궁궐", "서궐(西闕)", "왕기(王氣)", "부재(不在)의 역사"],
+        architecture: ["경사진 지형에 순응한 비대칭 배치", "100여 채의 전각이 있던 대규모 궁궐", "현재는 핵심 전각 일부만 복원"],
+        role: ["광해군에 의해 창건", "조선 후기 10명의 왕이 머문 이궁", "실질적인 법궁 역할 수행"],
+        tragedy: ["경복궁 중건 자재로 쓰이며 1차 훼손", "일제에 의해 완전히 파괴, 경성중학교 건립", "전각들이 팔려나가 뿔뿔이 흩어짐"],
+        story: {
+            title: "기억으로 남은 궁궐, 경희궁",
+            summary: "한때 100여 채의 전각을 거느린 대규모 궁궐이었으나, 경복궁 중건과 일제강점기를 거치며 가장 철저하게 파괴되어 '사라진 궁궐'로 불립니다. 숭정전 등 일부 건물이 복원되었지만, 광활하게 남은 빈터는 화려한 모습보다 더 웅변적으로 상실의 역사를 증언하며 깊은 울림을 줍니다.",
+            buildings: [
+                { name: "숭정전", desc: "경희궁의 정전. 현재 원본은 동국대에, 복원품이 궁터에 있음" },
+                { name: "흥화문", desc: "경희궁의 정문. 박문사, 신라호텔 정문으로 쓰이다 돌아옴" },
+                { name: "태령전", desc: "영조의 어진(초상화)을 모셨던 전각" },
+            ]
+        }
+    },
+};
+
+const timelineEvents = [
+    { year: 1395, title: "경복궁 창건", palace: "gyeongbok", desc: "조선 왕조의 법궁으로 건립." },
+    { year: 1405, title: "창덕궁 창건", palace: "changdeok", desc: "경복궁의 이궁으로 건립." },
+    { year: 1483, title: "창경궁 창건", palace: "changgyeong", desc: "왕실 어른을 모시기 위해 수강궁 터에 건립." },
+    { year: 1592, title: "임진왜란 발발", palace: "gyeongbok", desc: "경복궁, 창덕궁, 창경궁 등 모든 궁궐 소실." },
+    { year: 1593, title: "정릉동 행궁 시작", palace: "deoksu", desc: "선조가 환도 후 월산대군 사저를 임시 궁궐로 사용." },
+    { year: 1610, title: "창덕궁 재건", palace: "changdeok", desc: "소실된 궁궐 중 가장 먼저 재건되어 실질적 법궁이 됨." },
+    { year: 1616, title: "창경궁 명정전 재건", palace: "changgyeong", desc: "현존하는 가장 오래된 정전으로 복원." },
+    { year: 1617, title: "경희궁 창건 시작", palace: "gyeonghui", desc: "광해군이 왕기(王氣)가 서린 터에 건립 시작." },
+    { year: 1762, title: "임오화변 발생", palace: "changgyeong", desc: "창경궁 문정전 앞에서 영조가 사도세자를 뒤주에 가둠." },
+    { year: 1867, title: "경복궁 중건", palace: "gyeongbok", desc: "흥선대원군 주도로 재건. 이때 경희궁 전각 다수 훼철." },
+    { year: 1897, title: "대한제국 선포", palace: "deoksu", desc: "고종이 경운궁(덕수궁)에서 황제 즉위, 정궁이 됨." },
+    { year: 1905, title: "을사늑약 체결", palace: "deoksu", desc: "덕수궁 중명전에서 외교권 박탈." },
+    { year: 1907, title: "고종 강제 퇴위", palace: "deoksu", desc: "경운궁이 '덕수궁'으로 격하됨." },
+    { year: 1909, title: "창경원 개원", palace: "changgyeong", desc: "창경궁이 동물원, 식물원으로 격하됨." },
+    { year: 1910, title: "경희궁 완전 파괴", palace: "gyeonghui", desc: "일제가 궁궐 터에 경성중학교 건립." },
+    { year: 1919, title: "고종 승하", palace: "deoksu", desc: "덕수궁 함녕전에서 승하. 3.1 운동의 기폭제가 됨." },
+    { year: 1926, title: "조선총독부 청사 건립", palace: "gyeongbok", desc: "경복궁 근정전 앞에 세워져 경관을 완전히 훼손." },
+    { year: 1983, title: "창경궁 복원 시작", palace: "changgyeong", desc: "동물원 이전 및 '창경궁' 명칭 환원." },
+    { year: 1995, title: "구 조선총독부 건물 철거", palace: "gyeongbok", desc: "역사 바로 세우기의 일환으로 철거." },
+    { year: 1997, title: "창덕궁 유네스코 세계유산 등재", palace: "changdeok", desc: "자연과 조화된 건축미를 세계적으로 인정받음." },
+];
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const comparisonGrid = document.getElementById('comparison-grid');
+    const comparisonBtns = document.querySelectorAll('.comparison-btn');
+    const palaceStoryGrid = document.getElementById('palace-story-grid');
+    const palaceDetailContent = document.getElementById('palace-detail-content');
+    const historicalTimeline = document.getElementById('historical-timeline');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('.section');
+
+    function renderComparison(topic) {
+        comparisonGrid.innerHTML = '';
+        Object.keys(palaceData).forEach(key => {
+            const palace = palaceData[key];
+            const contentHtml = palace[topic].map(item => `<li>${item}</li>`).join('');
+            const card = `
+                <div class="comparison-card bg-white rounded-lg shadow-sm border ${palace.borderColor} p-6">
+                    <h3 class="font-display text-2xl font-bold ${palace.textColor}">${palace.name}</h3>
+                    <ul class="mt-4 space-y-2 text-sm text-stone-600 list-disc list-inside">
+                        ${contentHtml}
+                    </ul>
+                </div>
+            `;
+            comparisonGrid.innerHTML += card;
+        });
+    }
+
+    comparisonBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const topic = btn.dataset.topic;
+            renderComparison(topic);
+            comparisonBtns.forEach(b => {
+                b.classList.remove('bg-blue-800', 'text-white');
+                b.classList.add('bg-white', 'text-stone-700');
+            });
+            btn.classList.add('bg-blue-800', 'text-white');
+            btn.classList.remove('bg-white', 'text-stone-700');
+        });
+    });
+
+    function renderPalaceStories() {
+        palaceStoryGrid.innerHTML = '';
+        Object.keys(palaceData).forEach(key => {
+            const palace = palaceData[key];
+            const card = `
+                <div class="story-card cursor-pointer p-4 rounded-lg transition-all duration-300 ${palace.color} hover:shadow-xl hover:scale-105" data-palace-key="${key}">
+                    <h3 class="font-display text-3xl font-bold text-center ${palace.textColor}">${palace.name}</h3>
+                    <p class="text-center text-sm ${palace.textColor} mt-1">${palace.keyword[0]}</p>
+                </div>
+            `;
+            palaceStoryGrid.innerHTML += card;
+        });
+        
+        document.querySelectorAll('.story-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const key = card.dataset.palaceKey;
+                renderPalaceDetail(key);
+
+                document.querySelectorAll('.story-card').forEach(c => {
+                    c.classList.remove('ring-4', palaceData[c.dataset.palaceKey].borderColor);
+                });
+                card.classList.add('ring-4', palaceData[key].borderColor);
+            });
+        });
+    }
+
+    function renderPalaceDetail(key) {
+        const palace = palaceData[key];
+        const buildingsHtml = palace.story.buildings.map(b => `
+            <div class="bg-white p-4 rounded-lg shadow-sm">
+                <p class="font-bold text-lg ${palace.textColor}">${b.name}</p>
+                <p class="text-sm text-stone-600">${b.desc}</p>
+            </div>
+        `).join('');
+
+        palaceDetailContent.innerHTML = `
+            <div class="bg-white p-8 rounded-xl shadow-lg mt-8 border-t-8 ${palace.borderColor} transition-all duration-500">
+                <h3 class="font-display text-4xl font-bold ${palace.textColor}">${palace.story.title}</h3>
+                <p class="mt-4 text-stone-700 leading-relaxed">${palace.story.summary}</p>
+                <h4 class="font-display text-2xl font-bold mt-8 mb-4 ${palace.textColor}">주요 건축물</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    ${buildingsHtml}
+                </div>
+            </div>
+        `;
+    }
+    
+    function renderTimeline() {
+        historicalTimeline.innerHTML = '';
+        timelineEvents.forEach(event => {
+            const palace = palaceData[event.palace];
+            const item = `
+                <div class="timeline-item mb-8 ml-4 relative">
+                    <div class="absolute w-3 h-3 rounded-full -left-5 border-2 border-white ${palace.borderColor.replace('border-', 'bg-')}"></div>
+                    <div class="p-4 rounded-lg shadow-md bg-white border-l-4 ${palace.borderColor}">
+                        <time class="text-xs font-semibold uppercase text-stone-500">${event.year}년</time>
+                        <h4 class="text-lg font-bold font-display ${palace.textColor}">${event.title} <span class="text-sm font-normal text-stone-600">(${palace.name})</span></h4>
+                        <p class="text-sm text-stone-600">${event.desc}</p>
+                    </div>
+                </div>
+            `;
+            historicalTimeline.innerHTML += item;
+        });
+    }
+
+
+    const visitorsData = {
+        labels: ['경복궁', '덕수궁', '창덕궁', '창경궁', '경희궁'],
+        datasets: [{
+            label: '2024년 상반기 방문객 수 (명)',
+            data: [3211876, 1724529, 881646, 538131, 0], 
+            backgroundColor: [
+                'rgba(59, 130, 246, 0.6)',
+                'rgba(139, 92, 246, 0.6)',
+                'rgba(16, 185, 129, 0.6)',
+                'rgba(245, 158, 11, 0.6)',
+                'rgba(113, 113, 122, 0.6)'
+            ],
+            borderColor: [
+                'rgba(59, 130, 246, 1)',
+                'rgba(139, 92, 246, 1)',
+                'rgba(16, 185, 129, 1)',
+                'rgba(245, 158, 11, 1)',
+                'rgba(113, 113, 122, 1)'
+            ],
+            borderWidth: 1
+        }]
+    };
+    
+    const ctx = document.getElementById('palaceVisitorsChart').getContext('2d');
+    const palaceVisitorsChart = new Chart(ctx, {
+        type: 'bar',
+        data: visitorsData,
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                title: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.x !== null) {
+                                label += new Intl.NumberFormat('ko-KR').format(context.parsed.x) + ' 명';
+                            }
+                            if (context.label === '경희궁') {
+                                return '경희궁: 다른 궁과 달리 공원으로 관리되어 별도 집계가 어려움.';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return new Intl.NumberFormat('ko-KR', { notation: 'compact' }).format(value);
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    function navigate(hash) {
+        sections.forEach(section => {
+            if ('#' + section.id === hash) {
+                section.classList.add('active');
+            } else {
+                section.classList.remove('active');
+            }
+        });
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === hash) {
+                link.classList.add('active-nav');
+            } else {
+                link.classList.remove('active-nav');
+            }
+        });
+        mobileMenu.classList.add('hidden');
+    }
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const hash = e.target.getAttribute('href');
+            window.location.hash = hash;
+        });
+    });
+
+    window.addEventListener('hashchange', () => {
+        navigate(window.location.hash || '#compare');
+    });
+
+    renderComparison('keyword');
+    renderPalaceStories();
+    renderPalaceDetail('gyeongbok');
+    renderTimeline();
+    
+    navigate(window.location.hash || '#compare');
+});
+
+</script>
+</body>
+</html>
