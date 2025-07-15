@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나만의 구구단 놀이</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Gowun Dodum', sans-serif;
+        }
+        .control-input {
+            width: 60px; text-align: center; border-radius: 0.5rem; border: 2px solid #d1d5db; padding: 0.25rem; transition: border-color 0.2s;
+        }
+        .control-input:focus {
+            outline: none; border-color: #3b82f6;
+        }
+        .dan-selector-btn, .dan-filter-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .dan-selector-btn.selected {
+            background-color: #3b82f6; color: white; font-weight: bold; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); transform: translateY(-2px);
+        }
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .timer-urgent {
+            animation: pulse-urgent 0.8s infinite;
+        }
+        @keyframes pulse-urgent {
+            0%, 100% {
+                transform: scale(1);
+                color: #b91c1c; /* red-700 */
+                background-color: transparent;
+            }
+            50% {
+                transform: scale(1.2);
+                color: white;
+                background-color: #ef4444; /* red-500 */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-blue-100 to-purple-200 min-h-screen flex items-center justify-center p-2 sm:p-4">
+
+    <div class="w-full max-w-6xl mx-auto bg-white/95 rounded-2xl shadow-2xl p-4 md:p-8 relative">
+        
+        <header class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-blue-600">나만의 구구단 놀이! 🚀</h1>
+            <p class="text-gray-600 mt-2">다양한 방법으로 구구단을 정복해봐요!</p>
+        </header>
+
+        <!-- 설정 영역 -->
+        <div class="mb-6 p-4 bg-gray-100 rounded-xl shadow-inner flex flex-wrap items-center justify-center gap-2 md:gap-6">
+            <div class="flex items-center gap-2">
+                <label for="start-dan" class="font-semibold text-sm sm:text-base">시작 단:</label>
+                <input type="number" id="start-dan" min="2" max="99" value="2" class="control-input">
+            </div>
+            <div class="flex items-center gap-2">
+                <label for="end-dan" class="font-semibold text-sm sm:text-base">끝 단:</label>
+                <input type="number" id="end-dan" min="2" max="99" value="9" class="control-input">
+            </div>
+            <div class="flex items-center gap-2">
+                <label for="end-multiplier" class="font-semibold text-sm sm:text-base">곱하는 수:</label>
+                <span class="font-semibold">1 ~</span>
+                <input type="number" id="end-multiplier" min="1" max="99" value="9" class="control-input">
+            </div>
+            <button id="generate-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 sm:px-6 rounded-lg transition-transform hover:scale-105 text-sm sm:text-base">만들기!</button>
+        </div>
+
+        <!-- 구구단 & 퀴즈 영역 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- 구구단 출력 영역 -->
+            <div class="bg-sky-50 p-4 rounded-lg shadow-md flex flex-col">
+                <h2 class="text-xl font-bold text-sky-700 mb-2 text-center">구구단 표</h2>
+                <div id="dan-filter-controls" class="flex flex-wrap justify-center gap-2 mb-2 p-2 bg-sky-100 rounded-md">
+                    <button class="dan-filter-btn bg-gray-200 hover:bg-gray-300 text-xs font-semibold py-1 px-2 rounded-full" data-filter="all">전체선택</button>
+                    <button class="dan-filter-btn bg-gray-200 hover:bg-gray-300 text-xs font-semibold py-1 px-2 rounded-full" data-filter="odd">홀수단</button>
+                    <button class="dan-filter-btn bg-gray-200 hover:bg-gray-300 text-xs font-semibold py-1 px-2 rounded-full" data-filter="even">짝수단</button>
+                    <button class="dan-filter-btn bg-gray-200 hover:bg-gray-300 text-xs font-semibold py-1 px-2 rounded-full" data-filter="none">전체해제</button>
+                </div>
+                <div id="dan-selector-container" class="flex flex-wrap justify-center gap-2 mb-4 p-2 bg-sky-100 rounded-md">
+                    <!-- 단 선택 버튼이 여기에 동적으로 추가됩니다. -->
+                </div>
+                <div id="dan-display-container" class="h-80 flex-grow flex flex-wrap justify-center gap-4 p-2 bg-white rounded-md overflow-y-auto">
+                    <!-- 구구단 컬럼이 여기에 동적으로 추가됩니다. -->
+                </div>
+            </div>
+
+            <!-- 퀴즈 & 점수 영역 -->
+            <div>
+                <!-- 퀴즈 종류 선택 -->
+                <div class="flex justify-center gap-4 mb-4">
+                    <button id="start-normal-quiz-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg transition-transform hover:scale-105">일반 퀴즈</button>
+                    <button id="start-speed-quiz-btn" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-lg transition-transform hover:scale-105">스피드 퀴즈</button>
+                </div>
+                <!-- 퀴즈 -->
+                <div id="quiz-area" class="bg-green-50 p-6 rounded-lg shadow-md flex-col justify-center items-center text-center mb-6 hidden">
+                    <div class="flex justify-between items-center w-full">
+                        <h2 id="quiz-title" class="text-2xl font-bold text-green-700">⚡️반짝 퀴즈!⚡️</h2>
+                        <div id="timer-display" class="text-2xl font-bold hidden rounded-lg px-2"></div>
+                    </div>
+                    <div id="quiz-question" class="text-4xl font-bold text-gray-800 my-4 h-12"></div>
+                    <div class="flex items-center justify-center space-x-2 mb-4">
+                        <input type="number" id="quiz-answer" class="text-2xl font-bold w-28 text-center border-2 border-gray-300 rounded-lg p-2 focus:border-green-500 focus:ring-green-500" placeholder="?">
+                        <button id="check-answer-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg text-lg transition-transform hover:scale-105">확인</button>
+                    </div>
+                    <div id="quiz-feedback" class="h-10 text-xl font-bold"></div>
+                    <button id="new-quiz-btn" class="mt-2 bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-4 rounded-lg transition-transform hover:scale-105">다른 문제</button>
+                </div>
+                <!-- 점수판 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-amber-50 p-4 rounded-lg shadow-md text-center">
+                        <h3 class="text-lg font-bold text-amber-700">점수</h3>
+                        <p id="score" class="text-3xl font-bold">0 / 0</p>
+                        <p id="accuracy" class="text-md text-gray-600">(정답률: -)</p>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg shadow-md">
+                        <h3 class="text-lg font-bold text-red-700 text-center">오답 노트</h3>
+                        <ul id="mistake-log" class="h-20 overflow-y-auto text-center mt-1 space-y-1">
+                           <li class="text-gray-500">틀린 문제가 여기에 표시돼요.</li>
+                        </ul>
+                        <button id="retry-mistakes-btn" class="mt-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-1 px-2 rounded-full disabled:bg-gray-400" disabled>오답 다시 풀기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 스피드 퀴즈 결과 모달 -->
+        <div id="speed-quiz-result-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-white rounded-lg shadow-xl p-8 text-center">
+                <h2 class="text-3xl font-bold text-orange-500 mb-4">도전! 스피드 퀴즈 결과</h2>
+                <p class="text-xl mb-2">60초 동안</p>
+                <p class="text-5xl font-bold text-blue-600 mb-6"><span id="speed-quiz-score">0</span>개 맞혔어요!</p>
+                <button id="close-modal-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM 요소
+        const startDanInput = document.getElementById('start-dan'), endDanInput = document.getElementById('end-dan'), endMultiplierInput = document.getElementById('end-multiplier');
+        const generateBtn = document.getElementById('generate-btn'), danFilterControls = document.getElementById('dan-filter-controls'), danSelectorContainer = document.getElementById('dan-selector-container'), danDisplayContainer = document.getElementById('dan-display-container');
+        const quizArea = document.getElementById('quiz-area'), quizTitle = document.getElementById('quiz-title'), timerDisplay = document.getElementById('timer-display');
+        const quizQuestion = document.getElementById('quiz-question'), quizAnswer = document.getElementById('quiz-answer'), checkAnswerBtn = document.getElementById('check-answer-btn');
+        const newQuizBtn = document.getElementById('new-quiz-btn'), quizFeedback = document.getElementById('quiz-feedback');
+        const scoreDisplay = document.getElementById('score'), accuracyDisplay = document.getElementById('accuracy'), mistakeLog = document.getElementById('mistake-log');
+        const startNormalQuizBtn = document.getElementById('start-normal-quiz-btn'), startSpeedQuizBtn = document.getElementById('start-speed-quiz-btn');
+        const retryMistakesBtn = document.getElementById('retry-mistakes-btn');
+        const speedQuizResultModal = document.getElementById('speed-quiz-result-modal'), speedQuizScore = document.getElementById('speed-quiz-score'), closeModalBtn = document.getElementById('close-modal-btn');
+
+        // 상태 관리
+        let state = {
+            startDan: 2, endDan: 9, endMultiplier: 9,
+            quizNum1: 0, quizNum2: 0,
+            correctAnswers: 0, totalQuestions: 0, mistakes: [],
+            quizMode: 'none', // 'none', 'normal', 'speed', 'retry'
+            timer: null, timeLeft: 0
+        };
+
+        // --- UI 생성 및 관리 ---
+        function generateUI() {
+            state.startDan = Math.max(2, parseInt(startDanInput.value));
+            state.endDan = Math.max(state.startDan, parseInt(endDanInput.value));
+            state.endMultiplier = Math.max(1, parseInt(endMultiplierInput.value));
+            startDanInput.value = state.startDan; endDanInput.value = state.endDan; endMultiplierInput.value = state.endMultiplier;
+            danSelectorContainer.innerHTML = '';
+            for (let dan = state.startDan; dan <= state.endDan; dan++) {
+                const selectorBtn = document.createElement('button');
+                selectorBtn.className = 'dan-selector-btn selected bg-white hover:bg-blue-100 text-blue-800 font-semibold py-1 px-3 border border-blue-200 rounded-full shadow-sm';
+                selectorBtn.textContent = `${dan}단`; selectorBtn.dataset.dan = dan;
+                selectorBtn.addEventListener('click', () => {
+                    selectorBtn.classList.toggle('selected');
+                    renderSelectedTables();
+                });
+                danSelectorContainer.appendChild(selectorBtn);
+            }
+            renderSelectedTables();
+            resetQuiz();
+        }
+
+        function renderSelectedTables() {
+            danDisplayContainer.innerHTML = '';
+            danSelectorContainer.querySelectorAll('.dan-selector-btn.selected').forEach(btn => {
+                const dan = parseInt(btn.dataset.dan);
+                const column = document.createElement('div');
+                column.className = 'flex-shrink-0 w-32 space-y-1 text-center';
+                const title = document.createElement('h3');
+                title.className = 'text-lg font-bold text-sky-800 sticky top-0 bg-sky-50 py-1 rounded z-10';
+                title.textContent = `${dan}단`;
+                column.appendChild(title);
+                for (let i = 1; i <= state.endMultiplier; i++) {
+                    const p = document.createElement('p');
+                    p.className = "p-1 bg-white/80 rounded-md text-md";
+                    p.textContent = `${dan} × ${i} = ${dan * i}`;
+                    column.appendChild(p);
+                }
+                danDisplayContainer.appendChild(column);
+            });
+        }
+
+        danFilterControls.addEventListener('click', (e) => {
+            if (e.target.classList.contains('dan-filter-btn')) {
+                const filter = e.target.dataset.filter;
+                danSelectorContainer.querySelectorAll('.dan-selector-btn').forEach(btn => {
+                    const dan = parseInt(btn.dataset.dan);
+                    let select = false;
+                    if (filter === 'all') select = true;
+                    else if (filter === 'odd' && dan % 2 !== 0) select = true;
+                    else if (filter === 'even' && dan % 2 === 0) select = true;
+                    btn.classList.toggle('selected', select);
+                });
+                renderSelectedTables();
+            }
+        });
+
+        // --- 퀴즈 로직 ---
+        function startQuiz(mode) {
+            state.quizMode = mode;
+            quizArea.style.display = 'flex';
+            newQuizBtn.style.display = mode === 'normal' || mode === 'retry' ? 'block' : 'none';
+            timerDisplay.classList.remove('timer-urgent');
+            timerDisplay.classList.toggle('hidden', mode !== 'speed');
+            resetScore();
+            
+            if (mode === 'speed') {
+                quizTitle.textContent = '⏰ 스피드 퀴즈!';
+                state.timeLeft = 60;
+                timerDisplay.textContent = state.timeLeft;
+                state.timer = setInterval(runTimer, 1000);
+            } else if (mode === 'retry') {
+                quizTitle.textContent = '💪 오답 다시 풀기!';
+                if (state.mistakes.length === 0) {
+                    quizFeedback.textContent = '오답이 없어요!'; return;
+                }
+            } else {
+                quizTitle.textContent = '⚡️ 반짝 퀴즈!';
+            }
+            generateNewQuiz();
+        }
+
+        function runTimer() {
+            state.timeLeft--;
+            timerDisplay.textContent = state.timeLeft;
+            if (state.timeLeft <= 10) {
+                timerDisplay.classList.add('timer-urgent');
+            }
+            if (state.timeLeft <= 0) {
+                clearInterval(state.timer);
+                endSpeedQuiz();
+            }
+        }
+
+        function endSpeedQuiz() {
+            speedQuizScore.textContent = state.correctAnswers;
+            speedQuizResultModal.classList.remove('hidden');
+            resetQuiz();
+        }
+
+        function resetQuiz() {
+            quizArea.style.display = 'none';
+            clearInterval(state.timer);
+            timerDisplay.classList.remove('timer-urgent');
+            state.quizMode = 'none';
+        }
+        
+        function generateNewQuiz() {
+            let selectedDans = Array.from(danSelectorContainer.querySelectorAll('.dan-selector-btn.selected')).map(btn => parseInt(btn.dataset.dan));
+            if (selectedDans.length === 0 && state.quizMode !== 'retry') {
+                quizFeedback.textContent = "퀴즈를 풀 단을 선택해주세요!"; return;
+            }
+
+            if (state.quizMode === 'retry') {
+                if (state.mistakes.length === 0) {
+                    quizFeedback.textContent = '오답을 모두 맞혔어요! 🎉';
+                    setTimeout(resetQuiz, 2000); return;
+                }
+                const mistake = state.mistakes[0];
+                state.quizNum1 = mistake.num1;
+                state.quizNum2 = mistake.num2;
+            } else {
+                state.quizNum1 = selectedDans[Math.floor(Math.random() * selectedDans.length)];
+                state.quizNum2 = Math.floor(Math.random() * state.endMultiplier) + 1;
+            }
+            
+            quizQuestion.textContent = `${state.quizNum1} × ${state.quizNum2} = `;
+            quizAnswer.value = ''; quizFeedback.textContent = ''; quizAnswer.focus();
+        }
+
+        function checkAnswer() {
+            if (state.quizMode === 'none') return;
+            const correctAnswer = state.quizNum1 * state.quizNum2;
+            const userAnswer = parseInt(quizAnswer.value, 10);
+            if (isNaN(userAnswer)) { quizFeedback.textContent = '숫자를 입력해요!'; return; }
+            
+            state.totalQuestions++;
+            if (userAnswer === correctAnswer) {
+                state.correctAnswers++;
+                quizFeedback.textContent = '정답! 🎉';
+                quizFeedback.className = 'h-10 text-xl font-bold text-blue-600';
+                if (state.quizMode === 'retry') {
+                    state.mistakes.shift(); // 맞힌 오답 제거
+                }
+            } else {
+                quizFeedback.textContent = `아쉬워요, 정답은 ${correctAnswer}예요.`;
+                quizFeedback.className = 'h-10 text-xl font-bold text-red-500';
+                const mistake = { num1: state.quizNum1, num2: state.quizNum2, correct: correctAnswer };
+                if (!state.mistakes.some(m => m.num1 === mistake.num1 && m.num2 === mistake.num2)) {
+                    state.mistakes.push(mistake);
+                }
+            }
+            updateScoreboard();
+            if (state.quizMode === 'speed') {
+                setTimeout(generateNewQuiz, 300);
+            } else {
+                setTimeout(() => { quizFeedback.textContent = ''; }, 1500);
+            }
+        }
+        
+        // --- 점수판 관리 ---
+        function resetScore() {
+            state.correctAnswers = 0; state.totalQuestions = 0;
+            updateScoreboard();
+        }
+
+        function updateScoreboard() {
+            scoreDisplay.textContent = `${state.correctAnswers} / ${state.totalQuestions}`;
+            const accuracy = state.totalQuestions > 0 ? ((state.correctAnswers / state.totalQuestions) * 100).toFixed(0) : 0;
+            accuracyDisplay.textContent = `(정답률: ${state.totalQuestions > 0 ? accuracy + '%' : '-'})`;
+            mistakeLog.innerHTML = '';
+            if (state.mistakes.length === 0) {
+                 mistakeLog.innerHTML = '<li class="text-gray-500">틀린 문제가 여기에 표시돼요.</li>';
+                 retryMistakesBtn.disabled = true;
+            } else {
+                state.mistakes.forEach(m => {
+                    const li = document.createElement('li');
+                    li.className = 'text-red-600 font-semibold';
+                    li.textContent = `${m.num1} × ${m.num2} = ${m.correct}`;
+                    mistakeLog.appendChild(li);
+                });
+                retryMistakesBtn.disabled = false;
+            }
+        }
+
+        // --- 이벤트 리스너 ---
+        window.onload = generateUI;
+        generateBtn.addEventListener('click', generateUI);
+        checkAnswerBtn.addEventListener('click', checkAnswer);
+        newQuizBtn.addEventListener('click', generateNewQuiz);
+        quizAnswer.addEventListener('keyup', (e) => { if (e.key === 'Enter') checkAnswer(); });
+        startNormalQuizBtn.addEventListener('click', () => startQuiz('normal'));
+        startSpeedQuizBtn.addEventListener('click', () => startQuiz('speed'));
+        retryMistakesBtn.addEventListener('click', () => startQuiz('retry'));
+        closeModalBtn.addEventListener('click', () => speedQuizResultModal.classList.add('hidden'));
+    </script>
+</body>
+</html>
