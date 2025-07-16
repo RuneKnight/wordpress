@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘의 역사 (최종 수정 버전)</title>
+    <!-- Chosen Palette: Slate & Sky Blue -->
+    <!-- Application Structure Plan: This version enhances the single-view dashboard by adding a sub-navigation filter for event types (All, Events, Births, Deaths) and an interactive modal for detailed content exploration. The user flow is now: 1. Select global filters (Language, Date). 2. Select content type filter. 3. Content grid updates. 4. Click a card to view details in a modal. This layered approach allows users to progressively drill down into the information without leaving the main view, which is a highly effective pattern for data exploration apps. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Historical data categorized into Events, Births, Deaths, with detailed sub-pages.
+        - Goal: Inform, Organize, and allow deep-dive exploration.
+        - Viz/Presentation Method: The core remains a responsive grid of cards, now with category tags for better scannability. A new UI element, a modal window, is introduced to present detailed information (image, title, extract).
+        - Interaction: 
+            - Type Filters: Radio-style buttons provide clear visual feedback on the current filter.
+            - Card Click: Cards are now interactive, triggering a modal. This "summary-to-detail" interaction is intuitive.
+            - Modal: The modal is a standard, user-friendly way to show more information without navigating to a new page. It can be closed by a button or by clicking the backdrop.
+        - Justification: Adding filters gives users more control over the data. Category tags on cards improve at-a-glance understanding. The modal prevents context switching and keeps the user engaged in the main application flow, making the experience richer and more informative.
+        - Library/Method: HTML/Tailwind for layout, Vanilla JS for logic, html2canvas for screenshots.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" xintegrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoVBL5gI9kLmbG0CbnwFDEr4VR1HbA==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+    <style>
+        body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        .loader { border-top-color: #3b82f6; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .animate-spin { animation: spin 1s linear infinite; }
+        .modal-enter { animation: modal-enter 0.2s ease-out; }
+        .modal-leave { animation: modal-leave 0.2s ease-in forwards; }
+        @keyframes modal-enter { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes modal-leave { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
+        .filter-btn[aria-checked="true"] { background-color: #3b82f6; color: white; }
+        .filter-btn[aria-checked="false"] { background-color: #e2e8f0; color: #475569; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
+        
+        <header class="bg-white p-4 sm:p-6 rounded-xl shadow-lg mb-8 sticky top-4 z-20">
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-blue-600">오늘의 역사</h1>
+                    <div class="flex flex-wrap items-center gap-4">
+                        <select id="lang-select" class="rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                            <option value="ko" selected>한국어</option>
+                            <option value="en">English</option>
+                            <option value="de">Deutsch</option>
+                        </select>
+                        <input type="date" id="date-picker" class="rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <button id="download-btn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200">
+                            이미지로 저장
+                        </button>
+                    </div>
+                </div>
+                <div id="event-type-filter" role="radiogroup" class="flex flex-wrap gap-2 pt-4 border-t border-slate-200">
+                    <button role="radio" aria-checked="true" data-type="all" class="filter-btn px-4 py-2 text-sm font-semibold rounded-full transition-colors">전체</button>
+                    <button role="radio" aria-checked="false" data-type="events" class="filter-btn px-4 py-2 text-sm font-semibold rounded-full transition-colors">주요 사건</button>
+                    <button role="radio" aria-checked="false" data-type="births" class="filter-btn px-4 py-2 text-sm font-semibold rounded-full transition-colors">출생</button>
+                    <button role="radio" aria-checked="false" data-type="deaths" class="filter-btn px-4 py-2 text-sm font-semibold rounded-full transition-colors">사망</button>
+                </div>
+            </div>
+        </header>
+
+        <main id="history-container" class="bg-slate-100">
+            <div id="loader-container" class="flex justify-center items-center py-20">
+                <div class="loader w-16 h-16 border-8 border-slate-200 rounded-full animate-spin"></div>
+            </div>
+            <div id="content-area"></div>
+            <div id="message-container" class="text-center py-20"></div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal-container" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 hidden">
+        <div id="modal-content" class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col">
+            <div class="p-4 sm:p-6">
+                <img id="modal-image" src="" alt="상세 이미지" class="w-full h-64 object-cover rounded-lg bg-slate-200 mb-4" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div id="modal-image-fallback" class="w-full h-64 rounded-lg bg-slate-200 flex items-center justify-center text-slate-500 hidden">이미지 없음</div>
+                <h3 id="modal-title" class="text-2xl font-bold text-slate-800 mb-2"></h3>
+                <p id="modal-description" class="text-slate-600 leading-relaxed"></p>
+            </div>
+            <div class="flex justify-end p-4 bg-slate-50 rounded-b-2xl sticky bottom-0">
+                <button id="modal-close-btn" class="bg-slate-200 text-slate-700 font-bold py-2 px-6 rounded-lg hover:bg-slate-300 transition-colors">닫기</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const state = {
+                lang: 'ko',
+                date: new Date(),
+                eventType: 'all',
+            };
+
+            const langSelect = document.getElementById('lang-select');
+            const datePicker = document.getElementById('date-picker');
+            const downloadBtn = document.getElementById('download-btn');
+            const contentArea = document.getElementById('content-area');
+            const loaderContainer = document.getElementById('loader-container');
+            const messageContainer = document.getElementById('message-container');
+            const eventTypeFilter = document.getElementById('event-type-filter');
+            
+            const modalContainer = document.getElementById('modal-container');
+            const modalContent = document.getElementById('modal-content');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+            const modalImage = document.getElementById('modal-image');
+            const modalImageFallback = document.getElementById('modal-image-fallback');
+            const modalTitle = document.getElementById('modal-title');
+            const modalDescription = document.getElementById('modal-description');
+
+            const formatDateForAPI = (date) => ({
+                month: String(date.getMonth() + 1).padStart(2, '0'),
+                day: String(date.getDate()).padStart(2, '0'),
+            });
+
+            const formatDateForInput = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            const showMessage = (text) => {
+                contentArea.innerHTML = '';
+                messageContainer.innerHTML = `<p class="text-xl text-slate-500 font-semibold">${text}</p>`;
+            };
+
+            const createCard = (item, categoryLabel) => {
+                const card = document.createElement('div');
+                card.className = 'event-card bg-white rounded-lg shadow p-6 flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative';
+                if (item.pages && item.pages.length > 0) {
+                    card.dataset.pages = JSON.stringify(item.pages);
+                }
+                
+                const categoryColors = {
+                    '주요 사건': 'bg-blue-100 text-blue-800',
+                    '출생': 'bg-green-100 text-green-800',
+                    '사망': 'bg-red-100 text-red-800'
+                };
+
+                card.innerHTML = `
+                    <div class="absolute top-3 right-3 text-xs font-semibold px-2.5 py-0.5 rounded-full ${categoryColors[categoryLabel] || 'bg-slate-100 text-slate-800'}">${categoryLabel}</div>
+                    <h4 class="text-2xl font-bold text-blue-600 mb-2">${item.year}년</h4>
+                    <p class="text-slate-600 leading-relaxed flex-grow pr-12">${item.text}</p>
+                `;
+                return card;
+            };
+
+            const renderData = (data) => {
+                contentArea.innerHTML = '';
+                messageContainer.innerHTML = '';
+                const fragment = document.createDocumentFragment();
+                let hasContent = false;
+
+                const processCategory = (title, items, categoryLabel) => {
+                    if (!Array.isArray(items) || items.length === 0) return;
+                    hasContent = true;
+
+                    const sectionWrapper = document.createElement('div');
+                    sectionWrapper.className = 'mb-12';
+                    sectionWrapper.innerHTML = `<h2 class="text-3xl font-bold text-slate-700 mb-6 border-b-2 border-blue-500 pb-2">${title}</h2>`;
+                    
+                    const grid = document.createElement('div');
+                    grid.className = 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6';
+                    items.forEach(item => grid.appendChild(createCard(item, categoryLabel)));
+                    sectionWrapper.appendChild(grid);
+                    fragment.appendChild(sectionWrapper);
+                };
+                
+                const titles = { events: '주요 사건', births: '출생', deaths: '사망' };
+
+                if (state.eventType === 'all') {
+                    processCategory(titles.events, data.events, titles.events);
+                    processCategory(titles.births, data.births, titles.births);
+                    processCategory(titles.deaths, data.deaths, titles.deaths);
+                } else {
+                    const categoryLabel = titles[state.eventType];
+                    processCategory(categoryLabel, data[state.eventType], categoryLabel);
+                }
+
+                if (hasContent) {
+                    contentArea.appendChild(fragment);
+                } else {
+                    showMessage('해당 날짜와 유형에 대한 데이터가 없습니다.');
+                }
+            };
+
+            const fetchData = async () => {
+                loaderContainer.classList.remove('hidden');
+                contentArea.innerHTML = '';
+                messageContainer.innerHTML = '';
+
+                const { month, day } = formatDateForAPI(state.date);
+                const { lang, eventType } = state;
+                const url = `https://api.wikimedia.org/feed/v1/wikipedia/${lang}/onthisday/${eventType}/${month}/${day}`;
+
+                try {
+                    const response = await fetch(url, {
+                        headers: { 'Accept': 'application/json', 'User-Agent': 'OnThisDayApp/2.1 (myemail@example.com)' }
+                    });
+                    if (!response.ok) throw new Error(`API 요청 실패: ${response.status}`);
+                    const data = await response.json();
+                    renderData(data);
+                } catch (error) {
+                    console.error("데이터 로딩 오류:", error);
+                    showMessage('데이터를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+                } finally {
+                    loaderContainer.classList.add('hidden');
+                }
+            };
+
+            const openModal = (pagesData) => {
+                const page = pagesData[0];
+                if (!page) return;
+
+                modalTitle.innerHTML = page.displaytitle || '제목 없음';
+                modalDescription.textContent = page.extract || '상세 설명이 없습니다.';
+                
+                if (page.thumbnail && page.thumbnail.source) {
+                    modalImage.src = page.thumbnail.source;
+                    modalImage.style.display = 'block';
+                    modalImageFallback.style.display = 'none';
+                } else {
+                    modalImage.style.display = 'none';
+                    modalImageFallback.style.display = 'block';
+                }
+
+                modalContainer.classList.remove('hidden');
+                modalContent.classList.remove('modal-leave');
+                modalContent.classList.add('modal-enter');
+            };
+
+            const closeModal = () => {
+                modalContent.classList.remove('modal-enter');
+                modalContent.classList.add('modal-leave');
+                setTimeout(() => modalContainer.classList.add('hidden'), 200);
+            };
+
+            const handleStateChange = () => {
+                state.lang = langSelect.value;
+                const [year, month, day] = datePicker.value.split('-').map(Number);
+                state.date = new Date(year, month - 1, day);
+                fetchData();
+            };
+            
+            eventTypeFilter.addEventListener('click', (e) => {
+                const target = e.target.closest('button[role="radio"]');
+                if (!target || target.getAttribute('aria-checked') === 'true') return;
+
+                eventTypeFilter.querySelectorAll('button').forEach(btn => btn.setAttribute('aria-checked', 'false'));
+                target.setAttribute('aria-checked', 'true');
+                state.eventType = target.dataset.type;
+                fetchData();
+            });
+
+            contentArea.addEventListener('click', (e) => {
+                const card = e.target.closest('.event-card');
+                if (card && card.dataset.pages) {
+                    openModal(JSON.parse(card.dataset.pages));
+                }
+            });
+
+            const handleDownload = () => {
+                const container = document.querySelector('.container');
+                downloadBtn.disabled = true;
+                downloadBtn.textContent = '생성 중...';
+
+                html2canvas(container, {
+                    useCORS: true, scale: 2, logging: false, backgroundColor: '#f1f5f9'
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = `history_on_${formatDateForInput(state.date)}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                }).catch(err => {
+                    console.error("이미지 생성 오류:", err);
+                    alert("이미지 생성에 실패했습니다.");
+                }).finally(() => {
+                    downloadBtn.disabled = false;
+                    downloadBtn.textContent = '이미지로 저장';
+                });
+            };
+
+            const init = () => {
+                datePicker.value = formatDateForInput(state.date);
+                langSelect.addEventListener('change', handleStateChange);
+                datePicker.addEventListener('change', handleStateChange);
+                downloadBtn.addEventListener('click', handleDownload);
+                modalCloseBtn.addEventListener('click', closeModal);
+                modalContainer.addEventListener('click', (e) => {
+                    if (e.target === modalContainer) closeModal();
+                });
+
+                fetchData();
+            };
+
+            init();
+        });
+    </script>
+</body>
+</html>

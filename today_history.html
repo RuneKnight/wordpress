@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>On This Day</title>
+    <!-- Chosen Palette: Slate & Sky Blue -->
+    <!-- Application Structure Plan: This final version perfects the interactive dashboard. It maintains the global filters and content-type filters, and significantly enhances the modal. The modal now acts as a hub for deeper exploration with actions like individual card download, direct linking to sources, and searching. This creates a comprehensive "overview -> detail -> explore further" user flow, which is ideal for a research and discovery tool. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Historical data with deep links to external Wikipedia pages.
+        - Goal: Inform, Organize, and provide actionable next steps for exploration.
+        - Viz/Presentation Method: The card grid and modal remain the core. The modal's footer is now an action bar.
+        - Interaction: 
+            - Modal Action Buttons: The modal now includes contextual buttons. A "View on Wikipedia" link appears if a direct URL is provided by the API. If not, a "Search" button appears. A "Download Card" button is always present.
+        - Justification: These additions transform the app from a simple viewer into a useful research launchpad. Giving users the ability to save specific pieces of information and seamlessly jump to the source material dramatically increases the application's value and utility.
+        - Library/Method: HTML/Tailwind for layout, Vanilla JS for logic, html2canvas for screenshots.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" xintegrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoVBL5gI9kLmbG0CbnwFDEr4VR1HbA==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+    <style>
+        body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        .loader { border-top-color: #3b82f6; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .animate-spin { animation: spin 1s linear infinite; }
+        .modal-enter { animation: modal-enter 0.2s ease-out; }
+        .modal-leave { animation: modal-leave 0.2s ease-in forwards; }
+        @keyframes modal-enter { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes modal-leave { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
+        .filter-btn[aria-checked="true"] { background-color: #3b82f6; color: white; }
+        .filter-btn[aria-checked="false"] { background-color: #e2e8f0; color: #475569; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
+        
+        <header class="bg-white p-4 sm:p-6 rounded-xl shadow-lg mb-8 sticky top-4 z-20">
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-blue-600">On This Day</h1>
+                    <div class="flex flex-wrap items-center gap-4">
+                        <select id="lang-select" class="rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                            <option value="en" selected>English</option>
+                            <option value="de">Deutsch</option>
+                            <option value="fr">Français</option>
+                            <option value="es">Español</option>
+                            <option value="zh">中文</option>
+                        </select>
+                        <input type="date" id="date-picker" class="rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <button id="download-btn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200">
+                            Save All
+                        </button>
+                    </div>
+                </div>
+                <div id="event-type-filter" role="radiogroup" class="flex flex-wrap gap-2 pt-4 border-t border-slate-200">
+                    <button role="radio" aria-checked="true" data-type="all" class="filter-btn px-4 py-2 text-sm font-semibold rounded-full transition-colors">All</button>
+                    <button role="radio" aria-checked="false" data-type="events" class="filter-btn px-4 py-2 text-sm font-semibold rounded-full transition-colors">Events</button>
+                    <button role="radio" aria-checked="false" data-type="births" class="filter-btn px-4 py-2 text-sm font-semibold rounded-full transition-colors">Births</button>
+                    <button role="radio" aria-checked="false" data-type="deaths" class="filter-btn px-4 py-2 text-sm font-semibold rounded-full transition-colors">Deaths</button>
+                </div>
+            </div>
+        </header>
+
+        <main id="history-container" class="bg-slate-100">
+            <div id="loader-container" class="flex justify-center items-center py-20">
+                <div class="loader w-16 h-16 border-8 border-slate-200 rounded-full animate-spin"></div>
+            </div>
+            <div id="content-area"></div>
+            <div id="message-container" class="text-center py-20"></div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal-container" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 hidden">
+        <div id="modal-shell" class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col">
+            <div id="modal-content-to-capture" class="p-4 sm:p-6">
+                <img id="modal-image" src="" alt="Detail image" class="w-full h-64 object-cover rounded-lg bg-slate-200 mb-4" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div id="modal-image-fallback" class="w-full h-64 rounded-lg bg-slate-200 flex items-center justify-center text-slate-500 hidden">No Image</div>
+                <h3 id="modal-title" class="text-2xl font-bold text-slate-800 mb-2"></h3>
+                <p id="modal-description" class="text-slate-600 leading-relaxed"></p>
+            </div>
+            <div class="flex flex-wrap justify-between items-center gap-2 p-4 bg-slate-50 rounded-b-2xl mt-auto sticky bottom-0">
+                <div class="flex flex-wrap gap-2">
+                     <a id="modal-wiki-link" target="_blank" rel="noopener noreferrer" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm hidden">View on Wikipedia</a>
+                     <button id="modal-search-btn" class="bg-gray-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors text-sm hidden">Search on Wikipedia</button>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button id="modal-download-btn" class="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm">Save this Card</button>
+                    <button id="modal-close-btn" class="bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors text-sm">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const state = {
+                lang: 'en',
+                date: new Date(),
+                eventType: 'all',
+            };
+
+            const langSelect = document.getElementById('lang-select');
+            const datePicker = document.getElementById('date-picker');
+            const downloadBtn = document.getElementById('download-btn');
+            const contentArea = document.getElementById('content-area');
+            const loaderContainer = document.getElementById('loader-container');
+            const messageContainer = document.getElementById('message-container');
+            const eventTypeFilter = document.getElementById('event-type-filter');
+            
+            const modalContainer = document.getElementById('modal-container');
+            const modalShell = document.getElementById('modal-shell');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+            const modalImage = document.getElementById('modal-image');
+            const modalImageFallback = document.getElementById('modal-image-fallback');
+            const modalTitle = document.getElementById('modal-title');
+            const modalDescription = document.getElementById('modal-description');
+            const modalDownloadBtn = document.getElementById('modal-download-btn');
+            const modalWikiLink = document.getElementById('modal-wiki-link');
+            const modalSearchBtn = document.getElementById('modal-search-btn');
+
+            const formatDateForAPI = (date) => ({
+                month: String(date.getMonth() + 1).padStart(2, '0'),
+                day: String(date.getDate()).padStart(2, '0'),
+            });
+
+            const formatDateForInput = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            const showMessage = (text) => {
+                contentArea.innerHTML = '';
+                messageContainer.innerHTML = `<p class="text-xl text-slate-500 font-semibold">${text}</p>`;
+            };
+
+            const createCard = (item, categoryLabel) => {
+                const card = document.createElement('div');
+                card.className = 'event-card bg-white rounded-lg shadow p-6 flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative';
+                if (item.pages && item.pages.length > 0) {
+                    card.dataset.pages = JSON.stringify(item.pages);
+                }
+                
+                const categoryColors = {
+                    'Events': 'bg-blue-100 text-blue-800',
+                    'Births': 'bg-green-100 text-green-800',
+                    'Deaths': 'bg-red-100 text-red-800'
+                };
+
+                card.innerHTML = `
+                    <div class="absolute top-3 right-3 text-xs font-semibold px-2.5 py-0.5 rounded-full ${categoryColors[categoryLabel] || 'bg-slate-100 text-slate-800'}">${categoryLabel}</div>
+                    <h4 class="text-2xl font-bold text-blue-600 mb-2">Year ${item.year}</h4>
+                    <p class="text-slate-600 leading-relaxed flex-grow pr-12">${item.text}</p>
+                `;
+                return card;
+            };
+
+            const renderData = (data) => {
+                contentArea.innerHTML = '';
+                messageContainer.innerHTML = '';
+                const fragment = document.createDocumentFragment();
+                let hasContent = false;
+
+                const processCategory = (title, items, categoryLabel) => {
+                    if (!Array.isArray(items) || items.length === 0) return;
+                    hasContent = true;
+
+                    const sectionWrapper = document.createElement('div');
+                    sectionWrapper.className = 'mb-12';
+                    sectionWrapper.innerHTML = `<h2 class="text-3xl font-bold text-slate-700 mb-6 border-b-2 border-blue-500 pb-2">${title}</h2>`;
+                    
+                    const grid = document.createElement('div');
+                    grid.className = 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6';
+                    items.forEach(item => grid.appendChild(createCard(item, categoryLabel)));
+                    sectionWrapper.appendChild(grid);
+                    fragment.appendChild(sectionWrapper);
+                };
+                
+                const titles = { events: 'Events', births: 'Births', deaths: 'Deaths' };
+
+                if (state.eventType === 'all') {
+                    processCategory(titles.events, data.events, titles.events);
+                    processCategory(titles.births, data.births, titles.births);
+                    processCategory(titles.deaths, data.deaths, titles.deaths);
+                } else {
+                    const categoryLabel = titles[state.eventType];
+                    processCategory(categoryLabel, data[state.eventType], categoryLabel);
+                }
+
+                if (hasContent) {
+                    contentArea.appendChild(fragment);
+                } else {
+                    showMessage('No data available for the selected date and type.');
+                }
+            };
+
+            const fetchData = async () => {
+                loaderContainer.classList.remove('hidden');
+                contentArea.innerHTML = '';
+                messageContainer.innerHTML = '';
+
+                const { month, day } = formatDateForAPI(state.date);
+                const { lang, eventType } = state;
+                const url = `https://api.wikimedia.org/feed/v1/wikipedia/${lang}/onthisday/${eventType}/${month}/${day}`;
+
+                try {
+                    const response = await fetch(url, {
+                        headers: { 'Accept': 'application/json', 'User-Agent': 'OnThisDayApp/3.0 (myemail@example.com)' }
+                    });
+                    if (!response.ok) throw new Error(`API Request Failed: ${response.status}`);
+                    const data = await response.json();
+                    renderData(data);
+                } catch (error) {
+                    console.error("Data loading error:", error);
+                    showMessage('An error occurred while loading data. Please try again later.');
+                } finally {
+                    loaderContainer.classList.add('hidden');
+                }
+            };
+
+            const openModal = (pagesData) => {
+                const page = pagesData[0];
+                if (!page) return;
+
+                modalTitle.innerHTML = page.displaytitle || 'No Title';
+                modalDescription.textContent = page.extract || 'No description available.';
+                
+                if (page.thumbnail && page.thumbnail.source) {
+                    modalImage.src = page.thumbnail.source;
+                    modalImage.style.display = 'block';
+                    modalImageFallback.style.display = 'none';
+                } else {
+                    modalImage.style.display = 'none';
+                    modalImageFallback.style.display = 'block';
+                }
+
+                if (page.content_urls && page.content_urls.desktop && page.content_urls.desktop.page) {
+                    modalWikiLink.href = page.content_urls.desktop.page;
+                    modalWikiLink.classList.remove('hidden');
+                    modalSearchBtn.classList.add('hidden');
+                } else {
+                    modalWikiLink.classList.add('hidden');
+                    modalSearchBtn.classList.remove('hidden');
+                    modalSearchBtn.dataset.searchTerm = page.title;
+                }
+
+                modalContainer.classList.remove('hidden');
+                modalShell.classList.remove('modal-leave');
+                modalShell.classList.add('modal-enter');
+            };
+
+            const closeModal = () => {
+                modalShell.classList.remove('modal-enter');
+                modalShell.classList.add('modal-leave');
+                setTimeout(() => modalContainer.classList.add('hidden'), 200);
+            };
+
+            const handleStateChange = () => {
+                state.lang = langSelect.value;
+                const [year, month, day] = datePicker.value.split('-').map(Number);
+                state.date = new Date(year, month - 1, day);
+                fetchData();
+            };
+            
+            eventTypeFilter.addEventListener('click', (e) => {
+                const target = e.target.closest('button[role="radio"]');
+                if (!target || target.getAttribute('aria-checked') === 'true') return;
+
+                eventTypeFilter.querySelectorAll('button').forEach(btn => btn.setAttribute('aria-checked', 'false'));
+                target.setAttribute('aria-checked', 'true');
+                state.eventType = target.dataset.type;
+                fetchData();
+            });
+
+            contentArea.addEventListener('click', (e) => {
+                const card = e.target.closest('.event-card');
+                if (card && card.dataset.pages) {
+                    openModal(JSON.parse(card.dataset.pages));
+                }
+            });
+
+            const handleDownload = () => {
+                const container = document.querySelector('.container');
+                downloadBtn.disabled = true;
+                downloadBtn.textContent = 'Creating...';
+
+                html2canvas(container, {
+                    useCORS: true, scale: 2, logging: false, backgroundColor: '#f1f5f9'
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = `history_on_${formatDateForInput(state.date)}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                }).finally(() => {
+                    downloadBtn.disabled = false;
+                    downloadBtn.textContent = 'Save All';
+                });
+            };
+
+            const handleModalDownload = () => {
+                const contentToCapture = document.getElementById('modal-content-to-capture');
+                const title = modalTitle.textContent.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'card';
+                
+                modalDownloadBtn.disabled = true;
+                modalDownloadBtn.textContent = 'Creating...';
+
+                html2canvas(contentToCapture, {
+                    useCORS: true, scale: 2, logging: false, backgroundColor: 'white'
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = `history_card_${title}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                }).finally(() => {
+                    modalDownloadBtn.disabled = false;
+                    modalDownloadBtn.textContent = 'Save this Card';
+                });
+            };
+
+            const handleModalSearch = (e) => {
+                const searchTerm = e.currentTarget.dataset.searchTerm;
+                if (!searchTerm) return;
+                const searchUrl = `https://${state.lang}.wikipedia.org/w/index.php?search=${encodeURIComponent(searchTerm)}`;
+                window.open(searchUrl, '_blank', 'noopener,noreferrer');
+            };
+
+            const init = () => {
+                datePicker.value = formatDateForInput(state.date);
+                langSelect.addEventListener('change', handleStateChange);
+                datePicker.addEventListener('change', handleStateChange);
+                downloadBtn.addEventListener('click', handleDownload);
+                modalCloseBtn.addEventListener('click', closeModal);
+                modalContainer.addEventListener('click', (e) => {
+                    if (e.target === modalContainer) closeModal();
+                });
+                modalDownloadBtn.addEventListener('click', handleModalDownload);
+                modalSearchBtn.addEventListener('click', handleModalSearch);
+
+                fetchData();
+            };
+
+            init();
+        });
+    </script>
+</body>
+</html>
