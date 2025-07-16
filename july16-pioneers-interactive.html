@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7월 16일: 미지의 영역을 개척한 선구자들</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Cool Pioneers (Slate, Cyan, Gray) -->
+    <!-- Application Structure Plan: The SPA is structured around a central theme: "Pioneers of the Uncharted." It's divided into three thematic sections: "Ends of the Earth" (Explorers & Diplomats), "Frontiers of Justice & Faith" (Activists & Thinkers), and "Spotlight's New Dawn" (Performers). This thematic grouping helps users connect disparate figures under a unified, engaging narrative. The flow is top-down, encouraging a journey through different types of pioneering. Key interactions include an interactive table with coordinates and a Google Earth link for Amundsen, plus a timeline for Wells, chosen to transform static facts into compelling visual stories. -->
+    <!-- Visualization & Content Choices: 
+        - Roald Amundsen's Journey: Interactive table (HTML) with coordinates to detail the expedition's stages. A Google Earth link provides superior geographical context for the polar region.
+        - Ida B. Wells's Campaign: Interactive timeline (HTML/JS) to narrate her persistent fight for justice, highlighting key publications and events.
+        - Trygve Lie's UN: A simple, impactful info card with a key statistic about UN growth, emphasizing his foundational role.
+        - Other Figures (Rogers, Stanwyck, Ferrell, etc.): Clickable info cards (HTML/JS) for concise, user-driven information discovery.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; scroll-behavior: smooth; }
+        .content-card { transition: all 0.3s ease-in-out; }
+        .content-card-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+            padding-bottom: 20px;
+            border-left: 2px solid #cbd5e1;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -9px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: white;
+            border: 2px solid #0891b2;
+            transition: background-color 0.3s;
+        }
+        .timeline-item:hover::before {
+            background-color: #0891b2;
+        }
+        #timeline-info-box {
+            transition: opacity 0.3s;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-slate-700">7월 16일생 선구자들</h1>
+            <div class="hidden md:flex space-x-6">
+                <a href="#intro" class="text-gray-600 hover:text-cyan-600">소개</a>
+                <a href="#earth-pioneers" class="text-gray-600 hover:text-cyan-600">세상의 끝에서</a>
+                <a href="#justice-pioneers" class="text-gray-600 hover:text-cyan-600">정의와 신념의 최전선</a>
+                <a href="#stage-pioneers" class="text-gray-600 hover:text-cyan-600">새로운 무대의 새벽</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+        <section id="intro" class="text-center my-12 md:my-16">
+            <h2 class="text-4xl md:text-5xl font-extrabold text-cyan-600 mb-4">미지의 영역을 개척한 선구자들</h2>
+            <p class="max-w-3xl mx-auto text-lg text-slate-600">
+                7월 16일은 지도에 없던 길을 만들고, 사회의 편견에 맞서 싸우고, 문화의 새로운 지평을 연 인물들이 태어난 날입니다. 이들은 탐험, 외교, 인권, 예술 등 각자의 분야에서 '최초'라는 수식어를 얻으며 인류의 지평을 넓혔습니다. 이 인터랙티브 보고서를 통해 그들의 담대한 여정을 함께 따라가 보세요.
+            </p>
+        </section>
+
+        <div id="app" class="space-y-16">
+            
+            <section id="earth-pioneers" class="scroll-mt-24">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-slate-800">1부: 세상의 끝, 새로운 시작</h3>
+                    <p class="mt-4 max-w-2xl mx-auto text-slate-600">지리적, 정치적으로 미지의 영역이었던 곳에 첫 발을 내디딘 인물들입니다. 이들의 도전은 인류의 활동 무대를 행성의 끝과 국제 사회의 중심으로 확장시켰습니다.</p>
+                </div>
+                <div id="earth-pioneers-container" class="space-y-12"></div>
+            </section>
+
+            <section id="justice-pioneers" class="scroll-mt-24">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-slate-800">2부: 정의와 신념의 최전선</h3>
+                    <p class="mt-4 max-w-2xl mx-auto text-slate-600">뿌리 깊은 사회적 불의에 맞서 언론과 사상이라는 무기로 싸운 선구자들입니다. 이들은 억압받는 이들의 목소리가 되었고, 새로운 시대정신을 제시했습니다.</p>
+                </div>
+                <div id="justice-pioneers-container" class="space-y-12"></div>
+            </section>
+            
+            <section id="stage-pioneers" class="scroll-mt-24">
+                 <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-slate-800">3부: 새로운 무대의 새벽</h3>
+                    <p class="mt-4 max-w-2xl mx-auto text-slate-600">스크린과 무대 위에서 자신만의 스타일로 대중문화의 새로운 시대를 연 예술가들입니다. 이들은 수많은 사람들에게 웃음과 감동을 선사하며 한 시대의 아이콘이 되었습니다.</p>
+                </div>
+                <div id="stage-pioneers-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="bg-slate-800 text-white mt-16 py-8">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 7월 16일 선구자 탐구 인터랙티브 보고서.</p>
+            <p class="text-sm text-slate-400 mt-2">이 페이지는 제공된 정보를 기반으로 생성되었습니다.</p>
+        </div>
+    </footer>
+
+<script>
+const appData = {
+    earth: [
+        {
+            type: 'interactive',
+            name: "로알 아문센",
+            period: "1872-1928",
+            title: "인류 최초, 남극점에 도달하다",
+            icon: "🧭",
+            summary: "노르웨이의 극지 탐험가. 인류 역사상 최초로 남극점에 도달했으며, 북서항로를 최초로 항해한 기록도 가지고 있습니다. 그의 철저한 준비와 계획은 극지 탐험의 역사를 새로 썼습니다.",
+            details: `
+                <h4 class="font-bold text-lg mb-4">남극점 탐험 여정</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-100">
+                            <tr>
+                                <th class="p-3 font-bold uppercase text-slate-600 border border-slate-200">단계</th>
+                                <th class="p-3 font-bold uppercase text-slate-600 border border-slate-200">날짜</th>
+                                <th class="p-3 font-bold uppercase text-slate-600 border border-slate-200">좌표 (위도/경도)</th>
+                                <th class="p-3 font-bold uppercase text-slate-600 border border-slate-200">주요 내용</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-3 text-slate-800 border border-slate-200">출정</td>
+                                <td class="p-3 text-slate-800 border border-slate-200">1911년 10월 20일</td>
+                                <td class="p-3 text-slate-800 border border-slate-200">78.63°S, 163.67°W</td>
+                                <td class="p-3 text-slate-800 border border-slate-200">프람하임 기지에서 4대의 썰매와 52마리의 개와 함께 출발</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-3 text-slate-800 border border-slate-200">빙하 등반</td>
+                                <td class="p-3 text-slate-800 border border-slate-200">1911년 11월</td>
+                                <td class="p-3 text-slate-800 border border-slate-200">85.42°S, 163.00°W</td>
+                                <td class="p-3 text-slate-800 border border-slate-200">악셀 하이버그 빙하를 통해 해발 3,000미터 고원으로 진입</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-3 text-slate-800 border border-slate-200">남극점 도달</td>
+                                <td class="p-3 text-slate-800 border border-slate-200">1911년 12월 14일</td>
+                                <td class="p-3 text-slate-800 border border-slate-200">90.00°S</td>
+                                <td class="p-3 text-slate-800 border border-slate-200">인류 최초로 남극점 도달, 노르웨이 국기 게양</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-3 text-slate-800 border border-slate-200">무사 귀환</td>
+                                <td class="p-3 text-slate-800 border border-slate-200">1912년 1월 25일</td>
+                                <td class="p-3 text-slate-800 border border-slate-200">78.63°S, 163.67°W</td>
+                                <td class="p-3 text-slate-800 border border-slate-200">출발 99일 만에 전원 무사히 기지로 복귀</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-6 p-4 bg-cyan-50 rounded-lg text-center">
+                    <h5 class="font-bold text-cyan-800">구글 어스에서 탐험하기</h5>
+                    <p class="text-sm text-cyan-700 my-2">구글 맵은 극지방 표현에 한계가 있습니다. 3D 지구본을 제공하는 구글 어스를 통해 아문센의 위대한 여정을 더 생생하게 경험해 보세요.</p>
+                    <a href="https://earth.google.com/web/search/-78.63,-163.67" target="_blank" rel="noopener noreferrer" class="inline-block bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-cyan-700 transition-colors">
+                        구글 어스에서 탐험 시작하기
+                    </a>
+                </div>
+            `
+        },
+        {
+            type: 'card',
+            name: "트뤼그베 리",
+            period: "1896-1968",
+            title: "초대 UN 사무총장",
+            icon: "🕊️",
+            summary: "노르웨이의 정치인이자 외교관. 제2차 세계대전 이후 창설된 국제연합(UN)의 초대 사무총장으로 선출되어 전후 세계 질서의 기틀을 다졌습니다.",
+            details: `
+                <h4 class="font-bold text-lg mb-2">신생 국제기구의 초석</h4>
+                <p class="mb-4">그는 냉전의 긴장이 고조되는 어려운 시기에 UN을 이끌었습니다. 한국 전쟁 발발 시 UN의 개입을 확보하는 데 중요한 역할을 했으며, 이스라엘과 인도네시아의 독립 과정에도 관여했습니다. 그의 재임 기간(1946-1952) 동안 UN 회원국은 창립 51개국에서 60개국으로 늘어났습니다.</p>
+                <h4 class="font-bold text-lg mb-2">냉전의 그림자</h4>
+                <p>그러나 그의 임기는 미-소 간의 대립으로 인해 순탄치 않았습니다. 특히 한국 전쟁에 대한 그의 입장은 소련의 강력한 반발을 샀고, 이는 결국 그의 사임으로 이어졌습니다. 그는 "세상에서 가장 불가능한 직업"을 수행하며 국제 평화를 위해 헌신했습니다.</p>
+            `
+        }
+    ],
+    justice: [
+        {
+            type: 'interactive',
+            name: "아이다 벨 웰스",
+            period: "1862-1931",
+            title: "데이터로 린치에 맞선 저널리스트",
+            icon: "📰",
+            summary: "미국의 언론인이자 인권 운동가. 19세기 말과 20세기 초, 미국 남부에서 자행되던 린치(사적 보복)의 실상을 통계와 데이터를 통해 폭로하며 인종차별에 맞서 싸웠습니다.",
+            details: `
+                <div id="wells-timeline" class="mt-4">
+                    <div class="timeline-item" data-info="<h5 class='font-bold'>친구의 린치 사건</h5><p>그녀의 친구 토머스 모스가 린치로 살해당한 사건은 그녀의 삶을 바꾼 전환점이었습니다. 이 사건을 계기로 그녀는 린치의 야만성을 폭로하는 데 평생을 바치기로 결심합니다.</p>">
+                        <h5 class="font-bold text-cyan-700">1892년</h5>
+                        <p class="text-sm text-slate-600">투쟁의 시작</p>
+                    </div>
+                    <div class="timeline-item" data-info="<h5 class='font-bold'>'남부의 공포: 린치 법' 출간</h5><p>웰스는 린치가 흑인 여성을 보호하기 위한 것이라는 백인 사회의 주장이 거짓임을 통계로 입증했습니다. 그녀는 린치의 진짜 원인이 흑인의 경제적 성공에 대한 백인들의 두려움임을 밝혔습니다.</p>">
+                        <h5 class="font-bold text-cyan-700">1892년</h5>
+                        <p class="text-sm text-slate-600">팸플릿 발간</p>
+                    </div>
+                    <div class="timeline-item" data-info="<h5 class='font-bold'>전미유색인지위향상협회(NAACP) 창립</h5><p>웰스는 W. E. B. 듀보이스 등과 함께 NAACP의 창립 멤버로 참여하여, 조직적인 흑인 인권 운동의 기틀을 마련했습니다.</p>">
+                        <h5 class="font-bold text-cyan-700">1909년</h5>
+                        <p class="text-sm text-slate-600">조직 결성</p>
+                    </div>
+                     <div class="timeline-item" data-info="<h5 class='font-bold'>퓰리처상 특별상 수상</h5><p>그녀가 세상을 떠난 지 약 90년 후, 퓰리처상 위원회는 '미국 내 흑인에 대한 끔찍하고 잔인한 폭력에 대한 그녀의 뛰어난 보도'를 기리며 특별상을 수여했습니다.</p>">
+                        <h5 class="font-bold text-cyan-700">2020년</h5>
+                        <p class="text-sm text-slate-600">사후 명예 회복</p>
+                    </div>
+                </div>
+                <div id="timeline-info-box" class="mt-4 p-4 bg-cyan-50 rounded-lg min-h-[100px]">
+                    <p class="text-slate-600">타임라인의 항목을 클릭하여 각 시점의 주요 활동을 확인해보세요.</p>
+                </div>
+            `
+        },
+        {
+            type: 'card',
+            name: "메리 베이커 에디",
+            period: "1821-1910",
+            title: "크리스천 사이언스 창시자",
+            icon: "📖",
+            summary: "미국의 종교 지도자. 영적인 치유를 강조하는 종교인 크리스천 사이언스를 창시했습니다. 그녀의 저서 '과학과 건강'은 교리의 핵심 텍스트가 되었습니다.",
+            details: `
+                <h4 class="font-bold text-lg mb-2">영성과 치유</h4>
+                <p class="mb-4">에디는 질병과 고통이 물질적 실체가 아니라 신에 대한 오해에서 비롯된 정신적 오류라고 주장했습니다. 그녀는 기도를 통해 신의 본질을 올바르게 이해함으로써 육체적, 정신적 치유가 가능하다고 가르쳤습니다. 이러한 사상은 19세기 미국에서 큰 반향을 일으켰습니다.</p>
+                <h4 class="font-bold text-lg mb-2">언론 창간과 유산</h4>
+                <p>그녀는 자신의 사상을 전파하기 위해 1908년 국제적인 신문인 '크리스천 사이언스 모니터'를 창간했습니다. 이 신문은 선정주의를 배격하고 공정하고 깊이 있는 보도로 현재까지도 높은 평가를 받고 있으며, 퓰리처상을 7회 수상했습니다.</p>
+            `
+        }
+    ],
+    stage: [
+        {
+            type: 'card',
+            name: "진저 로저스",
+            period: "1911-1995",
+            title: "할리우드 황금기의 댄싱 퀸",
+            icon: "💃",
+            summary: "프레드 아스테어의 전설적인 파트너. 1930년대 대공황기 미국인들에게 꿈과 위안을 선사한 뮤지컬 영화의 아이콘입니다. 아카데미 여우주연상 수상 경력도 있는 다재다능한 배우였습니다.",
+            details: `<p>로저스는 아스테어와 함께 10편의 영화에 출연하며 할리우드 역사상 가장 유명한 댄스 듀오로 자리매김했습니다. 그녀는 "프레드 아스테어가 하는 모든 것을 해냈지만, 뒤로, 그리고 하이힐을 신고 해냈다"는 말로 유명합니다. 이는 단순히 춤 실력뿐만 아니라, 남성 중심의 쇼 비즈니스 세계에서 그녀가 겪어야 했던 어려움과 뛰어난 재능을 상징합니다.</p>`
+        },
+        {
+            type: 'card',
+            name: "바버라 스탠윅",
+            period: "1907-1990",
+            title: "강인한 여성상의 개척자",
+            icon: "🎬",
+            summary: "할리우드 황금기를 대표하는 배우. 청순가련형 여주인공이 대부분이던 시절, 독립적이고 강인하며 때로는 악랄하기까지 한 '팜 파탈' 연기로 스크린을 장악했습니다.",
+            details: `<p>스탠윅은 60년간 80편이 넘는 영화에 출연하며 놀라운 연기 스펙트럼을 보여주었습니다. 특히 필름 누아르의 걸작 《이중 배상》(1944)에서 그녀가 연기한 '필리스 디트릭슨' 역은 영화사상 가장 매혹적인 악녀 중 하나로 꼽힙니다. 그녀는 아카데미 여우주연상에 4번이나 후보로 올랐으며, 1982년 공로상을 수상했습니다.</p>`
+        },
+        {
+            type: 'card',
+            name: "윌 페럴",
+            period: "1967-현재",
+            title: "B급 감성의 코미디 제왕",
+            icon: "😂",
+            summary: "미국의 코미디 배우이자 작가. 'SNL'을 통해 스타덤에 올랐으며, 과장되고 엉뚱한 캐릭터 연기로 자신만의 코미디 제국을 구축했습니다. 영화 《엘프》, 《앵커맨》 등으로 유명합니다.",
+            details: `<p>페럴의 코미디는 종종 어른 아이 같은 캐릭터가 극도로 진지하게 황당한 상황에 대처하는 모습을 통해 웃음을 유발합니다. 그는 주류 코미디에 B급 영화와 즉흥 연기의 감성을 성공적으로 접목시켰다는 평가를 받습니다. 또한 제작사 '개리 산체스 프로덕션'을 설립하여 《바이스》, 《북스마트》 등 비평가들의 호평을 받은 작품들을 제작하기도 했습니다.</p>`
+        }
+    ]
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const containers = {
+        earth: document.getElementById('earth-pioneers-container'),
+        justice: document.getElementById('justice-pioneers-container'),
+        stage: document.getElementById('stage-pioneers-container')
+    };
+
+    function createCard(item) {
+        const card = document.createElement('div');
+        card.className = 'content-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl hover:-translate-y-1';
+        card.innerHTML = `
+            <div class="p-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <div class="text-4xl mb-2">${item.icon}</div>
+                        <h4 class="text-xl font-bold text-slate-800">${item.name}</h4>
+                        <p class="text-sm text-cyan-600 font-semibold">${item.period}</p>
+                        <p class="text-md font-medium text-slate-600 mt-1">${item.title}</p>
+                    </div>
+                    <span class="text-2xl text-slate-400 transform transition-transform duration-300">&#x25BC;</span>
+                </div>
+                <p class="mt-4 text-slate-600">${item.summary}</p>
+                <div class="content-card-details pt-4 mt-4 border-t border-slate-200 text-slate-700">
+                    ${item.details}
+                </div>
+            </div>
+        `;
+
+        card.addEventListener('click', () => {
+            const details = card.querySelector('.content-card-details');
+            const icon = card.querySelector('span');
+            if (details.style.maxHeight && details.style.maxHeight !== '0px') {
+                details.style.maxHeight = '0px';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                details.style.maxHeight = details.scrollHeight + "px";
+                icon.style.transform = 'rotate(180deg)';
+            }
+        });
+        return card;
+    }
+    
+    function createInteractiveCard(item) {
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-xl shadow-lg overflow-hidden';
+        card.innerHTML = `
+            <div class="p-6">
+                <div class="text-4xl mb-2">${item.icon}</div>
+                <h4 class="text-xl font-bold text-slate-800">${item.name}</h4>
+                <p class="text-sm text-cyan-600 font-semibold">${item.period}</p>
+                <p class="text-md font-medium text-slate-600 mt-1">${item.title}</p>
+                <p class="mt-4 text-slate-600">${item.summary}</p>
+                <div class="pt-4 mt-4 border-t border-slate-200 text-slate-700">
+                    ${item.details}
+                </div>
+            </div>
+        `;
+        return card;
+    }
+
+    for (const category in appData) {
+        appData[category].forEach(item => {
+            let card;
+            if (item.type === 'card') {
+                card = createCard(item);
+            } else if (item.type === 'interactive') {
+                card = createInteractiveCard(item);
+            }
+            if (card) {
+                containers[category].appendChild(card);
+            }
+        });
+    }
+
+    // Wells Timeline Logic
+    const timelineItems = document.querySelectorAll('.timeline-item');
+    const timelineInfoBox = document.getElementById('timeline-info-box');
+    if (timelineItems.length > 0 && timelineInfoBox) {
+        timelineItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const info = item.getAttribute('data-info');
+                timelineInfoBox.style.opacity = '0';
+                 setTimeout(() => {
+                    timelineInfoBox.innerHTML = info;
+                    timelineInfoBox.style.opacity = '1';
+                }, 300);
+            });
+        });
+    }
+});
+</script>
+</body>
+</html>
