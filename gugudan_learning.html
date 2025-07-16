@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>재미있는 곱셈 배우기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Gowun Dodum', sans-serif;
+        }
+        .control-panel {
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        .item-btn.selected {
+            transform: scale(1.1);
+            border-color: #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+        .group-container {
+            border: 2px dashed #a78bfa;
+            min-height: 80px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-sky-200 to-indigo-300 min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-4xl mx-auto bg-white/90 rounded-2xl shadow-2xl p-6 md:p-8">
+        
+        <!-- 제목 -->
+        <header class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">알쏭달쏭 곱셈, 눈으로 배워봐요! 🍭</h1>
+            <p class="text-gray-600 mt-2">그림을 움직여보며 곱셈의 원리를 쉽게 이해해요.</p>
+        </header>
+
+        <!-- 컨트롤 패널 -->
+        <div class="control-panel sticky top-4 z-10 grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 p-4 rounded-xl border border-gray-200 shadow-lg">
+            <!-- 1. 아이템 선택 -->
+            <div>
+                <label class="block text-lg font-semibold text-gray-700 mb-2">1. 어떤 그림으로 해볼까요?</label>
+                <div id="item-selector" class="flex items-center space-x-3 bg-gray-100 p-2 rounded-lg">
+                    <button class="item-btn text-4xl p-2 rounded-lg border-4 border-transparent transition-transform" data-item="🍎">🍎</button>
+                    <button class="item-btn text-4xl p-2 rounded-lg border-4 border-transparent transition-transform" data-item="🚗">🚗</button>
+                    <button class="item-btn text-4xl p-2 rounded-lg border-4 border-transparent transition-transform" data-item="⭐">⭐</button>
+                    <button class="item-btn text-4xl p-2 rounded-lg border-4 border-transparent transition-transform" data-item="🤖">🤖</button>
+                </div>
+            </div>
+            <!-- 2. 묶음 안의 개수 -->
+            <div>
+                <label for="items-per-group" class="block text-lg font-semibold text-gray-700 mb-2">2. 한 묶음에 몇 개씩?</label>
+                <div class="flex items-center space-x-2">
+                    <input type="range" id="items-per-group" min="1" max="10" value="3" class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg">
+                    <span id="items-per-group-value" class="text-xl font-bold text-blue-600 w-8 text-center">3</span>
+                </div>
+            </div>
+            <!-- 3. 묶음의 수 -->
+            <div>
+                <label for="number-of-groups" class="block text-lg font-semibold text-gray-700 mb-2">3. 몇 묶음으로 할까요?</label>
+                 <div class="flex items-center space-x-2">
+                    <input type="range" id="number-of-groups" min="1" max="10" value="4" class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg">
+                    <span id="number-of-groups-value" class="text-xl font-bold text-purple-600 w-8 text-center">4</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 시각화 영역 -->
+        <div id="visual-display" class="mb-8 p-4 bg-sky-50 rounded-lg min-h-[200px] flex flex-col items-center justify-center">
+            <!-- 그룹들이 여기에 동적으로 추가됩니다. -->
+        </div>
+
+        <!-- 결과 영역 -->
+        <div class="bg-amber-100 border-t-4 border-amber-400 rounded-b-lg p-6 text-center">
+            <div class="mb-4">
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">덧셈으로 먼저 세어보면...</h3>
+                <p id="addition-result" class="text-2xl md:text-3xl font-bold text-gray-800 bg-white p-3 rounded-lg shadow-inner min-h-[56px] flex items-center justify-center"></p>
+            </div>
+            <div class="flex items-center justify-center my-4">
+                <div class="w-1/4 h-px bg-gray-300"></div>
+                <span class="text-2xl mx-4">👇</span>
+                <div class="w-1/4 h-px bg-gray-300"></div>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold text-green-700 mb-2">곱셈으로 간단하게!</h3>
+                <p id="multiplication-result" class="text-3xl md:text-4xl font-bold text-green-600 bg-white p-3 rounded-lg shadow-inner min-h-[64px] flex items-center justify-center"></p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // DOM 요소 가져오기
+        const itemSelector = document.getElementById('item-selector');
+        const itemsPerGroupSlider = document.getElementById('items-per-group');
+        const numberOfGroupsSlider = document.getElementById('number-of-groups');
+        const itemsPerGroupValue = document.getElementById('items-per-group-value');
+        const numberOfGroupsValue = document.getElementById('number-of-groups-value');
+        const visualDisplay = document.getElementById('visual-display');
+        const additionResult = document.getElementById('addition-result');
+        const multiplicationResult = document.getElementById('multiplication-result');
+
+        // 상태 관리
+        let state = {
+            selectedItem: '🍎',
+            itemsPerGroup: 3,
+            numberOfGroups: 4,
+        };
+
+        // UI 업데이트 함수
+        function updateUI() {
+            // 슬라이더 값 표시 업데이트
+            itemsPerGroupValue.textContent = state.itemsPerGroup;
+            numberOfGroupsValue.textContent = state.numberOfGroups;
+
+            // 시각화 영역 업데이트
+            visualDisplay.innerHTML = ''; // 기존 내용 초기화
+            visualDisplay.classList.add('grid', 'gap-4');
+            visualDisplay.style.gridTemplateColumns = `repeat(auto-fit, minmax(120px, 1fr))`;
+            
+            for (let i = 0; i < state.numberOfGroups; i++) {
+                const groupEl = document.createElement('div');
+                groupEl.className = 'group-container bg-white/50 rounded-lg p-3 flex flex-wrap justify-center items-center gap-1 shadow-md';
+                
+                for (let j = 0; j < state.itemsPerGroup; j++) {
+                    const itemEl = document.createElement('span');
+                    itemEl.className = 'text-3xl';
+                    itemEl.textContent = state.selectedItem;
+                    groupEl.appendChild(itemEl);
+                }
+                visualDisplay.appendChild(groupEl);
+            }
+
+            // 결과 업데이트
+            // 덧셈식 생성
+            const additionArray = Array(state.numberOfGroups).fill(state.itemsPerGroup);
+            const additionString = additionArray.join(' + ');
+            const total = state.itemsPerGroup * state.numberOfGroups;
+            
+            additionResult.textContent = `${additionString} = ${total}`;
+
+            // 곱셈식 생성
+            multiplicationResult.textContent = `${state.itemsPerGroup} × ${state.numberOfGroups} = ${total}`;
+
+            // 선택된 아이템 버튼 스타일 업데이트
+            document.querySelectorAll('.item-btn').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.item === state.selectedItem);
+            });
+        }
+
+        // 이벤트 리스너 설정
+        itemSelector.addEventListener('click', (e) => {
+            if (e.target.classList.contains('item-btn')) {
+                state.selectedItem = e.target.dataset.item;
+                updateUI();
+            }
+        });
+
+        itemsPerGroupSlider.addEventListener('input', (e) => {
+            state.itemsPerGroup = parseInt(e.target.value, 10);
+            updateUI();
+        });
+
+        numberOfGroupsSlider.addEventListener('input', (e) => {
+            state.numberOfGroups = parseInt(e.target.value, 10);
+            updateUI();
+        });
+
+        // 초기 UI 렌더링
+        window.onload = () => {
+             // 초기 슬라이더 값 설정
+            itemsPerGroupSlider.value = state.itemsPerGroup;
+            numberOfGroupsSlider.value = state.numberOfGroups;
+            updateUI();
+        };
+    </script>
+</body>
+</html>
