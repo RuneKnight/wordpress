@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>넬슨 만델라: 통합의 여정</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Ubuntu Harmony -->
+    <!-- Application Structure Plan: The application is designed around a central interactive timeline of Mandela's life, moving from a chronological narrative to thematic explorations. This structure was chosen over a linear report format to empower users to explore at their own pace. The flow is: 1. Introduction (Hero), 2. Interactive Timeline (chronological exploration), 3. Key Themes (deep dive into core concepts like TRC and Rainbow Nation), 4. Legacy (quantitative and qualitative evaluation), and 5. Explore (self-directed keyword search). This non-linear, thematic approach enhances usability by breaking down dense information into manageable, interactive chunks, fostering discovery rather than passive reading. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: 5 life stages (Fighter, Prisoner, etc.). Goal: Show change over time. Viz: Interactive HTML/CSS timeline. Interaction: Click stage to show detailed text. Justification: Visually intuitive way to navigate a biography. Method: Vanilla JS DOM manipulation.
+        - Report Info: TRC success/failures. Goal: Compare/Evaluate. Viz: Doughnut Chart. Interaction: Hover/click for details. Justification: Visually represents the concept of a balanced but imperfect outcome. Library: Chart.js.
+        - Report Info: Post-presidency work. Goal: Organize/Inform. Viz: Horizontal Bar Chart. Interaction: Hover for details. Justification: Clearly shows and compares focus areas. Library: Chart.js.
+        - Report Info: Key concepts (Apartheid, Ubuntu, etc.). Goal: Explore. Viz: Interactive HTML tags. Interaction: Click to show definition modal. Justification: Encourages self-directed learning and cross-referencing within the app. Method: Vanilla JS.
+        CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #FDFBF8;
+            color: #3D352F;
+        }
+        .timeline-item {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .timeline-item.active .timeline-dot {
+            transform: scale(1.5);
+            background-color: #8D6E63;
+        }
+        .timeline-item.active .timeline-title {
+            font-weight: 700;
+            color: #5D4037;
+        }
+        .timeline-content-container {
+            border-left: 2px solid #D7CCC8;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #5D4037;
+            border-bottom-color: #8D6E63;
+        }
+        .keyword-tag {
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-[#F1EAE4] sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-[#5D4037]">넬슨 만델라</h1>
+            <div class="hidden md:flex space-x-8">
+                <a href="#journey" class="nav-link font-medium text-gray-700">인생의 여정</a>
+                <a href="#legacy" class="nav-link font-medium text-gray-700">핵심 유산</a>
+                <a href="#vision" class="nav-link font-medium text-gray-700">비전과 평가</a>
+                <a href="#explore" class="nav-link font-medium text-gray-700">더 깊이 알기</a>
+            </div>
+             <button id="mobile-menu-button" class="md:hidden focus:outline-none">
+                <span class="text-2xl">☰</span>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-white">
+            <a href="#journey" class="block text-center py-2 text-gray-700 hover:bg-gray-100">인생의 여정</a>
+            <a href="#legacy" class="block text-center py-2 text-gray-700 hover:bg-gray-100">핵심 유산</a>
+            <a href="#vision" class="block text-center py-2 text-gray-700 hover:bg-gray-100">비전과 평가</a>
+            <a href="#explore" class="block text-center py-2 text-gray-700 hover:bg-gray-100">더 깊이 알기</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        <section class="text-center mb-20">
+            <h2 class="text-4xl md:text-5xl font-extrabold text-[#5D4037] mb-4">넬슨 롤리랄라 만델라</h2>
+            <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+                20세기 가장 위대한 인물 중 한 명으로, 아파르트헤이트 철폐를 위해 싸운 투사이자 용서와 화해의 리더십으로 남아프리카공화국을 통합한 대통령. 그의 삶은 억압에 대한 저항과 인간 존엄성의 승리를 상징합니다.
+            </p>
+        </section>
+
+        <section id="journey" class="mb-20 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-[#5D4037]">인생의 5단계</h3>
+                <p class="text-gray-600 mt-2">그의 삶을 정의한 다섯 가지 역할을 통해 만델라의 위대한 여정을 살펴보세요. 각 단계를 클릭하여 자세한 내용을 확인할 수 있습니다.</p>
+            </div>
+
+            <div class="flex flex-col md:flex-row md:space-x-8">
+                <div class="w-full md:w-1/3 mb-8 md:mb-0">
+                    <div id="timeline-nav" class="space-y-4">
+                    </div>
+                </div>
+                <div class="w-full md:w-2/3 timeline-content-container p-6 rounded-lg bg-white shadow-lg">
+                    <div id="timeline-content">
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="legacy" class="mb-20 scroll-mt-20">
+             <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-[#5D4037]">지속적인 유산</h3>
+                <p class="text-gray-600 mt-2">만델라가 세상에 남긴 가장 중요하고 영향력 있는 세 가지 유산을 소개합니다. 그의 리더십과 철학이 어떻게 현재까지 영향을 미치고 있는지 알 수 있습니다.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                    <div class="text-4xl mb-4 text-[#8D6E63]">①</div>
+                    <h4 class="text-xl font-bold mb-2">용서와 화해의 리더십</h4>
+                    <p class="text-gray-600">수십 년간의 억압에도 불구하고 보복이 아닌 용서를 선택했습니다. 이는 남아공을 내전의 위기에서 구하고, 분열된 사회가 공존할 수 있다는 희망의 증거가 되었습니다.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                     <div class="text-4xl mb-4 text-[#8D6E63]">②</div>
+                    <h4 class="text-xl font-bold mb-2">'무지개 국가' 비전 제시</h4>
+                    <p class="text-gray-600">모든 인종과 문화가 동등하게 존중받고 조화를 이루는 '무지개 국가'라는 이상을 제시했습니다. 이는 다문화 사회의 통합 모델로서 전 세계에 영감을 주었습니다.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                    <div class="text-4xl mb-4 text-[#8D6E63]">③</div>
+                    <h4 class="text-xl font-bold mb-2">인권과 민주주의의 상징</h4>
+                    <p class="text-gray-600">정의와 평등을 향한 그의 불굴의 투쟁은 전 세계 인권 운동가들에게 깊은 영감을 주었으며, 그의 이름은 자유와 민주주의를 위한 투쟁의 대명사가 되었습니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="vision" class="mb-20 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-[#5D4037]">비전과 현실, 그리고 평가</h3>
+                <p class="text-gray-600 mt-2">만델라의 위대한 비전이 현실에서 어떻게 구현되었는지, 그리고 그에 대한 다양한 평가를 통해 그의 유산을 입체적으로 조명합니다.</p>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h4 class="text-2xl font-bold mb-2 text-center">진실과화해위원회(TRC)의 명과 암</h4>
+                    <p class="text-gray-600 text-center mb-4">TRC는 과거사 청산의 새로운 모델이었지만, 성공과 한계를 동시에 가집니다.</p>
+                    <div class="chart-container">
+                        <canvas id="trcChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h4 class="text-2xl font-bold mb-2 text-center">퇴임 후 국제적 기여</h4>
+                    <p class="text-gray-600 text-center mb-4">대통령직에서 물러난 후에도 인류를 위한 그의 헌신은 계속되었습니다.</p>
+                    <div class="chart-container">
+                        <canvas id="legacyChart"></canvas>
+                    </div>
+                </div>
+                <div class="lg:col-span-2 bg-white p-8 rounded-lg shadow-lg mt-8">
+                    <h4 class="text-2xl font-bold mb-4 text-center">비판적 시각</h4>
+                    <div class="flex flex-col md:flex-row justify-around gap-6">
+                        <div class="text-center">
+                            <h5 class="font-semibold text-lg text-[#8D6E63]">경제적 불평등</h5>
+                            <p class="text-gray-600 mt-1 max-w-md mx-auto">정치적 평등은 이루었지만, 흑인 다수가 겪는 경제적 어려움은 완전히 해결하지 못했다는 한계가 있습니다.</p>
+                        </div>
+                        <div class="text-center">
+                            <h5 class="font-semibold text-lg text-[#8D6E63]">ANC의 부패 문제</h5>
+                            <p class="text-gray-600 mt-1 max-w-md mx-auto">만델라 이후 ANC의 장기 집권이 일부 부패와 비효율로 이어지면서 그의 이상이 퇴색되었다는 비판이 제기됩니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="explore" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-[#5D4037]">더 깊이 알기: 핵심 키워드</h3>
+                <p class="text-gray-600 mt-2">만델라의 삶과 시대를 이해하는 데 중요한 키워드들입니다. 태그를 클릭해 간단한 설명을 확인하세요.</p>
+            </div>
+            <div id="keyword-container" class="flex flex-wrap justify-center gap-3">
+            </div>
+        </section>
+
+    </main>
+    
+    <div id="keyword-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-lg shadow-2xl max-w-lg w-full p-6 relative">
+            <button id="modal-close-button" class="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+            <h3 id="modal-title" class="text-2xl font-bold mb-4 text-[#5D4037]"></h3>
+            <p id="modal-description" class="text-gray-700"></p>
+        </div>
+    </div>
+    
+    <footer class="bg-[#F1EAE4] mt-20">
+        <div class="container mx-auto px-6 py-6 text-center text-gray-600">
+            <p>이 페이지는 넬슨 만델라의 삶과 유산을 기리기 위해 제작된 교육용 인터랙티브 자료입니다.</p>
+        </div>
+    </footer>
+
+    <script>
+        const timelineData = {
+            fighter: {
+                title: "투사 (Fighter)",
+                period: "1944–1962",
+                content: `
+                    <h4 class="text-2xl font-bold text-[#5D4037] mb-2">정의를 위한 투사</h4>
+                    <p class="text-gray-500 mb-4">1944–1962</p>
+                    <p class="text-gray-700 mb-4">요하네스버그에서 변호사로 활동하며 아파르트헤이트의 잔혹한 현실을 목격한 만델라는 아프리카 민족회의(ANC)에 가입하며 본격적인 정치 투쟁에 뛰어듭니다. 초기에는 비폭력 저항을 추구했지만, 1960년 샤프빌 학살 사건을 계기로 무장 투쟁 노선으로 전환하게 됩니다. 그는 ANC의 군사 조직 '움콘토 웨 시즈웨(민족의 창)'를 공동 창설하며 저항의 선봉에 섰습니다.</p>
+                    <strong class="font-semibold text-gray-800">주요 사건:</strong>
+                    <ul class="list-disc list-inside text-gray-700 mt-2">
+                        <li>ANC 청년 동맹 가입 (1944)</li>
+                        <li>샤프빌 학살 사건 (1960)</li>
+                        <li>'움콘토 웨 시즈웨' 창설 (1961)</li>
+                    </ul>`
+            },
+            prisoner: {
+                title: "죄수 (Prisoner)",
+                period: "1962–1990",
+                content: `
+                    <h4 class="text-2xl font-bold text-[#5D4037] mb-2">신념의 죄수</h4>
+                    <p class="text-gray-500 mb-4">1962–1990 (27년)</p>
+                    <p class="text-gray-700 mb-4">1964년 '리보니아 재판'에서 종신형을 선고받고 로벤섬에 수감됩니다. 죄수번호 '46664'로 불리며 27년간의 옥살이를 했지만, 그의 신념은 꺾이지 않았습니다. 감옥 안에서도 동료 죄수들을 교육하고(일명 '만델라 대학'), 외부 세계와 소통하며 저항을 이어갔습니다. 이 시기는 그를 단순한 투사에서 용서와 화해의 상징으로 승화시키는 결정적인 계기가 되었습니다.</p>
+                    <strong class="font-semibold text-gray-800">주요 사건:</strong>
+                    <ul class="list-disc list-inside text-gray-700 mt-2">
+                        <li>리보니아 재판 및 "나는 죽을 각오가 되어 있습니다" 연설 (1964)</li>
+                        <li>로벤섬 수감 생활 시작 (1964)</li>
+                        <li>국제적인 석방 운동 확산</li>
+                    </ul>`
+            },
+            negotiator: {
+                title: "협상가 (Negotiator)",
+                period: "1990–1994",
+                content: `
+                    <h4 class="text-2xl font-bold text-[#5D4037] mb-2">미래를 위한 협상가</h4>
+                    <p class="text-gray-500 mb-4">1990–1994</p>
+                    <p class="text-gray-700 mb-4">1990년 2월 11일, 27년 만에 석방된 만델라는 곧바로 F.W. 데 클레르크 대통령과 아파르트헤이트 종식을 위한 험난한 협상에 돌입합니다. 그는 과거의 적과 손을 잡고, 보복 대신 평화적인 권력 이양을 선택했습니다. 극우 백인 세력과 급진 흑인 세력의 반발 속에서도 끈질긴 대화와 타협을 통해 남아공을 내전의 위기에서 구해냈고, 이 공로로 데 클레르크와 함께 1993년 노벨 평화상을 수상합니다.</p>
+                    <strong class="font-semibold text-gray-800">주요 사건:</strong>
+                    <ul class="list-disc list-inside text-gray-700 mt-2">
+                        <li>석방 (1990. 2. 11)</li>
+                        <li>아파르트헤이트 관련법 폐지 (1991)</li>
+                        <li>노벨 평화상 수상 (1993)</li>
+                    </ul>`
+            },
+            president: {
+                title: "대통령 (President)",
+                period: "1994–1999",
+                content: `
+                    <h4 class="text-2xl font-bold text-[#5D4037] mb-2">통합의 대통령</h4>
+                    <p class="text-gray-500 mb-4">1994–1999</p>
+                    <p class="text-gray-700 mb-4">1994년, 남아공 최초의 완전한 민주 선거에서 승리하며 최초의 흑인 대통령이 되었습니다. 그는 '무지개 국가'를 기치로 내걸고 국민 통합에 힘썼습니다. 특히 1995년 럭비 월드컵에서 백인들의 스포츠였던 럭비를 전폭적으로 지지하며 흑과 백의 화합을 이끌어낸 일화는 그의 통합 리더십을 상징하는 사건입니다. 또한 '진실과화해위원회(TRC)'를 설립하여 과거사를 청산하고 미래로 나아가는 발판을 마련했습니다.</p>
+                    <strong class="font-semibold text-gray-800">주요 사건:</strong>
+                    <ul class="list-disc list-inside text-gray-700 mt-2">
+                        <li>남아공 최초 흑인 대통령 취임 (1994)</li>
+                        <li>진실과화해위원회(TRC) 설립 (1995)</li>
+                        <li>럭비 월드컵을 통한 국민 통합 (1995)</li>
+                    </ul>`
+            },
+            statesman: {
+                title: "국가의 원로 (Elder Statesman)",
+                period: "1999–2013",
+                content: `
+                    <h4 class="text-2xl font-bold text-[#5D4037] mb-2">세계의 원로</h4>
+                    <p class="text-gray-500 mb-4">1999–2013</p>
+                    <p class="text-gray-700 mb-4">1999년 단임으로 대통령직에서 물러난 후에도 그의 영향력은 계속되었습니다. '넬슨 만델라 재단'을 통해 에이즈(HIV/AIDS) 퇴치 운동, 어린이 교육, 국제 분쟁 해결 등 전 지구적 문제에 헌신했습니다. 그는 특정 국가의 지도자를 넘어 전 인류의 도덕적 스승이자 '세계의 원로'로서 존경받았으며, 2013년 12월 5일, 95세의 나이로 영면했습니다.</p>
+                    <strong class="font-semibold text-gray-800">주요 활동:</strong>
+                    <ul class="list-disc list-inside text-gray-700 mt-2">
+                        <li>대통령직 퇴임 (1999)</li>
+                        <li>넬슨 만델라 재단 설립</li>
+                        <li>에이즈 퇴치 및 인권 운동 전개</li>
+                    </ul>`
+            },
+        };
+
+        const keywordsData = {
+            "Apartheid": { title: "아파르트헤이트", description: "남아프리카 공화국의 극단적인 인종차별 및 분리 정책. 1948년부터 1994년까지 지속되었으며, 인종에 따라 거주, 교육, 직업 등을 엄격히 제한했습니다." },
+            "ANC": { title: "아프리카 민족회의 (ANC)", description: "1912년에 설립된 남아공의 정당. 초기에는 비폭력 저항을, 이후에는 무장 투쟁을 이끌며 아파르트헤이트 철폐 운동의 중심 역할을 했습니다." },
+            "Sharpeville Massacre": { title: "샤프빌 학살", description: "1960년 3월 21일, 통행증법에 반대하는 비무장 시위대에 경찰이 발포하여 69명이 사망한 사건. 이 사건을 계기로 ANC는 무장 투쟁 노선으로 전환했습니다." },
+            "Rivonia Trial": { title: "리보니아 재판", description: "1963-64년, 만델라를 포함한 ANC 지도부가 내란 혐의로 기소된 재판. 여기서 만델라의 '나는 죽을 각오가 되어 있습니다'라는 명연설이 나왔습니다." },
+            "Robben Island": { title: "로벤섬", description: "만델라가 27년의 수감 생활 중 18년을 보낸 악명 높은 정치범 수용소. 현재는 유네스코 세계문화유산으로 지정되었습니다." },
+            "TRC": { title: "진실과화해위원회 (TRC)", description: "아파르트헤이트 시기 인권 유린 사건의 진실을 규명하고, 가해자의 고백을 통해 사면하며 국민적 화해를 도모하기 위해 설립된 기구입니다." },
+            "Rainbow Nation": { title: "무지개 국가", description: "만델라가 제시한, 다양한 인종과 문화가 공존하고 조화를 이루는 새로운 남아프리카공화국의 비전입니다." },
+            "Ubuntu": { title: "우분투 철학", description: "'네가 있기에 내가 있다(I am because you are)'는 의미의 아프리카 전통 사상. 공동체와 연대를 강조하며 만델라의 용서와 화해 리더십의 근간이 되었습니다." }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const timelineNav = document.getElementById('timeline-nav');
+            const timelineContent = document.getElementById('timeline-content');
+            
+            Object.keys(timelineData).forEach((key, index) => {
+                const data = timelineData[key];
+                const item = document.createElement('div');
+                item.className = `timeline-item flex items-center p-3 rounded-lg hover:bg-gray-100 ${index === 0 ? 'active' : ''}`;
+                item.dataset.key = key;
+                item.innerHTML = `
+                    <div class="timeline-dot w-4 h-4 rounded-full bg-gray-300 mr-4"></div>
+                    <div>
+                        <h5 class="timeline-title font-semibold text-lg text-gray-700">${data.title}</h5>
+                        <p class="text-sm text-gray-500">${data.period}</p>
+                    </div>
+                `;
+                timelineNav.appendChild(item);
+            });
+            
+            const updateContent = (key) => {
+                timelineContent.innerHTML = timelineData[key].content;
+                document.querySelectorAll('.timeline-item').forEach(el => {
+                    el.classList.toggle('active', el.dataset.key === key);
+                });
+            };
+
+            timelineNav.addEventListener('click', (e) => {
+                const item = e.target.closest('.timeline-item');
+                if (item) {
+                    updateContent(item.dataset.key);
+                }
+            });
+
+            updateContent('fighter');
+
+            const keywordContainer = document.getElementById('keyword-container');
+            const modal = document.getElementById('keyword-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalDescription = document.getElementById('modal-description');
+            const modalCloseButton = document.getElementById('modal-close-button');
+
+            Object.keys(keywordsData).forEach(key => {
+                const data = keywordsData[key];
+                const tag = document.createElement('button');
+                tag.className = 'keyword-tag bg-white text-gray-700 font-medium py-2 px-4 rounded-full shadow-sm hover:bg-[#8D6E63] hover:text-white';
+                tag.textContent = data.title;
+                tag.dataset.key = key;
+                keywordContainer.appendChild(tag);
+            });
+            
+            keywordContainer.addEventListener('click', (e) => {
+                const tag = e.target.closest('.keyword-tag');
+                if (tag) {
+                    const data = keywordsData[tag.dataset.key];
+                    modalTitle.textContent = data.title;
+                    modalDescription.textContent = data.description;
+                    modal.classList.remove('hidden');
+                }
+            });
+
+            const closeModal = () => modal.classList.add('hidden');
+            modalCloseButton.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if(e.target === modal) closeModal();
+            });
+
+            const trcCtx = document.getElementById('trcChart').getContext('2d');
+            new Chart(trcCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['성공적 측면 (화해 도모)', '한계 (사법적 정의 부족)'],
+                    datasets: [{
+                        data: [65, 35],
+                        backgroundColor: ['#A1887F', '#D7CCC8'],
+                        borderColor: ['#8D6E63', '#BCAAA4'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const legacyCtx = document.getElementById('legacyChart').getContext('2d');
+            new Chart(legacyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['에이즈(HIV/AIDS) 퇴치', '어린이 교육 증진', '국제 분쟁 해결'],
+                    datasets: [{
+                        label: '주요 기여 활동',
+                        data: [85, 80, 70],
+                        backgroundColor: ['#A1887F', '#BCAAA4', '#D7CCC8'],
+                        borderColor: '#8D6E63',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                             ticks: { display: false }
+                        }
+                    }
+                }
+            });
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
