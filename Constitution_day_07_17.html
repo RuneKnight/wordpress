@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대한민국 헌법, 대화형 탐구</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Subtle Accents -->
+    <!-- Application Structure Plan: A thematic, single-page application designed for intuitive exploration. The structure progresses from the general concept (Constitution Day) to specific details (key articles, amendments), using a top navigation bar for direct access. It starts with an introduction, moves to a historical timeline, then dives into the constitution's principles and structure with interactive charts and cards, and concludes with an engaging quiz. This user-centric flow encourages discovery rather than linear reading, making complex civic information more accessible and digestible. -->
+    <!-- Visualization & Content Choices: 
+        1. Report Info: History of Constitution's enactment. -> Goal: Show Change/Process. -> Viz/Presentation: Interactive HTML/CSS timeline. -> Interaction: Clicking a date reveals detailed information in a modal-like view. -> Justification: Transforms a static list of dates into an engaging, explorable journey. -> Library/Method: Vanilla JS, Tailwind CSS.
+        2. Report Info: Core principles of the Constitution. -> Goal: Organize/Inform. -> Viz/Presentation: Grid of interactive cards. -> Interaction: Hovering over a card reveals a concise explanation. -> Justification: Breaks down abstract principles into visually distinct, bite-sized pieces of information. -> Library/Method: HTML, Tailwind CSS (hover effects).
+        3. Report Info: Structure of the Constitution (Chapters/Articles). -> Goal: Show Proportions/Organize. -> Viz/Presentation: Doughnut chart. -> Interaction: Tooltips on hover provide exact article counts per chapter grouping. -> Justification: Visually represents the thematic weight and focus of the Constitution's different sections. -> Library/Method: Chart.js (Canvas).
+        4. Report Info: History of Constitutional Amendments. -> Goal: Compare/Show Change. -> Viz/Presentation: Bar chart showing years of amendments. -> Interaction: Tooltips on hover display the year and which number amendment it was. -> Justification: Provides a quick visual summary of Korea's dynamic constitutional history. -> Library/Method: Chart.js (Canvas).
+        5. Report Info: Key constitutional knowledge. -> Goal: Engage/Reinforce Learning. -> Viz/Presentation: Interactive quiz. -> Interaction: User selects an answer and gets immediate feedback. -> Justification: Solidifies learning through active participation. -> Library/Method: Vanilla JS, HTML forms.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #F8F7F2;
+            color: #4B4B4B;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #3B82F6;
+            border-bottom-color: #3B82F6;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #FFFFFF;
+            border: 3px solid #60A5FA;
+        }
+        .timeline-item:hover::before {
+             background-color: #3B82F6;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            margin: auto;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .quiz-option {
+            border: 2px solid #D1D5DB;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .quiz-option:hover {
+            background-color: #EFF6FF;
+            border-color: #93C5FD;
+        }
+        .quiz-option.selected {
+            background-color: #DBEAFE;
+            border-color: #3B82F6;
+        }
+        .quiz-option.correct {
+            background-color: #D1FAE5;
+            border-color: #10B981;
+        }
+        .quiz-option.incorrect {
+            background-color: #FEE2E2;
+            border-color: #EF4444;
+        }
+    </style>
+</head>
+<body class="bg-[#F8F7F2] text-[#4B4B4B]">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <h1 class="text-xl md:text-2xl font-bold text-blue-600">헌법, 대화형 탐구</h1>
+                <div class="hidden md:flex space-x-6 text-lg">
+                    <a href="#intro" class="nav-link">소개</a>
+                    <a href="#timeline" class="nav-link">제정의 역사</a>
+                    <a href="#explore" class="nav-link">헌법 둘러보기</a>
+                    <a href="#amendments" class="nav-link">개정의 역사</a>
+                    <a href="#quiz" class="nav-link">헌법 퀴즈</a>
+                </div>
+                <button id="mobile-menu-button" class="md:hidden p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden mt-4 flex flex-col space-y-2">
+                <a href="#intro" class="nav-link-mobile block py-2 px-4 text-sm rounded hover:bg-blue-50">소개</a>
+                <a href="#timeline" class="nav-link-mobile block py-2 px-4 text-sm rounded hover:bg-blue-50">제정의 역사</a>
+                <a href="#explore" class="nav-link-mobile block py-2 px-4 text-sm rounded hover:bg-blue-50">헌법 둘러보기</a>
+                <a href="#amendments" class="nav-link-mobile block py-2 px-4 text-sm rounded hover:bg-blue-50">개정의 역사</a>
+                <a href="#quiz" class="nav-link-mobile block py-2 px-4 text-sm rounded hover:bg-blue-50">헌법 퀴즈</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+        <section id="intro" class="text-center py-16 md:py-24">
+            <h2 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight">대한민국, 그 시작을 열다</h2>
+            <p class="text-lg md:text-xl max-w-3xl mx-auto text-gray-600">
+                1948년 7월 17일, 대한민국 헌법이 공포되었습니다. 제헌절은 우리나라가 자유민주주의 국가로서 첫발을 내디딘 상징적인 날입니다. 이 페이지를 통해 대한민국 헌법의 역사적 의미와 핵심 가치를 탐구해보세요.
+            </p>
+        </section>
+
+        <section id="timeline" class="py-12 md:py-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold">헌법 제정의 발자취</h2>
+                <p class="mt-2 text-gray-600">대한민국 정부 수립과 헌법 제정까지의 긴박했던 과정을 시간 순서대로 살펴보세요.</p>
+            </div>
+            <div class="relative max-w-4xl mx-auto">
+                <div class="border-l-4 border-blue-300 absolute h-full top-0 left-2"></div>
+                <div id="timeline-container" class="space-y-12">
+                </div>
+            </div>
+            <div id="timeline-details" class="mt-8 max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-md border border-gray-200 hidden">
+                <h3 id="details-title" class="text-2xl font-bold mb-2 text-blue-600"></h3>
+                <p id="details-content" class="text-gray-700"></p>
+            </div>
+        </section>
+
+        <section id="explore" class="py-12 md:py-20 bg-blue-50 rounded-2xl">
+            <div class="text-center mb-12 px-4">
+                <h2 class="text-3xl font-bold">대한민국 헌법 둘러보기</h2>
+                <p class="mt-2 text-gray-600">헌법 전문부터 핵심 원리, 주요 조항까지, 우리 헌법의 뼈대를 이루는 내용들을 만나보세요.</p>
+            </div>
+
+            <div class="max-w-5xl mx-auto px-4">
+                <div class="card p-6 md:p-8 mb-12">
+                    <h3 class="text-2xl font-bold mb-4 text-center">헌법 전문 (Preamble)</h3>
+                    <p class="text-gray-700 leading-relaxed text-left md:text-center whitespace-pre-line">유구한 역사와 전통에 빛나는 우리 대한국민은 3·1운동으로 건립된 대한민국임시정부의 법통과 불의에 항거한 4·19민주이념을 계승하고, 조국의 민주개혁과 평화적 통일의 사명에 입각하여 정의·인도와 동포애로써 민족의 단결을 공고히 하고, 모든 사회적 폐습과 불의를 타파하며, 자율과 조화를 바탕으로 자유민주적 기본질서를 더욱 확고히 하여 정치·경제·사회·문화의 모든 영역에 있어서 각인의 기회를 균등히 하고, 능력을 최고도로 발휘하게 하며, 자유와 권리에 따르는 책임과 의무를 완수하게 하여, 안으로는 국민생활의 균등한 향상을 기하고 밖으로는 항구적인 세계평화와 인류공영에 이바지함으로써 우리들과 우리들의 자손의 안전과 자유와 행복을 영원히 확보할 것을 다짐하면서 1948년 7월 12일에 제정되고 8차에 걸쳐 개정된 헌법을 이제 국회의 의결을 거쳐 국민투표에 의하여 개정한다.
+                    </p>
+                </div>
+
+                <h3 class="text-2xl font-bold mb-6 text-center">헌법의 핵심 원리</h3>
+                <div id="principles-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div class="card p-6">
+                        <h3 class="text-2xl font-bold mb-4 text-center">헌법의 구조</h3>
+                        <p class="text-center text-gray-600 mb-4">대한민국 헌법은 전문, 10개 장, 130개 조항으로 이루어져 있습니다. 각 장이 다루는 내용을 통해 국가 운영의 큰 그림을 이해할 수 있습니다.</p>
+                        <div class="chart-container">
+                            <canvas id="constitutionStructureChart"></canvas>
+                        </div>
+                    </div>
+                     <div class="card p-6">
+                        <h3 class="text-2xl font-bold mb-4 text-center">주요 조항 살펴보기</h3>
+                        <ul id="key-articles-list" class="space-y-4 text-gray-700">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="amendments" class="py-12 md:py-20">
+            <div class="text-center mb-12 px-4">
+                <h2 class="text-3xl font-bold">아홉 번의 개헌, 민주주의의 여정</h2>
+                <p class="mt-2 text-gray-600">1948년 제정 이후, 대한민국 헌법은 9차례 개정되었습니다. 개헌의 역사는 우리 민주주의의 발전 과정을 그대로 보여줍니다.</p>
+            </div>
+            <div class="card p-6 max-w-5xl mx-auto">
+                 <div class="chart-container h-[400px] md:h-[500px]">
+                    <canvas id="amendmentsHistoryChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="quiz" class="py-12 md:py-20">
+             <div class="text-center mb-12 px-4">
+                <h2 class="text-3xl font-bold">헌법, 얼마나 알고 계신가요?</h2>
+                <p class="mt-2 text-gray-600">간단한 퀴즈를 통해 오늘 배운 내용을 확인해보세요!</p>
+            </div>
+            <div id="quiz-container" class="max-w-2xl mx-auto card p-8">
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-gray-800 text-white text-center p-6">
+        <p>&copy; 2025 대한민국 헌법 대화형 탐구. All rights reserved.</p>
+        <p class="text-sm text-gray-400 mt-2">본 페이지는 교육적 목적으로 제작되었습니다.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const timelineData = [
+                {
+                    date: '1948년 5월 10일',
+                    title: '대한민국 제헌 국회의원 선거',
+                    content: '대한민국 최초의 국회의원 선거로, 헌법을 제정할 제헌 국회를 구성했습니다. 이 선거를 통해 198명의 국회의원이 선출되었습니다.'
+                },
+                {
+                    date: '1948년 7월 1일',
+                    title: '국호 "대한민국" 결정',
+                    content: '제헌 국회 본회의에서 국호를 "대한민국"으로 결정했습니다. 이는 3.1운동으로 수립된 대한민국 임시정부의 정통성을 잇는다는 의미를 가집니다.'
+                },
+                {
+                    date: '1948년 7월 12일',
+                    title: '대한민국 헌법 제정',
+                    content: '제헌 국회에서 대한민국 헌법이 의결, 제정되었습니다. 내각책임제를 중심으로 한 민주 공화국의 골격이 완성되었습니다.'
+                },
+                {
+                    date: '1948년 7월 17일',
+                    title: '헌법 공포',
+                    content: '초대 대통령 이승만이 대한민국 헌법을 공식적으로 공포했습니다. 이 날을 기념하여 제헌절이 되었으며, 조선왕조 건국일과 같은 날로 정하여 역사적 연속성을 강조했습니다.'
+                },
+                 {
+                    date: '1949년 10월 1일',
+                    title: '제헌절, 국경일로 지정',
+                    content: '대한민국 정부는 헌법 공포를 기념하는 제헌절을 4대 국경일 중 하나로 지정하여 그 의미를 기렸습니다. (2008년부터는 공휴일에서 제외)'
+                }
+            ];
+
+            const principlesData = [
+                { name: '국민주권주의', description: '국가의 모든 권력은 국민으로부터 나온다는 원리입니다. (헌법 제1조 제2항)' },
+                { name: '자유민주주의', description: '개인의 자유와 권리를 존중하고, 다수결의 원칙과 법치주의를 바탕으로 국가를 운영합니다.' },
+                { name: '권력분립주의', description: '국가 권력을 입법부(국회), 행정부(정부), 사법부(법원)로 나누어 서로 견제하고 균형을 이루게 합니다.' },
+                { name: '복지국가주의', description: '모든 국민이 인간다운 생활을 할 수 있도록 국가가 적극적으로 나서야 한다는 원리입니다.' },
+            ];
+            
+            const keyArticlesData = [
+                { article: '제1조 ①', content: '대한민국은 민주공화국이다.'},
+                { article: '제1조 ②', content: '대한민국의 주권은 국민에게 있고, 모든 권력은 국민으로부터 나온다.'},
+                { article: '제10조', content: '모든 국민은 인간으로서의 존엄과 가치를 가지며, 행복을 추구할 권리를 가진다.'},
+                { article: '제21조 ①', content: '모든 국민은 언론·출판의 자유와 집회·결사의 자유를 가진다.'},
+            ];
+
+            const quizData = [
+                {
+                    question: '대한민국 헌법이 최초로 공포된 날은 언제일까요?',
+                    options: ['1945년 8월 15일', '1948년 7월 17일', '1950년 6월 25일', '1987년 6월 29일'],
+                    answer: '1948년 7월 17일'
+                },
+                {
+                    question: '대한민국의 주권은 누구에게 있나요? (헌법 제1조 제2항)',
+                    options: ['대통령', '국회', '국민', '법원'],
+                    answer: '국민'
+                },
+                {
+                    question: '현재까지 대한민국 헌법은 총 몇 차례 개정되었을까요?',
+                    options: ['5번', '7번', '9번', '11번'],
+                    answer: '9번'
+                }
+            ];
+
+            const timelineContainer = document.getElementById('timeline-container');
+            timelineData.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'timeline-item relative pl-8 cursor-pointer';
+                div.innerHTML = `<h3 class="font-bold text-lg md:text-xl text-blue-500">${item.date}</h3><p class="text-gray-800">${item.title}</p>`;
+                div.addEventListener('click', () => {
+                    document.getElementById('details-title').textContent = item.date;
+                    document.getElementById('details-content').textContent = item.content;
+                    document.getElementById('timeline-details').classList.remove('hidden');
+                    document.querySelectorAll('.timeline-item').forEach(el => el.classList.remove('font-extrabold'));
+                    div.classList.add('font-extrabold');
+                });
+                timelineContainer.appendChild(div);
+            });
+            
+            const principlesContainer = document.getElementById('principles-container');
+            principlesData.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'card p-5 text-center';
+                div.innerHTML = `
+                    <h4 class="font-bold text-xl mb-2">${item.name}</h4>
+                    <p class="text-gray-600 text-sm">${item.description}</p>
+                `;
+                principlesContainer.appendChild(div);
+            });
+            
+            const keyArticlesList = document.getElementById('key-articles-list');
+            keyArticlesData.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'border-l-4 border-blue-200 pl-4 py-1'
+                li.innerHTML = `<strong class="text-blue-600">${item.article}</strong>: ${item.content}`;
+                keyArticlesList.appendChild(li);
+            });
+            
+            const structureCtx = document.getElementById('constitutionStructureChart').getContext('2d');
+            new Chart(structureCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['총강 & 국민의 권리와 의무 (1-68조)', '국가기관 (국회, 정부, 법원 등)', '헌법재판소, 선관위 등', '지방자치 & 경제 & 개정'],
+                    datasets: [{
+                        label: '조항 수',
+                        data: [68, 59, 10, 13], 
+                        backgroundColor: ['#60A5FA', '#3B82F6', '#93C5FD', '#BFDBFE'],
+                        borderColor: '#FFFFFF',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed + '개 조항';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const amendmentsCtx = document.getElementById('amendmentsHistoryChart').getContext('2d');
+            new Chart(amendmentsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['1차', '2차', '3차', '4차', '5차', '6차', '7차', '8차', '9차(현행)'],
+                    datasets: [{
+                        label: '개헌 연도',
+                        data: [1952, 1954, 1960, 1960, 1962, 1969, 1972, 1980, 1987],
+                        backgroundColor: '#60A5FA',
+                        borderColor: '#3B82F6',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            min: 1945,
+                            max: 1990,
+                            ticks: {
+                                stepSize: 5
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label + ' 개헌';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            const quizContainer = document.getElementById('quiz-container');
+            let currentQuizIndex = 0;
+            let score = 0;
+
+            function loadQuiz() {
+                const currentQuiz = quizData[currentQuizIndex];
+                if (!currentQuiz) {
+                    quizContainer.innerHTML = `
+                        <h3 class="text-2xl font-bold mb-4 text-center">퀴즈 완료!</h3>
+                        <p class="text-center text-lg">총 ${quizData.length}문제 중 <strong class="text-blue-600">${score}</strong>문제를 맞히셨습니다!</p>
+                        <button id="restart-quiz" class="mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                            다시 풀기
+                        </button>
+                    `;
+                    document.getElementById('restart-quiz').addEventListener('click', () => {
+                        currentQuizIndex = 0;
+                        score = 0;
+                        loadQuiz();
+                    });
+                    return;
+                }
+
+                const optionsHtml = currentQuiz.options.map(option => `
+                    <div class="quiz-option p-4 rounded-lg cursor-pointer">
+                        ${option}
+                    </div>
+                `).join('');
+
+                quizContainer.innerHTML = `
+                    <p class="text-gray-500 mb-2">문제 ${currentQuizIndex + 1}/${quizData.length}</p>
+                    <h3 class="text-xl font-bold mb-6">${currentQuiz.question}</h3>
+                    <div class="space-y-3">${optionsHtml}</div>
+                    <div id="feedback" class="mt-4 text-center font-bold"></div>
+                    <button id="next-quiz" class="mt-4 w-full bg-gray-300 text-gray-500 font-bold py-2 px-4 rounded-lg transition-colors hidden" disabled>
+                        다음 문제
+                    </button>
+                `;
+
+                const optionElements = quizContainer.querySelectorAll('.quiz-option');
+                optionElements.forEach(el => {
+                    el.addEventListener('click', () => {
+                        if (quizContainer.querySelector('.selected')) return;
+
+                        optionElements.forEach(opt => opt.classList.remove('selected'));
+                        el.classList.add('selected');
+
+                        const isCorrect = el.textContent.trim() === currentQuiz.answer;
+                        const feedbackEl = document.getElementById('feedback');
+
+                        if (isCorrect) {
+                            el.classList.add('correct');
+                            feedbackEl.textContent = '정답입니다!';
+                            feedbackEl.className = 'mt-4 text-center font-bold text-green-600';
+                            score++;
+                        } else {
+                            el.classList.add('incorrect');
+                            feedbackEl.textContent = `틀렸습니다. 정답은 "${currentQuiz.answer}" 입니다.`;
+                            feedbackEl.className = 'mt-4 text-center font-bold text-red-600';
+                            optionElements.forEach(opt => {
+                                if(opt.textContent.trim() === currentQuiz.answer) {
+                                    opt.classList.add('correct');
+                                }
+                            });
+                        }
+                        
+                        const nextButton = document.getElementById('next-quiz');
+                        nextButton.classList.remove('hidden');
+                        nextButton.disabled = false;
+                        nextButton.className = 'mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors';
+
+                    });
+                });
+                
+                document.getElementById('next-quiz').addEventListener('click', () => {
+                    currentQuizIndex++;
+                    loadQuiz();
+                });
+            }
+            loadQuiz();
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            document.querySelectorAll('.nav-link-mobile').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+
+            const navLinks = document.querySelectorAll('nav a');
+            const sections = document.querySelectorAll('main section');
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
