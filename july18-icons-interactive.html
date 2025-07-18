@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7월 18일: 경계를 허문 아이콘들</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Iconic Gold (Gray, Black, Amber) -->
+    <!-- Application Structure Plan: The application is built around the central theme "Icons Who Broke Boundaries." It is divided into three focused sections: 1) "Beyond the Boundaries of Justice" for Nelson Mandela, 2) "Beyond the Boundaries of Exploration" for John Glenn, and 3) "Beyond the Boundaries of Culture" for artists like Hunter S. Thompson and Vin Diesel. This structure allows for a deep dive into the two primary figures (Mandela, Glenn) with dedicated interactive elements (timeline, mission dashboard), while efficiently presenting the cultural figures using a card-based layout. This design prioritizes narrative depth and user engagement over a simple list. -->
+    <!-- Visualization & Content Choices: 
+        - Nelson Mandela's Life: An interactive timeline (HTML/JS) is used to convey the immense span of his struggle and triumph. Clicking a year reveals details, turning his biography into an explorable journey.
+        - John Glenn's Orbit: A "Mission Dashboard" (HTML/JS) visualizes the key stages of his Friendship 7 flight. This is more engaging than text, providing a sense of progression and highlighting the technical achievement.
+        - Cultural Icons: Clickable cards (HTML/JS) are used for Hunter S. Thompson, Vin Diesel, etc. This is an efficient way to present multiple figures, allowing users to choose who to learn about without cluttering the UI.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; scroll-behavior: smooth; }
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+            padding-bottom: 30px;
+            border-left: 3px solid #d1d5db;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -11px;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: white;
+            border: 3px solid #f59e0b;
+            transition: background-color 0.3s;
+        }
+        .timeline-item.active::before, .timeline-item:hover::before {
+            background-color: #f59e0b;
+        }
+        .mission-point {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background-color: #4b5563;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 0 8px rgba(0,0,0,0.5);
+        }
+        .mission-point.active, .mission-point:hover {
+            background-color: #f59e0b;
+            transform: scale(1.25);
+        }
+        #mission-path-container {
+            background-color: #1f2937; /* A dark blue-gray space color */
+            background-image: 
+                radial-gradient(ellipse at 50% 150%, #374151 0%, transparent 70%), /* Earth's curve glow */
+                radial-gradient(circle at 15% 25%, white 0.5px, transparent 2px), /* Star */
+                radial-gradient(circle at 80% 40%, white 0.5px, transparent 2px), /* Star */
+                radial-gradient(circle at 45% 60%, white 0.5px, transparent 2px), /* Star */
+                radial-gradient(circle at 90% 85%, white 0.5px, transparent 2px); /* Star */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-gray-900">7월 18일생 아이콘들</h1>
+            <div class="hidden md:flex space-x-6">
+                <a href="#intro" class="text-gray-600 hover:text-amber-600">소개</a>
+                <a href="#justice-boundary" class="text-gray-600 hover:text-amber-600">정의의 경계</a>
+                <a href="#exploration-boundary" class="text-gray-600 hover:text-amber-600">탐험의 경계</a>
+                <a href="#culture-boundary" class="text-gray-600 hover:text-amber-600">문화의 경계</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+        <section id="intro" class="text-center my-12 md:my-16">
+            <h2 class="text-4xl md:text-5xl font-extrabold text-amber-600 mb-4">경계를 허문 아이콘들</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600">
+                7월 18일은 인류의 역사에 지울 수 없는 족적을 남긴 인물들이 태어난 날입니다. 이들은 정치, 과학, 문화의 영역에서 기존의 질서와 한계에 도전하며 새로운 길을 열었습니다. 불가능해 보였던 경계를 무너뜨린 이들의 위대한 삶을 탐험해 보세요.
+            </p>
+        </section>
+
+        <div id="app" class="space-y-20">
+            
+            <section id="justice-boundary" class="scroll-mt-24">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-gray-900">정의의 경계를 넘어서</h3>
+                    <p class="mt-4 max-w-2xl mx-auto text-gray-600">한 사람의 신념이 어떻게 국가의 가장 깊은 분열을 치유하고 세계에 영감을 주었는지, 넬슨 만델라의 일대기를 통해 확인해 보세요.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+                    <div class="md:col-span-1">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <div class="text-5xl mb-4">🕊️</div>
+                            <h4 class="text-2xl font-bold text-gray-900">넬슨 만델라</h4>
+                            <p class="text-md text-amber-600 font-semibold">1918-2013</p>
+                            <p class="mt-2 text-gray-700">남아프리카 공화국의 반아파르트헤이트 혁명가이자 초대 흑인 대통령. 27년간의 수감 생활을 이겨내고 용서와 화해의 리더십으로 국가를 통합한 20세기 최고의 지도자입니다.</p>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <div id="mandela-timeline" class="relative">
+                            <!-- Timeline items will be injected by JS -->
+                        </div>
+                        <div id="timeline-info-box" class="mt-4 p-6 bg-amber-50 rounded-lg min-h-[150px] transition-all duration-300">
+                            <p class="text-gray-600">타임라인의 연도를 클릭하여 넬슨 만델라의 삶의 주요 순간들을 확인해보세요.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="exploration-boundary" class="scroll-mt-24">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-gray-900">탐험의 경계를 넘어서</h3>
+                    <p class="mt-4 max-w-2xl mx-auto text-gray-600">인류가 지구의 중력을 벗어나 우주로 나아간 역사적인 순간, 존 글렌의 비행을 미션 대시보드를 통해 재구성했습니다.</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                        <div class="lg:col-span-2">
+                            <div class="text-5xl mb-4">🚀</div>
+                            <h4 class="text-2xl font-bold text-gray-900">존 글렌</h4>
+                            <p class="text-md text-amber-600 font-semibold">1921-2016</p>
+                            <p class="mt-2 text-gray-700">미국 최초로 지구 궤도를 비행한 우주비행사이자 연방 상원의원. 냉전 시대 미국의 우주 개발을 이끈 '머큐리 세븐'의 일원으로, 국가적 영웅으로 추앙받았습니다.</p>
+                            <div id="mission-info-box" class="mt-6 p-4 bg-gray-100 rounded-lg min-h-[120px]">
+                                <p class="text-gray-600">미션 경로의 포인트를 클릭하여 비행 단계별 정보를 확인해보세요.</p>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-3">
+                            <h5 class="font-bold text-lg text-center mb-4">프렌드십 7호 미션 경로</h5>
+                            <div id="mission-path-container" class="relative w-full h-64 md:h-80 rounded-lg overflow-hidden">
+                                <!-- Background is now set via CSS -->
+                                <div id="mission-points">
+                                    <!-- Mission points will be injected by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="culture-boundary" class="scroll-mt-24">
+                 <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-gray-900">문화의 경계를 넘어서</h3>
+                    <p class="mt-4 max-w-2xl mx-auto text-gray-600">저널리즘, 문학, 영화 등 각자의 무대에서 기존의 규칙을 깨고 자신만의 스타일을 창조한 문화적 아이콘들을 만나보세요.</p>
+                </div>
+                <div id="culture-icons-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                    <!-- Culture icon cards will be injected by JS -->
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="bg-gray-900 text-white mt-20 py-8">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 7월 18일 아이콘 탐구.</p>
+        </div>
+    </footer>
+
+<script>
+const appData = {
+    mandelaTimeline: [
+        { year: "1944", title: "ANC 가입", info: "아프리카 민족회의(ANC)에 가입하여 본격적으로 반아파르트헤이트 운동에 투신합니다." },
+        { year: "1964", title: "리보니아 재판", info: "내란 혐의로 종신형을 선고받습니다. 법정에서 '나는 백인 지배와 흑인 지배 모두에 맞서 싸웠다... 이상을 위해 나는 기꺼이 죽을 준비가 되어 있다'는 명연설을 남깁니다." },
+        { year: "1964-1982", title: "로벤섬 수감", info: "대서양의 악명 높은 감옥 '로벤섬'에서 18년간 복역하며 채석장에서 강제 노역을 합니다." },
+        { year: "1990", title: "석방", info: "27년간의 수감 생활 끝에 F. W. 데 클레르크 대통령에 의해 석방됩니다. 그의 석방은 아파르트헤이트 종식의 서막을 알립니다." },
+        { year: "1993", title: "노벨 평화상", info: "아파르트헤이트를 평화적으로 종식시킨 공로를 인정받아 데 클레르크와 함께 노벨 평화상을 공동 수상합니다." },
+        { year: "1994", title: "대통령 취임", info: "남아프리카 공화국 최초의 모든 인종이 참여한 민주 선거에서 승리하여 첫 흑인 대통령으로 취임합니다." }
+    ],
+    glennMission: [
+        { stage: "1", title: "발사", top: '70%', left: '10%', info: "1962년 2월 20일, 프렌드십 7호가 케이프 커내버럴에서 발사되어 우주로 향합니다." },
+        { stage: "2", title: "궤도 진입", top: '30%', left: '30%', info: "발사 후 약 5분 만에 성공적으로 지구 궤도에 진입합니다. 글렌은 '경치는 장관이다'라는 말을 남깁니다." },
+        { stage: "3", title: "궤도 비행", top: '20%', left: '50%', info: "약 4시간 55분 동안 지구를 세 바퀴 비행하며 무중력 상태와 우주 환경에 대한 데이터를 수집합니다." },
+        { stage: "4", title: "재진입", top: '30%', left: '70%', info: "대기권 재진입 시 우주선의 방열판이 헐거워졌다는 경고가 있었으나, 이는 센서 오류로 밝혀졌습니다. 긴장감 넘치는 순간이었습니다." },
+        { stage: "5", title: "착수", top: '70%', left: '90%', info: "대서양에 성공적으로 착수하여 미 해군 구축함에 의해 구조됩니다. 그는 미국의 국가적 영웅이 되었습니다." }
+    ],
+    cultureIcons: [
+        {
+            name: "헌터 S. 톰프슨",
+            period: "1937-2005",
+            title: "곤조 저널리즘의 창시자",
+            icon: "✍️",
+            summary: "기자가 사건의 중심에 뛰어들어 주관적인 경험을 서술하는 '곤조 저널리즘'을 창시했습니다. 그의 글은 기성세대의 위선과 미국 사회의 어두운 단면을 날카롭게 파고들었습니다.",
+            details: "대표작 《라스베이거스의 공포와 혐오》는 1960년대 반문화 운동의 정수를 담은 작품으로 평가받습니다. 그는 전통적인 저널리즘의 객관성이라는 경계를 허물고, 문학과 저널리즘을 결합한 새로운 글쓰기 방식을 개척했습니다."
+        },
+        {
+            name: "빈 디젤",
+            period: "1967-현재",
+            title: "액션 프랜차이즈의 제왕",
+            icon: "🚗",
+            summary: "영화 《분노의 질주》 시리즈의 주연이자 제작자. 단순한 액션 스타를 넘어, '가족'이라는 주제를 중심으로 한 블록버스터 프랜차이즈를 성공적으로 이끌며 새로운 흥행 공식을 만들었습니다.",
+            details: "그는 인종적으로 다양한 캐스팅을 통해 전 세계 관객의 공감을 얻었으며, 소셜 미디어를 적극적으로 활용하여 팬들과 소통하는 새로운 유형의 스타상을 제시했습니다. 그는 배우와 제작자의 경계를 넘나들며 자신만의 브랜드를 구축했습니다."
+        },
+        {
+            name: "크리스틴 벨",
+            period: "1980-현재",
+            title: "다재다능한 현대의 아이콘",
+            icon: "🎤",
+            summary: "드라마 《베로니카 마스》, 영화 《겨울왕국》의 '안나' 목소리 연기 등으로 유명한 배우. 특유의 재치와 다재다능함으로 코미디와 드라마, 뮤지컬의 경계를 자유롭게 넘나듭니다.",
+            details: "그녀는 사랑스러운 캐릭터 연기뿐만 아니라, 사회 문제에 대한 적극적인 발언과 자선 활동으로도 잘 알려져 있습니다. 벨은 전통적인 여배우의 역할을 넘어, 대중에게 긍정적인 영향을 미치는 현대적인 롤모델로 자리매김했습니다."
+        },
+        {
+            name: "윌리엄 메이크피스 새커리",
+            period: "1811-1863",
+            title: "빅토리아 시대의 풍자가",
+            icon: "📖",
+            summary: "영국의 소설가. 대표작 《허영의 시장》을 통해 빅토리아 시대 상류층의 허례허식과 속물근성을 신랄하게 풍자했습니다.",
+            details: "그는 동시대 작가인 찰스 디킨스와 라이벌 관계를 형성하며 19세기 영국 문학의 황금기를 이끌었습니다. 새커리는 낭만적인 소설이 주를 이루던 시대에, 사회의 위선을 꿰뚫는 사실주의적 시선으로 문학의 경계를 넓혔습니다."
+        }
+    ]
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Mandela Timeline
+    const timelineContainer = document.getElementById('mandela-timeline');
+    const timelineInfoBox = document.getElementById('timeline-info-box');
+    if (timelineContainer && timelineInfoBox) {
+        appData.mandelaTimeline.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'timeline-item cursor-pointer';
+            div.innerHTML = `<h5 class="font-bold text-lg">${item.year}</h5><p class="text-gray-600">${item.title}</p>`;
+            div.addEventListener('click', () => {
+                timelineInfoBox.innerHTML = `<h5 class='font-bold text-amber-700'>${item.year}: ${item.title}</h5><p class='mt-2 text-gray-800'>${item.info}</p>`;
+                document.querySelectorAll('.timeline-item').forEach(el => el.classList.remove('active'));
+                div.classList.add('active');
+            });
+            timelineContainer.appendChild(div);
+        });
+    }
+
+    // Glenn Mission
+    const missionPointsContainer = document.getElementById('mission-points');
+    const missionInfoBox = document.getElementById('mission-info-box');
+    if (missionPointsContainer && missionInfoBox) {
+        appData.glennMission.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'mission-point';
+            div.style.top = item.top;
+            div.style.left = item.left;
+            div.textContent = item.stage;
+            div.addEventListener('click', () => {
+                missionInfoBox.innerHTML = `<h5 class='font-bold text-amber-700'>단계 ${item.stage}: ${item.title}</h5><p class='mt-2 text-gray-600'>${item.info}</p>`;
+                document.querySelectorAll('.mission-point').forEach(el => el.classList.remove('active'));
+                div.classList.add('active');
+            });
+            missionPointsContainer.appendChild(div);
+        });
+    }
+
+    // Culture Icons
+    const cultureContainer = document.getElementById('culture-icons-container');
+    if (cultureContainer) {
+        appData.cultureIcons.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-lg shadow-md p-6';
+            card.innerHTML = `
+                <div class="flex items-center mb-4">
+                    <div class="text-4xl mr-4">${item.icon}</div>
+                    <div>
+                        <h4 class="text-xl font-bold text-gray-900">${item.name}</h4>
+                        <p class="text-sm text-amber-600 font-semibold">${item.period}</p>
+                    </div>
+                </div>
+                <h5 class="font-bold text-gray-800 mb-2">${item.title}</h5>
+                <p class="text-gray-600 mb-4">${item.summary}</p>
+                <details class="text-sm">
+                    <summary class="cursor-pointer font-semibold text-amber-700 hover:underline">더보기</summary>
+                    <p class="mt-2 text-gray-600">${item.details}</p>
+                </details>
+            `;
+            cultureContainer.appendChild(card);
+        });
+    }
+});
+</script>
+</body>
+</html>
