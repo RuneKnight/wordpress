@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>반짝반짝! 나도 우주여행 갈 수 있을까?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Cosmic Dawn -->
+    <!-- Application Structure Plan: The application is designed as a single, scrolling narrative to guide young users through the topic of private space travel. The structure is thematic: 1. Hero/Intro (Engage), 2. Interactive Company Explorer (Inform/Organize), 3. Visual Feature Comparison (Compare), 4. Future Outlook (Inspire). This story-like flow is more intuitive and engaging for the target audience than a dry, report-style layout. The core interaction is a tab-based system for exploring SpaceX and Blue Origin, which encourages active participation and focuses attention on one concept at a time, enhancing comprehension. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: General introduction to space travel. -> Goal: Engage. -> Viz/Presentation: Animated canvas starfield background with a welcoming title. -> Interaction: Scrolling. -> Justification: Creates an immersive, "wow" effect suitable for the topic and audience. -> Library/Method: HTML5 Canvas with vanilla JS.
+        - Report Info: Descriptions of SpaceX and Blue Origin. -> Goal: Organize/Inform. -> Viz/Presentation: Interactive cards/tabs. -> Interaction: User clicks on a company card to display its details in a central content area. -> Justification: Turns passive reading into an active exploration, improving engagement and information retention. -> Library/Method: HTML/CSS/JS for DOM manipulation.
+        - Report Info: Core technologies/missions of the two companies. -> Goal: Compare. -> Viz/Presentation: A simple, two-column visual diagram created with HTML/CSS. Uses Unicode icons instead of images. -> Interaction: Static visual. -> Justification: Provides a clear, at-a-glance comparison of the key concepts (reusability vs. tourism) without the need for complex charts, as there is no quantitative data. -> Library/Method: HTML/Tailwind CSS.
+        - Report Info: Future of space travel. -> Goal: Inspire. -> Viz/Presentation: Concluding text with optimistic and forward-looking language. -> Interaction: Reading. -> Justification: Ends the narrative on a positive and memorable note. -> Library/Method: HTML/CSS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            background-color: #0d1120;
+        }
+        .text-glow {
+            text-shadow: 0 0 8px rgba(220, 214, 247, 0.7), 0 0 10px rgba(220, 214, 247, 0.5);
+        }
+        .card-active {
+            border-color: #A78BFA !important;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(167, 139, 250, 0.2), 0 4px 6px -4px rgba(167, 139, 250, 0.2);
+        }
+        .content-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <div id="app" class="min-h-screen">
+
+        <header class="relative text-center py-20 sm:py-32 overflow-hidden">
+            <canvas id="starfield" class="absolute top-0 left-0 w-full h-full z-0"></canvas>
+            <div class="relative z-10 max-w-4xl mx-auto px-4">
+                <h1 class="text-4xl md:text-6xl font-bold text-white text-glow">💫 반짝반짝! 나도 우주여행 갈 수 있을까? 💫</h1>
+                <p class="mt-6 text-lg md:text-xl text-indigo-200">꿈만 같던 우주여행이 현실로 다가오고 있어요!</p>
+            </div>
+        </header>
+        
+        <main class="max-w-5xl mx-auto p-4 sm:p-8">
+
+            <section id="intro" class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 sm:p-10 text-center mb-12 shadow-2xl shadow-indigo-900/20">
+                <h2 class="text-3xl font-bold text-white mb-4">새로운 우주 시대가 열렸어요! 🚀</h2>
+                <p class="text-lg text-gray-300 leading-relaxed max-w-3xl mx-auto">
+                    친구들, 혹시 밤하늘을 보면서 '내가 저 별에 갈 수 있을까?' 하고 생각해 본 적 있나요?
+                    옛날에는 우주에 가는 것이 나라에서만 할 수 있는 아주 특별한 일이었어요. 하지만 이제는 여러 회사에서 멋진 우주선을 만들어 '우리와 함께 우주로 떠나요!'라고 외치기 시작했답니다. 이렇게 우주 여행을 준비하는 회사들을 '민간 우주 기업'이라고 불러요.
+                </p>
+            </section>
+
+            <section id="companies" class="mb-12">
+                 <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-white">우주로 가는 길을 만드는 회사들</h2>
+                    <p class="mt-2 text-indigo-300">가장 유명한 두 회사를 만나볼까요? 카드를 눌러보세요!</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div id="card-spacex" class="company-card cursor-pointer bg-gray-800 p-6 rounded-2xl border-2 border-gray-700 transition-all duration-300 ease-in-out hover:border-violet-400 hover:shadow-xl hover:shadow-violet-500/10">
+                        <div class="flex items-center space-x-4">
+                            <div class="text-4xl">🛰️</div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white">스페이스X</h3>
+                                <p class="text-gray-400">재사용 로켓의 선구자</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="card-blueorigin" class="company-card cursor-pointer bg-gray-800 p-6 rounded-2xl border-2 border-gray-700 transition-all duration-300 ease-in-out hover:border-violet-400 hover:shadow-xl hover:shadow-violet-500/10">
+                        <div class="flex items-center space-x-4">
+                            <div class="text-4xl">🌍</div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white">블루 오리진</h3>
+                                <p class="text-gray-400">꿈의 우주 관광</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="company-details" class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 sm:p-10 min-h-[250px] shadow-2xl shadow-indigo-900/20">
+                    <div id="details-content" class="text-center text-gray-400 flex items-center justify-center h-full">
+                        <p>알고 싶은 회사의 카드를 선택해주세요!</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="comparison" class="mb-12">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-white">어떻게 우주에 갈까요?</h2>
+                    <p class="mt-2 text-indigo-300">두 회사의 특별한 기술을 비교해봐요!</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 text-center shadow-lg">
+                        <div class="text-5xl mb-4">🔄</div>
+                        <h3 class="text-2xl font-bold text-white mb-2">스페이스X: 버스처럼 또 타는 로켓</h3>
+                        <p class="text-gray-300 leading-relaxed">
+                            한 번 사용한 로켓을 버리지 않고, 멋지게 착륙시켜서 다시 사용해요. 이렇게 하면 우주여행 비용이 훨씬 저렴해져서 더 많은 사람이 우주에 갈 수 있게 된답니다!
+                        </p>
+                    </div>
+                     <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 text-center shadow-lg">
+                        <div class="text-5xl mb-4">🤸</div>
+                        <h3 class="text-2xl font-bold text-white mb-2">블루 오리진: 무중력 체험 여행</h3>
+                        <p class="text-gray-300 leading-relaxed">
+                            우주 경계선까지 올라가서 창밖으로 아름다운 지구를 보고, 잠시 동안 우주인처럼 몸이 둥둥 뜨는 신기한 무중력 체험을 할 수 있는 특별한 여행을 만들고 있어요.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="future" class="bg-gradient-to-br from-indigo-900/60 to-violet-900/60 rounded-2xl p-8 sm:p-12 text-center shadow-2xl shadow-indigo-900/20">
+                 <h2 class="text-3xl font-bold text-white mb-4">우리가 맞이할 미래</h2>
+                 <p class="text-lg text-indigo-200 leading-relaxed max-w-3xl mx-auto">
+                    어때요? 꿈만 같았던 우주여행이 이제 정말 눈앞에 다가온 것 같지 않나요? 어쩌면 우리 친구들이 어른이 되었을 때는, 제주도에 비행기 타고 가듯이 우주에 놀러 가는 시대가 올지도 몰라요!
+                    다음에는 또 어떤 신나는 우주 이야기가 기다리고 있을까요? 기대해주세요! ✨
+                 </p>
+            </section>
+        </main>
+
+        <footer class="text-center p-8 text-gray-500">
+            <p>&copy; 2025 우주 탐험대. All rights reserved.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const starfield = document.getElementById('starfield');
+            const ctx = starfield.getContext('2d');
+
+            function resizeCanvas() {
+                starfield.width = window.innerWidth;
+                starfield.height = starfield.parentElement.offsetHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            
+            let stars = [];
+            const numStars = 200;
+
+            for (let i = 0; i < numStars; i++) {
+                stars.push({
+                    x: Math.random(),
+                    y: Math.random(),
+                    size: Math.random() * 2 + 1,
+                    speed: Math.random() * 0.2 + 0.1
+                });
+            }
+
+            function drawStars() {
+                ctx.clearRect(0, 0, starfield.width, starfield.height);
+                ctx.fillStyle = 'white';
+                stars.forEach(star => {
+                    ctx.beginPath();
+                    ctx.arc(star.x * starfield.width, star.y * starfield.height, star.size / 2, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    star.y += star.speed * (1 / 60);
+                    if (star.y * starfield.height > starfield.height) {
+                        star.y = 0;
+                        star.x = Math.random();
+                    }
+                });
+            }
+
+            function animate() {
+                drawStars();
+                requestAnimationFrame(animate);
+            }
+            
+            resizeCanvas();
+            animate();
+
+            const companyData = {
+                spacex: {
+                    name: '스페이스X (SpaceX)',
+                    founder: '일론 머스크',
+                    description: '로켓을 쏘아 올리고 다시 착륙시켜서 다음에도 또 쓸 수 있게 만드는 기술로 유명해요. 마치 한 번 탄 버스를 다음에도 또 타고, 또 탈 수 있게 하는 것과 같죠! 이렇게 하면 우주여행 비용이 훨씬 저렴해질 수 있답니다.'
+                },
+                blueorigin: {
+                    name: '블루 오리진 (Blue Origin)',
+                    founder: '제프 베이조스',
+                    description: '사람들을 태우고 우주 경계선까지 갔다가 지구로 다시 돌아오는 여행을 준비하고 있어요. 우리가 좋아하는 인터넷 쇼핑몰 \'아마존\'을 만든 분의 회사랍니다. 우주에서 아주 잠시 동안 둥둥 떠다니는 무중력 체험도 할 수 있대요!'
+                }
+            };
+
+            const cardSpaceX = document.getElementById('card-spacex');
+            const cardBlueOrigin = document.getElementById('card-blueorigin');
+            const detailsContent = document.getElementById('details-content');
+            const companyCards = document.querySelectorAll('.company-card');
+
+            function updateDetails(companyKey) {
+                const data = companyData[companyKey];
+                const contentHTML = `
+                    <div class="content-fade-in text-left">
+                        <h3 class="text-2xl font-bold text-white mb-2">${data.name}</h3>
+                        <p class="text-md text-violet-300 mb-4">설립자: ${data.founder}</p>
+                        <p class="text-lg text-gray-300 leading-relaxed">${data.description}</p>
+                    </div>
+                `;
+                detailsContent.innerHTML = contentHTML;
+            }
+
+            function setActiveCard(selectedCard) {
+                companyCards.forEach(card => {
+                    card.classList.remove('card-active');
+                });
+                selectedCard.classList.add('card-active');
+            }
+
+            cardSpaceX.addEventListener('click', () => {
+                updateDetails('spacex');
+                setActiveCard(cardSpaceX);
+            });
+
+            cardBlueOrigin.addEventListener('click', () => {
+                updateDetails('blueorigin');
+                setActiveCard(cardBlueOrigin);
+            });
+        });
+    </script>
+</body>
+</html>
