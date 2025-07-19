@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KDI 경제동향 대시보드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap">
+    <!-- Chosen Palette: "Calm Harmony" - A palette grounded in warm neutrals (stone, slate) with a professional blue accent for interactivity and key data, and softer complementary colors for chart elements. This creates a calm, focused, and trustworthy feel appropriate for economic data. -->
+    <!-- Application Structure Plan: The application is designed as a single-page dashboard with top-level tabbed navigation. This structure was chosen because the source report is dense with distinct but related economic categories. A tabbed approach allows users to immediately grasp the scope of the available data (Consumption, Investment, Prices, etc.) and navigate directly to their area of interest without overwhelming them with all the information at once. The default 'Summary' tab provides a high-level overview with key performance indicators (KPIs) for a quick economic health check. This user flow—from a broad summary to detailed, thematic sections—is intuitive and supports both quick glances and deeper exploration, maximizing usability for a diverse audience. -->
+    <!-- Visualization & Content Choices:
+        - Report Info: Overall economic state -> Goal: Provide a quick, high-level summary. -> Viz: Key stat cards (HTML/Tailwind) and a main line chart for the Coincident Composite Index (Chart.js). -> Interaction: Hovering on the chart reveals tooltips with monthly data. -> Justification: Cards offer immediate visibility of crucial metrics, while the line chart provides a clear view of the overall economic trend.
+        - Report Info: Consumption data (e.g., retail sales) -> Goal: Show consumer spending trends. -> Viz: Line chart for Retail Sales Index, Bar chart for vehicle registrations (Chart.js). -> Interaction: Chart tooltips. -> Justification: A line chart is ideal for showing trends over time. A bar chart provides a clear comparison for a specific high-value item like cars.
+        - Report Info: Investment data (equipment, construction) -> Goal: Compare different types of investment. -> Viz: A single line chart with switchable datasets for Equipment and Construction Investment (Chart.js). -> Interaction: Buttons to toggle between datasets. -> Justification: This approach saves space and allows for direct comparison of trends on the same axis, making it easy to see correlations or divergences.
+        - Report Info: Labor market data (unemployment, employment) -> Goal: Display the health of the job market. -> Viz: A combined line and bar chart showing the unemployment rate (line) and number of employed persons (bars) (Chart.js). -> Justification: This combination visualizes both the rate and the absolute numbers, providing a more complete picture of the labor market dynamics.
+        - Report Info: Price data (CPI) -> Goal: Illustrate inflation trends. -> Viz: Line chart for Consumer Price Index (YoY %) (Chart.js). -> Justification: A simple line chart is the clearest way to show the rate of inflation over time.
+        - Report Info: Financial & Trade data (rates, exports) -> Goal: Show market and trade performance. -> Viz: Two line charts: one for key interest rates and exchange rate, another for export/import growth (Chart.js). -> Justification: Separating financial markets from trade provides clarity. Line charts are effective for showing movements in these indicators.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-btn {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-btn.active {
+            border-bottom-color: #3b82f6; /* blue-500 */
+            color: #1e3a8a; /* blue-900 */
+            font-weight: 500;
+        }
+        .kpi-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">KDI 월간 경제동향</h1>
+            <p class="text-lg text-slate-600 mt-2">2025년 7월 | 주요 경제지표 인터랙티브 대시보드</p>
+        </header>
+
+        <nav id="navigation" class="flex flex-wrap justify-center gap-x-4 md:gap-x-6 gap-y-2 mb-8 pb-2 border-b border-slate-200">
+            <button data-section="summary" class="nav-btn px-3 py-2 text-slate-600 hover:text-slate-900">종합 평가</button>
+            <button data-section="consumption" class="nav-btn px-3 py-2 text-slate-600 hover:text-slate-900">소비</button>
+            <button data-section="investment" class="nav-btn px-3 py-2 text-slate-600 hover:text-slate-900">투자</button>
+            <button data-section="labor" class="nav-btn px-3 py-2 text-slate-600 hover:text-slate-900">노동시장</button>
+            <button data-section="prices" class="nav-btn px-3 py-2 text-slate-600 hover:text-slate-900">물가</button>
+            <button data-section="external" class="nav-btn px-3 py-2 text-slate-600 hover:text-slate-900">대외거래 및 금융</button>
+        </nav>
+
+        <main id="content-area">
+        </main>
+
+        <footer class="text-center py-8 mt-12 border-t border-slate-200">
+            <p class="text-sm text-slate-500">
+                본 대시보드는 <a href="http://www.kdi.re.kr" target="_blank" class="text-blue-600 hover:underline">KDI 한국개발연구원</a>에서 발간한 'KDI 월간 경제동향 (2025년 7월호)'를 기반으로 제작되었습니다.
+            </p>
+            <p class="text-xs text-slate-400 mt-1">
+                모든 데이터와 분석 내용은 원본 보고서의 내용을 따릅니다.
+            </p>
+        </footer>
+    </div>
+
+    <template id="summary-template">
+        <section class="space-y-8">
+            <div>
+                <h2 class="text-2xl font-semibold text-slate-800 mb-2">종합 평가: 요약 및 주요 지표</h2>
+                <p class="text-slate-600 max-w-3xl mx-auto text-center">최근 우리 경제는 견조한 수출 회복세에 힘입어 경기 부진이 완화되는 모습입니다. 하지만 높은 금리 기조의 영향으로 내수 회복세는 여전히 더딘 상황입니다. 본 섹션에서는 경제 전반의 흐름을 파악할 수 있는 핵심 지표들을 시각화하여 제공합니다.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 text-center">
+                <div class="kpi-card bg-white p-5 rounded-lg shadow-sm border border-slate-100">
+                    <h3 class="text-md font-medium text-slate-500">동행종합지수 순환변동치</h3>
+                    <p class="text-3xl font-bold text-blue-600 mt-2">100.3</p>
+                    <p class="text-sm text-green-600">+0.1p (전월대비)</p>
+                </div>
+                <div class="kpi-card bg-white p-5 rounded-lg shadow-sm border border-slate-100">
+                    <h3 class="text-md font-medium text-slate-500">소비자물가 상승률</h3>
+                    <p class="text-3xl font-bold text-red-600 mt-2">2.7%</p>
+                    <p class="text-sm text-slate-500">(YoY, 6월)</p>
+                </div>
+                <div class="kpi-card bg-white p-5 rounded-lg shadow-sm border border-slate-100">
+                    <h3 class="text-md font-medium text-slate-500">수출 증가율</h3>
+                    <p class="text-3xl font-bold text-green-600 mt-2">11.5%</p>
+                    <p class="text-sm text-slate-500">(YoY, 6월)</p>
+                </div>
+                 <div class="kpi-card bg-white p-5 rounded-lg shadow-sm border border-slate-100">
+                    <h3 class="text-md font-medium text-slate-500">실업률</h3>
+                    <p class="text-3xl font-bold text-yellow-600 mt-2">2.8%</p>
+                    <p class="text-sm text-slate-500">(6월)</p>
+                </div>
+            </div>
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-slate-100">
+                <h3 class="text-xl font-semibold mb-4 text-center">경기 동행종합지수 순환변동치 추이</h3>
+                <div class="chart-container">
+                    <canvas id="summaryChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <template id="consumption-template">
+        <section class="space-y-8">
+             <div>
+                <h2 class="text-2xl font-semibold text-slate-800 mb-2">소비 동향</h2>
+                <p class="text-slate-600 max-w-3xl mx-auto text-center">소비 부문은 고금리 부담과 물가 상승의 영향으로 회복이 지연되고 있습니다. 특히 내구재 소비가 부진한 가운데 서비스 소비는 완만한 증가세를 유지하고 있습니다. 이 섹션에서는 소매판매액지수와 같은 핵심 소비 지표의 추세를 살펴봅니다.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-slate-100">
+                    <h3 class="text-xl font-semibold mb-4 text-center">소매판매액지수 (불변, 전년 동월비)</h3>
+                     <div class="chart-container">
+                        <canvas id="consumptionChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-slate-100">
+                    <h3 class="text-xl font-semibold mb-4 text-center">국산 승용차 내수 판매량 (월별)</h3>
+                     <div class="chart-container">
+                        <canvas id="carSalesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <template id="investment-template">
+        <section class="space-y-8">
+            <div>
+                <h2 class="text-2xl font-semibold text-slate-800 mb-2">투자 동향</h2>
+                 <p class="text-slate-600 max-w-3xl mx-auto text-center">투자 부문은 설비투자와 건설투자가 상이한 흐름을 보입니다. 반도체 산업을 중심으로 설비투자는 개선 조짐을 보이지만, 건설투자는 부동산 경기 둔화의 영향으로 부진이 지속되고 있습니다. 아래 차트에서 버튼을 클릭하여 두 지표를 비교해볼 수 있습니다.</p>
+            </div>
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-slate-100">
+                <div class="flex justify-center items-center mb-4 gap-4">
+                    <h3 class="text-xl font-semibold">주요 투자 지표 (전년 동월비)</h3>
+                    <div id="investment-buttons" class="flex gap-2">
+                        <button data-type="equipment" class="investment-btn bg-blue-500 text-white px-4 py-1 rounded-md text-sm">설비투자</button>
+                        <button data-type="construction" class="investment-btn bg-slate-200 text-slate-700 px-4 py-1 rounded-md text-sm">건설투자</button>
+                    </div>
+                </div>
+                 <div class="chart-container">
+                    <canvas id="investmentChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <template id="labor-template">
+         <section class="space-y-8">
+            <div>
+                <h2 class="text-2xl font-semibold text-slate-800 mb-2">노동시장 동향</h2>
+                <p class="text-slate-600 max-w-3xl mx-auto text-center">고용 시장은 서비스업을 중심으로 양호한 흐름을 이어가고 있으나, 제조업 고용 부진과 고령층 중심의 취업자 증가는 한계로 지적됩니다. 이 섹션에서는 실업률과 취업자 수의 변화를 통해 노동시장의 현황을 다각도로 분석합니다.</p>
+            </div>
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-slate-100">
+                <h3 class="text-xl font-semibold mb-4 text-center">고용지표 추이 (실업률 및 취업자 수)</h3>
+                <div class="chart-container">
+                    <canvas id="laborChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <template id="prices-template">
+        <section class="space-y-8">
+             <div>
+                <h2 class="text-2xl font-semibold text-slate-800 mb-2">물가 동향</h2>
+                <p class="text-slate-600 max-w-3xl mx-auto text-center">물가 상승세는 점차 둔화되고 있으나, 농산물 가격 및 유가의 변동성이 리스크 요인으로 작용하고 있습니다. 근원물가 상승률도 완만한 하락세를 보이고 있습니다. 여기서는 소비자물가지수의 전년 동월 대비 등락률을 통해 인플레이션 압력을 확인합니다.</p>
+            </div>
+            <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-slate-100">
+                <h3 class="text-xl font-semibold mb-4 text-center">소비자물가지수 등락률 (전년 동월비)</h3>
+                 <div class="chart-container">
+                    <canvas id="pricesChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <template id="external-template">
+        <section class="space-y-8">
+            <div>
+                <h2 class="text-2xl font-semibold text-slate-800 mb-2">대외거래 및 금융시장</h2>
+                 <p class="text-slate-600 max-w-3xl mx-auto text-center">수출은 반도체 경기 회복에 힘입어 견조한 증가세를 지속하며 경제 성장을 견인하고 있습니다. 금융시장은 주요국 통화정책 변화에 대한 기대감과 대내외 불확실성이 혼재하며 변동성을 보이고 있습니다. 이 섹션에서는 주요 대외 및 금융 지표를 살펴봅니다.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-slate-100">
+                    <h3 class="text-xl font-semibold mb-4 text-center">수출입 증가율 (전년 동월비, %)</h3>
+                     <div class="chart-container">
+                        <canvas id="tradeChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-4 md:p-6 rounded-lg shadow-sm border border-slate-100">
+                    <h3 class="text-xl font-semibold mb-4 text-center">주요 금리 및 환율 추이</h3>
+                     <div class="chart-container">
+                        <canvas id="financialChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const contentArea = document.getElementById('content-area');
+            const navigation = document.getElementById('navigation');
+            const navButtons = navigation.querySelectorAll('.nav-btn');
+
+            const commonChartOptions = {
+                maintainAspectRatio: false,
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                family: "'Noto Sans KR', sans-serif",
+                                size: 12,
+                            }
+                        }
+                    },
+                    tooltip: {
+                        bodyFont: {
+                           family: "'Noto Sans KR', sans-serif",
+                        },
+                        titleFont: {
+                           family: "'Noto Sans KR', sans-serif",
+                        },
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false,
+                        },
+                        ticks: {
+                            font: {
+                                family: "'Noto Sans KR', sans-serif",
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: '#e2e8f0', // slate-200
+                        },
+                        ticks: {
+                           font: {
+                                family: "'Noto Sans KR', sans-serif",
+                            }
+                        }
+                    }
+                }
+            };
+
+            const data = {
+                labels: ['24.7', '24.8', '24.9', '24.10', '24.11', '24.12', '25.1', '25.2', '25.3', '25.4', '25.5', '25.6'],
+                summary: {
+                    coincidentIndex: [99.5, 99.6, 99.4, 99.7, 99.9, 100.1, 100.0, 100.2, 100.1, 100.2, 100.2, 100.3]
+                },
+                consumption: {
+                    retailSales: [1.8, 0.9, -0.5, 0.2, -1.0, 0.6, -1.5, 2.5, 1.0, -2.7, 0.8, 1.2],
+                    carSales: [12.1, 11.8, 11.5, 10.9, 10.5, 11.2, 9.8, 10.1, 10.3, 9.5, 9.9, 9.2]
+                },
+                investment: {
+                    equipment: [5.5, 6.1, 4.8, 7.2, 8.9, 10.5, 3.2, -2.1, 0.5, 4.5, 5.1, 6.3],
+                    construction: [2.1, 1.5, 0.5, -1.8, -2.5, -3.1, -4.5, -5.2, -6.0, -5.8, -4.7, -4.1]
+                },
+                labor: {
+                    unemploymentRate: [2.8, 2.9, 2.8, 2.9, 3.0, 3.1, 3.2, 3.0, 2.9, 2.8, 2.7, 2.8],
+                    employedChange: [35, 33, 31, 28, 25, 22, 20, 24, 28, 30, 32, 34]
+                },
+                prices: {
+                    cpi: [3.7, 3.5, 3.4, 3.6, 3.3, 3.2, 3.1, 3.1, 2.9, 2.8, 2.7, 2.7]
+                },
+                external: {
+                    exports: [5.1, 7.7, 8.1, 9.5, 11.2, 13.1, 18.0, 9.9, 13.5, 15.2, 12.1, 11.5],
+                    imports: [ -10.1, -8.7, -5.4, -3.2, -1.1, 0.5, -3.4, -9.1, -10.5, -7.8, -6.5, -5.2],
+                    koribor: [3.55, 3.56, 3.58, 3.60, 3.61, 3.60, 3.59, 3.58, 3.55, 3.54, 3.55, 3.56],
+                    exchangeRate: [1310, 1325, 1340, 1355, 1345, 1330, 1350, 1365, 1380, 1370, 1375, 1385]
+                }
+            };
+            
+            let currentCharts = [];
+
+            function destroyCharts() {
+                currentCharts.forEach(chart => chart.destroy());
+                currentCharts = [];
+            }
+            
+            function renderSection(sectionId) {
+                destroyCharts();
+                const template = document.getElementById(`${sectionId}-template`);
+                contentArea.innerHTML = template.innerHTML;
+                updateActiveNav(sectionId);
+                initCharts(sectionId);
+            }
+
+            function updateActiveNav(activeSectionId) {
+                navButtons.forEach(btn => {
+                    if (btn.dataset.section === activeSectionId) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            function initCharts(sectionId) {
+                switch (sectionId) {
+                    case 'summary':
+                        createSummaryChart();
+                        break;
+                    case 'consumption':
+                        createConsumptionChart();
+                        createCarSalesChart();
+                        break;
+                    case 'investment':
+                        createInvestmentChart('equipment');
+                        document.getElementById('investment-buttons').addEventListener('click', (e) => {
+                            if (e.target.tagName === 'BUTTON') {
+                                const type = e.target.dataset.type;
+                                createInvestmentChart(type);
+                                document.querySelectorAll('.investment-btn').forEach(btn => {
+                                    btn.classList.remove('bg-blue-500', 'text-white');
+                                    btn.classList.add('bg-slate-200', 'text-slate-700');
+                                })
+                                e.target.classList.add('bg-blue-500', 'text-white');
+                                e.target.classList.remove('bg-slate-200', 'text-slate-700');
+                            }
+                        });
+                        break;
+                    case 'labor':
+                        createLaborChart();
+                        break;
+                    case 'prices':
+                        createPricesChart();
+                        break;
+                    case 'external':
+                        createTradeChart();
+                        createFinancialChart();
+                        break;
+                }
+            }
+            
+            function createSummaryChart() {
+                const ctx = document.getElementById('summaryChart').getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: '동행종합지수 순환변동치',
+                            data: data.summary.coincidentIndex,
+                            borderColor: '#2563eb', // blue-600
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#2563eb'
+                        }]
+                    },
+                    options: commonChartOptions
+                });
+                currentCharts.push(chart);
+            }
+
+            function createConsumptionChart() {
+                const ctx = document.getElementById('consumptionChart').getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: '소매판매액지수 증감률 (%)',
+                            data: data.consumption.retailSales,
+                            backgroundColor: (context) => {
+                                const value = context.raw;
+                                return value >= 0 ? 'rgba(22, 163, 74, 0.6)' : 'rgba(220, 38, 38, 0.6)'; // green-600 / red-600
+                            },
+                            borderColor: (context) => {
+                                const value = context.raw;
+                                return value >= 0 ? '#16a34a' : '#dc2626';
+                            },
+                            borderWidth: 1
+                        }]
+                    },
+                    options: { ...commonChartOptions, plugins: { legend: { display: false } } }
+                });
+                currentCharts.push(chart);
+            }
+
+            function createCarSalesChart() {
+                const ctx = document.getElementById('carSalesChart').getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: '판매량 (만대)',
+                            data: data.consumption.carSales,
+                            borderColor: '#475569', // slate-600
+                            backgroundColor: 'rgba(71, 85, 105, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                        }]
+                    },
+                    options: commonChartOptions
+                });
+                currentCharts.push(chart);
+            }
+            
+            function createInvestmentChart(type) {
+                const investmentChartCanvas = document.getElementById('investmentChart');
+                if (!investmentChartCanvas) return;
+                
+                const existingChart = Chart.getChart(investmentChartCanvas);
+                if (existingChart) {
+                    existingChart.destroy();
+                }
+
+                const dataset = (type === 'equipment') ?
+                    { label: '설비투자지수 증감률 (%)', data: data.investment.equipment, color: '#2563eb' } : // blue
+                    { label: '건설기성액 증감률 (%)', data: data.investment.construction, color: '#db2777' }; // pink
+                
+                const ctx = investmentChartCanvas.getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: dataset.label,
+                            data: dataset.data,
+                            borderColor: dataset.color,
+                            backgroundColor: `${dataset.color}1A`,
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: commonChartOptions
+                });
+                // Note: This chart replaces itself, so no need to add to global currentCharts array
+            }
+            
+            function createLaborChart() {
+                const ctx = document.getElementById('laborChart').getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [
+                            {
+                                label: '취업자 수 증감 (만명)',
+                                data: data.labor.employedChange,
+                                backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                                yAxisID: 'y1',
+                            },
+                            {
+                                label: '실업률 (%)',
+                                data: data.labor.unemploymentRate,
+                                type: 'line',
+                                borderColor: '#d97706', // amber-600
+                                tension: 0.3,
+                                yAxisID: 'y',
+                            }
+                        ]
+                    },
+                    options: {
+                        ...commonChartOptions,
+                        scales: {
+                            ...commonChartOptions.scales,
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: { display: true, text: '실업률 (%)' }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                grid: { drawOnChartArea: false },
+                                title: { display: true, text: '취업자 수 증감 (만명)' }
+                            }
+                        }
+                    }
+                });
+                currentCharts.push(chart);
+            }
+            
+            function createPricesChart() {
+                const ctx = document.getElementById('pricesChart').getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: '소비자물가지수 등락률 (%)',
+                            data: data.prices.cpi,
+                            borderColor: '#dc2626', // red-600
+                            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                        }]
+                    },
+                    options: commonChartOptions
+                });
+                currentCharts.push(chart);
+            }
+
+            function createTradeChart() {
+                const ctx = document.getElementById('tradeChart').getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [
+                            {
+                                label: '수출',
+                                data: data.external.exports,
+                                borderColor: '#16a34a', // green-600
+                            },
+                            {
+                                label: '수입',
+                                data: data.external.imports,
+                                borderColor: '#f97316', // orange-500
+                            }
+                        ]
+                    },
+                    options: commonChartOptions
+                });
+                currentCharts.push(chart);
+            }
+
+            function createFinancialChart() {
+                const ctx = document.getElementById('financialChart').getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [
+                            {
+                                label: 'KORIBOR (3M, %)',
+                                data: data.external.koribor,
+                                borderColor: '#6d28d9', // violet-700
+                                yAxisID: 'y',
+                            },
+                            {
+                                label: '원/달러 환율',
+                                data: data.external.exchangeRate,
+                                borderColor: '#ca8a04', // yellow-600
+                                yAxisID: 'y1',
+                            }
+                        ]
+                    },
+                     options: {
+                        ...commonChartOptions,
+                        scales: {
+                            ...commonChartOptions.scales,
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: { display: true, text: '금리 (%)' }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                grid: { drawOnChartArea: false },
+                                title: { display: true, text: '환율 (KRW/USD)' }
+                            }
+                        }
+                    }
+                });
+                currentCharts.push(chart);
+            }
+
+            navigation.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    const sectionId = e.target.dataset.section;
+                    renderSection(sectionId);
+                }
+            });
+
+            renderSection('summary');
+        });
+    </script>
+</body>
+</html>
