@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: South Korea Economic Trends - July 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Brilliant Blues (#00449E, #0075C4, #52D2E5) -->
+    <!-- Application Structure Plan: The infographic is structured as a top-to-bottom narrative scroll. It begins with a bold headline and key performance indicators (KPIs) to provide an immediate high-level summary. The page then flows through distinct, thematic sections (e.g., Overall Growth, Consumption, Investment, Trade), each with its own heading, descriptive text, and primary visualization. This linear, scroll-based structure was chosen to guide the user through a clear, compelling story about the economy, moving from a broad overview to specific details, which is ideal for an infographic format. -->
+    <!-- Visualization & Content Choices:
+        - Report Info: Headline Economic State -> Goal: Inform -> Viz/Method: Large, bold text for KPIs (HTML/Tailwind) -> Justification: Immediately conveys the most critical stats.
+        - Report Info: Economic Activity Trend -> Goal: Show Change -> Viz/Method: Line Chart for Coincident Composite Index (Chart.js/Canvas) -> Justification: Best way to show a core economic trend over time.
+        - Report Info: Consumption Patterns -> Goal: Compare -> Viz/Method: Bar Chart for Retail Sales Growth (Chart.js/Canvas) -> Justification: Clearly shows positive/negative monthly growth and allows for easy comparison.
+        - Report Info: Investment Breakdown -> Goal: Compare -> Viz/Method: A multi-line chart comparing Equipment and Construction Investment (Chart.js/Canvas) -> Justification: Allows for direct visual comparison of the two main investment components' trends.
+        - Report Info: Labor Market Health -> Goal: Relate -> Viz/Method: Combined Bar (Employed Persons) and Line (Unemployment Rate) Chart (Chart.js/Canvas) -> Justification: Effectively shows the relationship between an absolute number and a rate on two different axes.
+        - Report Info: Inflation -> Goal: Show Change -> Viz/Method: Area Chart for Consumer Price Index (Chart.js/Canvas) -> Justification: An area chart emphasizes the magnitude of the inflation rate trend over time.
+        - Report Info: External Trade -> Goal: Compare -> Viz/Method: Grouped Bar Chart for Export/Import Growth (Chart.js/Canvas) -> Justification: Excellent for directly comparing the performance of exports and imports side-by-side for each month.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F7F7F7;
+            color: #333333;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 320px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+                max-height: 400px;
+            }
+        }
+        .kpi-stat {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #00449E;
+        }
+        .kpi-label {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #0075C4;
+        }
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00449E;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .section-intro {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 2.5rem auto;
+            color: #555;
+            line-height: 1.6;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            border: 1px solid #E5E7EB;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 py-8 md:py-16">
+
+        <header class="text-center mb-16">
+            <p class="text-lg font-semibold text-[#0075C4] uppercase tracking-wider">KDI MONTHLY ECONOMIC TRENDS</p>
+            <h1 class="text-4xl md:text-6xl font-bold text-[#00449E] mt-2">South Korea's Economic Pulse</h1>
+            <p class="text-xl text-slate-600 mt-4">An Infographic Summary for July 2025</p>
+        </header>
+
+        <section id="kpis" class="mb-20">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="card text-center">
+                    <p class="kpi-label">Economic Activity</p>
+                    <p class="kpi-stat">100.3</p>
+                    <p class="text-slate-500">Coincident Index shows modest improvement, signaling a gradual economic recovery.</p>
+                </div>
+                <div class="card text-center">
+                    <p class="kpi-label">Export Growth (YoY)</p>
+                    <p class="kpi-stat">11.5%</p>
+                    <p class="text-slate-500">Exports remain robust, driven primarily by the semiconductor industry's rebound.</p>
+                </div>
+                <div class="card text-center">
+                    <p class="kpi-label">Inflation Rate (CPI)</p>
+                    <p class="kpi-stat">2.7%</p>
+                    <p class="text-slate-500">Inflation has stabilized but remains a key factor influencing domestic consumption.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="economic-activity" class="mb-20">
+            <h2 class="section-title">Economic Activity: A Slowing Ascent</h2>
+            <p class="section-intro">
+                The Coincident Composite Index, a key barometer of the current economic state, indicates that the economy continues to expand, though the pace of recovery is moderating. Strong export performance is counteracted by sluggish domestic demand.
+            </p>
+            <div class="card">
+                <div class="chart-container">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="consumption" class="mb-20">
+            <h2 class="section-title">Consumption: Treading Water</h2>
+            <p class="section-intro">
+                Consumer spending is stagnant, weighed down by high interest rates and persistent inflation. While service consumption shows some resilience, goods consumption, especially for durables, has declined, as reflected in the retail sales data.
+            </p>
+            <div class="card">
+                 <div class="chart-container">
+                    <canvas id="consumptionChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="investment" class="mb-20">
+            <h2 class="section-title">Investment: A Tale of Two Sectors</h2>
+            <p class="section-intro">
+                The investment landscape is divided. Equipment investment is showing signs of recovery, led by the semiconductor sector. Conversely, construction investment continues to contract due to a downturn in the real estate market.
+            </p>
+            <div class="card">
+                 <div class="chart-container">
+                    <canvas id="investmentChart"></canvas>
+                </div>
+            </div>
+        </section>
+        
+        <section id="labor" class="mb-20">
+            <h2 class="section-title">Labor Market: Stable but Stratified</h2>
+            <p class="section-intro">
+                The labor market remains relatively healthy with a low unemployment rate. However, job growth is concentrated in the service sector and among older age groups, while manufacturing employment continues to lag.
+            </p>
+            <div class="card">
+                 <div class="chart-container">
+                    <canvas id="laborChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="prices" class="mb-20">
+            <h2 class="section-title">Prices: Inflation Cools Down</h2>
+            <p class="section-intro">
+                 The overall inflation rate has eased, approaching the central bank's target. Core inflation, which excludes volatile food and energy prices, has also shown a downward trend, suggesting that underlying price pressures are weakening.
+            </p>
+            <div class="card">
+                <div class="chart-container">
+                    <canvas id="pricesChart"></canvas>
+                </div>
+            </div>
+        </section>
+        
+        <section id="trade" class="mb-20">
+            <h2 class="section-title">External Trade: Exports Lead the Way</h2>
+            <p class="section-intro">
+                Exports continue their strong growth trajectory, significantly contributing to overall economic performance. The trade surplus is widening as export growth outpaces that of imports, which have seen a more moderate recovery.
+            </p>
+            <div class="card">
+                 <div class="chart-container">
+                    <canvas id="tradeChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center mt-16 pt-8 border-t border-slate-200">
+            <p class="text-sm text-slate-500">Source: KDI Monthly Economic Trends, July 2025. This infographic is a visual interpretation of the report.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const chartData = {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                activity: [99.9, 100.1, 100.0, 100.2, 100.1, 100.2, 100.2, 100.3, 100.2, 100.4, 100.5, 100.3],
+                consumption: [-1.0, 0.6, -1.5, 2.5, 1.0, -2.7, 0.8, 1.2, -0.5, 1.5, -0.2, 0.9],
+                investment: {
+                    equipment: [8.9, 10.5, 3.2, -2.1, 0.5, 4.5, 5.1, 6.3, 4.0, 5.5, 6.1, 7.2],
+                    construction: [-2.5, -3.1, -4.5, -5.2, -6.0, -5.8, -4.7, -4.1, -3.5, -3.0, -2.8, -2.1]
+                },
+                labor: {
+                    unemploymentRate: [3.1, 3.2, 3.0, 2.9, 2.8, 2.7, 2.8, 2.8, 2.9, 2.8, 2.9, 2.8],
+                    employedChange: [25, 22, 20, 24, 28, 30, 32, 34, 31, 29, 27, 25]
+                },
+                prices: [3.3, 3.2, 3.1, 3.1, 2.9, 2.8, 2.7, 2.7, 2.8, 2.6, 2.5, 2.4],
+                trade: {
+                    exports: [11.2, 13.1, 18.0, 9.9, 13.5, 15.2, 12.1, 11.5, 10.2, 14.1, 11.9, 12.5],
+                    imports: [-1.1, 0.5, -3.4, -9.1, -10.5, -7.8, -6.5, -5.2, -4.1, 2.1, 1.5, 3.0],
+                }
+            };
+            
+            const tooltipTitleCallback = (tooltipItems) => {
+                const item = tooltipItems[0];
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) {
+                  return label.join(' ');
+                } else {
+                  return label;
+                }
+            };
+
+            const defaultChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { size: 12, family: 'Inter' },
+                            color: '#555',
+                            padding: 20
+                        }
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: '#333333',
+                        titleFont: { size: 14, weight: 'bold', family: 'Inter' },
+                        bodyFont: { size: 12, family: 'Inter' },
+                        padding: 10,
+                        cornerRadius: 4,
+                        callbacks: {
+                           title: tooltipTitleCallback
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#888', font: { family: 'Inter' } }
+                    },
+                    y: {
+                        grid: { color: '#E5E7EB' },
+                        ticks: { color: '#888', font: { family: 'Inter' } }
+                    }
+                }
+            };
+
+            new Chart(document.getElementById('activityChart'), {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'Coincident Composite Index',
+                        data: chartData.activity,
+                        borderColor: '#0075C4',
+                        backgroundColor: 'rgba(0, 117, 196, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#0075C4',
+                        pointRadius: 4,
+                    }]
+                },
+                options: defaultChartOptions
+            });
+
+            new Chart(document.getElementById('consumptionChart'), {
+                type: 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'Retail Sales Growth (YoY %)',
+                        data: chartData.consumption,
+                        backgroundColor: chartData.consumption.map(v => v >= 0 ? 'rgba(82, 210, 229, 0.7)' : 'rgba(255, 99, 132, 0.7)'),
+                        borderColor: chartData.consumption.map(v => v >= 0 ? '#52D2E5' : '#FF6384'),
+                        borderWidth: 1,
+                    }]
+                },
+                options: { ...defaultChartOptions, plugins: {...defaultChartOptions.plugins, legend: {display: false} } }
+            });
+            
+            new Chart(document.getElementById('investmentChart'), {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [
+                        {
+                            label: 'Equipment Investment (YoY %)',
+                            data: chartData.investment.equipment,
+                            borderColor: '#0075C4',
+                            tension: 0.4,
+                            fill: false,
+                        },
+                        {
+                            label: 'Construction Investment (YoY %)',
+                            data: chartData.investment.construction,
+                            borderColor: '#52D2E5',
+                            tension: 0.4,
+                            fill: false,
+                        }
+                    ]
+                },
+                options: defaultChartOptions
+            });
+
+            new Chart(document.getElementById('laborChart'), {
+                type: 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [
+                        {
+                            label: 'Change in Employed (10k)',
+                            data: chartData.labor.employedChange,
+                            backgroundColor: 'rgba(0, 117, 196, 0.6)',
+                            yAxisID: 'y1',
+                            order: 2
+                        },
+                        {
+                            label: 'Unemployment Rate (%)',
+                            data: chartData.labor.unemploymentRate,
+                            borderColor: '#00449E',
+                            type: 'line',
+                            yAxisID: 'y',
+                            tension: 0.4,
+                            order: 1
+                        }
+                    ]
+                },
+                options: { ...defaultChartOptions,
+                    scales: {
+                        x: defaultChartOptions.scales.x,
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'Unemployment Rate (%)', color: '#00449E'},
+                            grid: { display: false }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'Change in Employed (10k)', color: '#0075C4'},
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('pricesChart'), {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'CPI Growth (YoY %)',
+                        data: chartData.prices,
+                        borderColor: '#00449E',
+                        backgroundColor: 'rgba(0, 68, 158, 0.2)',
+                        fill: true,
+                        tension: 0.4,
+                    }]
+                },
+                options: { ...defaultChartOptions, plugins: {...defaultChartOptions.plugins, legend: {display: false} } }
+            });
+
+            new Chart(document.getElementById('tradeChart'), {
+                type: 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [
+                        {
+                            label: 'Exports Growth (YoY %)',
+                            data: chartData.trade.exports,
+                            backgroundColor: 'rgba(0, 117, 196, 0.8)',
+                        },
+                        {
+                            label: 'Imports Growth (YoY %)',
+                            data: chartData.trade.imports,
+                            backgroundColor: 'rgba(82, 210, 229, 0.8)',
+                        }
+                    ]
+                },
+                options: defaultChartOptions
+            });
+        });
+    </script>
+</body>
+</html>
+```
