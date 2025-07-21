@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7월 21일: 장인 정신의 거인들</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Classic Library (Stone, Amber, Slate) -->
+    <!-- Application Structure Plan: The theme is "Titans of Their Craft," focusing on individuals who achieved mastery. The structure is thematic: 1) "Master of Words" (Hemingway), 2) "Master of Performance" (Williams), and 3) "Masters of Thought & Sound" (McLuhan, Stern). This allows for dedicated interactive sections for the two main figures, Hemingway and Williams, making their core contributions (Iceberg Theory, character acting) highly engaging. The other figures are presented in elegant cards to complement the main sections. -->
+    <!-- Visualization & Content Choices: 
+        - Ernest Hemingway's Iceberg Theory: An interactive text element. A simple sentence is shown, and a button reveals the vast underlying meaning, visually demonstrating his literary philosophy.
+        - Robin Williams's Characters: A "character carousel" (HTML/JS slider). Users can click through his iconic roles, each with a quote and analysis, capturing his versatile genius.
+        - Marshall McLuhan's Philosophy: An interactive section explaining "The medium is the message." Users click icons (book, TV, phone) to see how each medium shapes content, making his abstract theory accessible.
+        - Isaac Stern: Presented in a clean, informative card that highlights his dual role as a master violinist and a cultural savior (saving Carnegie Hall).
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; scroll-behavior: smooth; }
+        .iceberg-surface { transition: all 0.3s ease-in-out; }
+        .iceberg-depth {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .carousel-container {
+            position: relative;
+            overflow: hidden;
+        }
+        .character-carousel {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+        .character-card {
+            width: 100%;
+            flex-shrink: 0;
+        }
+        .media-icon {
+            transition: all 0.2s ease-in-out;
+            filter: grayscale(100%);
+            opacity: 0.6;
+        }
+        .media-icon.active, .media-icon:hover {
+            filter: grayscale(0%);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="bg-stone-100 text-slate-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-slate-900">7월 21일생 거인들</h1>
+            <div class="hidden md:flex space-x-6">
+                <a href="#intro" class="text-gray-600 hover:text-amber-800">소개</a>
+                <a href="#master-words" class="text-gray-600 hover:text-amber-800">언어의 장인</a>
+                <a href="#master-performance" class="text-gray-600 hover:text-amber-800">연기의 장인</a>
+                <a href="#master-thought" class="text-gray-600 hover:text-amber-800">사상과 소리의 장인</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+        <section id="intro" class="text-center my-12 md:my-16">
+            <h2 class="text-4xl md:text-5xl font-extrabold text-amber-800 mb-4">장인 정신의 거인들</h2>
+            <p class="max-w-3xl mx-auto text-lg text-slate-600">
+                7월 21일은 각자의 분야에서 최고의 경지에 도달하여 한 시대를 정의한 '장인(Titan)'들이 태어난 날입니다. 이들은 수십 년간 자신의 기술을 연마하여 문학, 연기, 사상, 음악의 역사를 새로 썼습니다. 이 거인들의 세계로 여러분을 초대합니다.
+            </p>
+        </section>
+
+        <div id="app" class="space-y-20">
+            
+            <section id="master-words" class="scroll-mt-24">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-slate-900">언어의 장인: 어니스트 헤밍웨이</h3>
+                    <p class="mt-4 max-w-2xl mx-auto text-slate-600">간결하고 절제된 문체로 20세기 문학에 혁명을 일으킨 거장. 그의 '빙산 이론'을 직접 체험하며, 문장 아래 숨겨진 거대한 의미를 발견해 보세요.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg max-w-4xl mx-auto">
+                    <h4 class="text-2xl font-bold">어니스트 헤밍웨이 (1899-1961)</h4>
+                    <p class="text-amber-800 font-semibold">노벨 문학상 수상 작가</p>
+                    <div class="mt-6 p-6 bg-blue-50 rounded-lg iceberg-surface">
+                        <p class="text-lg italic text-slate-700">"노인은 고기를 잡지 못한 지 84일째였다."</p>
+                        <p class="text-sm text-slate-500">- 《노인과 바다》 첫 문장</p>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button id="reveal-iceberg" class="px-6 py-2 bg-amber-700 text-white font-semibold rounded-full hover:bg-amber-800 transition">숨겨진 의미 보기 ▼</button>
+                    </div>
+                    <div id="iceberg-depth" class="mt-4 border-t-2 border-dashed border-blue-200 pt-4">
+                        <h5 class="font-bold text-lg text-slate-800">빙산의 아랫부분: 생략된 의미들</h5>
+                        <ul class="list-disc list-inside mt-2 space-y-2 text-slate-600">
+                            <li><strong>인간의 존엄성:</strong> 84일간의 실패에도 굴하지 않는 노인의 끈기는 패배 속에서도 지지 않는 인간의 존엄을 상징합니다.</li>
+                            <li><strong>자연과의 투쟁:</strong> 노인과 거대한 물고기의 사투는 인간과 거대한 자연의 원초적인 관계와 경외심을 보여줍니다.</li>
+                            <li><strong>상실과 기억:</strong> 노인은 과거의 영광(사자 꿈)을 기억하며 현재의 고난을 견딥니다. 이는 모든 인간이 겪는 상실과 추억의 주제를 담고 있습니다.</li>
+                            <li><strong>간결함의 미학:</strong> 헤밍웨이는 이 모든 것을 직접 설명하지 않습니다. 그는 사실만을 제시하고, 독자가 그 이면의 거대한 감정과 주제를 느끼도록 만듭니다. 이것이 바로 빙산 이론의 핵심입니다.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="master-performance" class="scroll-mt-24">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-slate-900">연기의 장인: 로빈 윌리엄스</h3>
+                    <p class="mt-4 max-w-2xl mx-auto text-slate-600">눈물과 웃음을 자유자재로 오가며 스크린을 장악했던 천재 배우. 그의 다채로운 캐릭터들을 통해 그의 놀라운 연기 스펙트럼을 경험해 보세요.</p>
+                </div>
+                 <div class="bg-white p-6 rounded-lg shadow-lg max-w-4xl mx-auto">
+                    <h4 class="text-2xl font-bold">로빈 윌리엄스 (1951-2014)</h4>
+                    <p class="text-amber-800 font-semibold">아카데미상 수상 배우</p>
+                    <div id="carousel-container" class="carousel-container mt-6">
+                        <div id="character-carousel" class="character-carousel">
+                            <div class="character-card p-6 bg-slate-50 rounded-lg">
+                                <h5 class="text-xl font-bold">지니 (알라딘)</h5>
+                                <p class="text-lg italic mt-2">"Phenomenal cosmic power! Itty bitty living space."</p>
+                                <p class="mt-4 text-slate-600">수천 년간 램프에 갇혔지만 자유로운 영혼을 가진 지니. 윌리엄스의 즉흥 연기와 에너지 넘치는 목소리는 디즈니 애니메이션의 역사를 바꿨습니다.</p>
+                            </div>
+                            <div class="character-card p-6 bg-slate-50 rounded-lg">
+                                <h5 class="text-xl font-bold">존 키팅 (죽은 시인의 사회)</h5>
+                                <p class="text-lg italic mt-2">"Carpe Diem. Seize the day, boys. Make your lives extraordinary."</p>
+                                <p class="mt-4 text-slate-600">전통에 얽매인 학생들에게 '카르페 디엠'을 외치며 삶의 주인이 되라고 가르친 괴짜 교사. 그의 열정은 수많은 이들에게 깊은 영감을 주었습니다.</p>
+                            </div>
+                            <div class="character-card p-6 bg-slate-50 rounded-lg">
+                                <h5 class="text-xl font-bold">미세스 다웃파이어</h5>
+                                <p class="text-lg italic mt-2">"Help is on the way, dear!"</p>
+                                <p class="mt-4 text-slate-600">아이들을 만나기 위해 푸근한 유모 할머니로 변장한 아버지. 그의 코믹한 연기 뒤에는 가족에 대한 절절한 사랑이 담겨 있어 웃음과 감동을 동시에 선사했습니다.</p>
+                            </div>
+                            <div class="character-card p-6 bg-slate-50 rounded-lg">
+                                <h5 class="text-xl font-bold">숀 맥과이어 (굿 윌 헌팅)</h5>
+                                <p class="text-lg italic mt-2">"It's not your fault."</p>
+                                <p class="mt-4 text-slate-600">상처받은 천재 윌 헌팅의 마음을 열게 한 심리학자. 그의 진심 어린 위로는 로빈 윌리엄스에게 아카데미 남우조연상을 안겨주었으며, 영화사상 가장 감동적인 장면 중 하나로 남아있습니다.</p>
+                            </div>
+                             <div class="character-card p-6 bg-slate-50 rounded-lg">
+                                <h5 class="text-xl font-bold">패치 아담스</h5>
+                                <p class="text-lg italic mt-2">"You treat a disease, you win, you lose. You treat a person, I guarantee you, you'll win, no matter what the outcome."</p>
+                                <p class="mt-4 text-slate-600">웃음과 인간애로 환자를 치료해야 한다고 믿었던 의대생. 실존 인물을 바탕으로 한 이 역할에서 그는 의학과 인간성의 관계에 대한 깊은 질문을 던졌습니다.</p>
+                            </div>
+                             <div class="character-card p-6 bg-slate-50 rounded-lg">
+                                <h5 class="text-xl font-bold">앤드류 마틴 (바이센테니얼 맨)</h5>
+                                <p class="text-lg italic mt-2">"As the great Andrew Martin used to say: 'One is glad to be of service.'"</p>
+                                <p class="mt-4 text-slate-600">200년에 걸쳐 인간이 되기를 갈망했던 가사 로봇. 그는 이 역할을 통해 인간성의 본질과 사랑, 그리고 죽음에 대한 철학적 탐구를 보여주었습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-center mt-4 space-x-4">
+                        <button id="prev-btn" class="px-4 py-2 bg-slate-300 rounded-full hover:bg-slate-400 transition">◀</button>
+                        <button id="next-btn" class="px-4 py-2 bg-slate-300 rounded-full hover:bg-slate-400 transition">▶</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="master-thought" class="scroll-mt-24">
+                 <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-slate-900">사상과 소리의 장인들</h3>
+                    <p class="mt-4 max-w-2xl mx-auto text-slate-600">미디어의 본질을 꿰뚫어 본 사상가와, 바이올린 하나로 세계인의 마음을 울린 거장의 세계를 만나보세요.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="text-2xl font-bold">마셜 매클루언 (1911-1980)</h4>
+                        <p class="text-amber-800 font-semibold">미디어 이론의 선구자</p>
+                        <p class="mt-4 text-slate-600">"미디어는 메시지다"라는 말로 유명한 캐나다의 사상가. 그는 메시지의 내용보다 그것을 전달하는 매체(미디어) 자체가 인간의 사고와 사회를 변화시킨다고 주장했습니다. 아래 아이콘을 클릭하여 각 미디어가 어떻게 메시지를 형성하는지 확인해보세요.</p>
+                        <div class="flex justify-around mt-6">
+                            <div class="media-icon text-4xl cursor-pointer" data-info="책은 선형적, 논리적 사고를 강화합니다. 정보는 순차적으로 구성되며, 깊이 있는 사색을 유도합니다.">📖</div>
+                            <div class="media-icon text-4xl cursor-pointer" data-info="TV는 시각적, 감성적 경험을 제공합니다. 정보는 파편적으로 전달되며, 시청자를 수동적인 관찰자로 만듭니다.">📺</div>
+                            <div class="media-icon text-4xl cursor-pointer" data-info="스마트폰은 즉각적, 상호작용적 소통을 가능하게 합니다. 정보는 네트워크화되어 있으며, 사용자를 참여자로 만듭니다.">📱</div>
+                        </div>
+                        <p id="media-info" class="mt-4 text-center text-slate-700 min-h-[60px]">아이콘을 클릭해 설명을 보세요.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h4 class="text-2xl font-bold">아이작 스턴 (1920-2001)</h4>
+                        <p class="text-amber-800 font-semibold">20세기 최고의 바이올리니스트</p>
+                        <p class="mt-4 text-slate-600">우크라이나계 미국인 바이올리니스트. 따뜻하고 풍부한 음색과 완벽한 기교로 20세기 클래식 음악계를 대표하는 거장으로 추앙받습니다. 그는 연주자로서뿐만 아니라, 철거 위기에 놓인 카네기 홀을 지켜낸 문화적 수호자이기도 했습니다. 그의 노력 덕분에 카네기 홀은 오늘날까지 세계적인 공연장으로 남아있습니다.</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="bg-slate-900 text-white mt-20 py-8">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 7월 21일 거인 탐구.</p>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Hemingway's Iceberg
+    const revealBtn = document.getElementById('reveal-iceberg');
+    const icebergDepth = document.getElementById('iceberg-depth');
+    if (revealBtn && icebergDepth) {
+        revealBtn.addEventListener('click', function() {
+            const isHidden = !icebergDepth.style.maxHeight || icebergDepth.style.maxHeight === '0px';
+            if (isHidden) {
+                icebergDepth.style.maxHeight = icebergDepth.scrollHeight + "px";
+                this.textContent = "의미 숨기기 ▲";
+            } else {
+                icebergDepth.style.maxHeight = null;
+                this.textContent = "숨겨진 의미 보기 ▼";
+            }
+        });
+    }
+
+    // Williams's Carousel
+    const carouselContainer = document.getElementById('carousel-container');
+    const carousel = document.getElementById('character-carousel');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    let currentIndex = 0;
+    
+    if (carousel && carousel.children.length > 0) {
+        const totalSlides = carousel.children.length;
+        
+        function updateCarousel() {
+            const slideWidth = carouselContainer.offsetWidth;
+            carousel.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+        }
+
+        nextBtn.addEventListener('click', () => {
+            currentIndex = (currentIndex + 1) % totalSlides;
+            updateCarousel();
+        });
+
+        prevBtn.addEventListener('click', () => {
+            currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+            updateCarousel();
+        });
+
+        // Recalculate width on window resize for responsiveness
+        window.addEventListener('resize', updateCarousel);
+        // Initial call to set position correctly after a slight delay to ensure layout is stable
+        setTimeout(updateCarousel, 100);
+    }
+    
+    // McLuhan's Media
+    const mediaIcons = document.querySelectorAll('.media-icon');
+    const mediaInfo = document.getElementById('media-info');
+    if (mediaIcons.length > 0) {
+        mediaIcons.forEach(icon => {
+            icon.addEventListener('click', function() {
+                mediaInfo.textContent = this.dataset.info;
+                mediaIcons.forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    }
+});
+</script>
+</body>
+</html>
