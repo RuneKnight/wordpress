@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G7과 대한민국의 미래 동력: 인터랙티브 대시보드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals with Subtle Teal Accent -->
+    <!-- Application Structure Plan: The application is designed as a single-page dashboard with three distinct, navigable thematic sections: 1) Macroeconomic Drivers, 2) Technology Drivers, and 3) AI & Talent Strategy. This structure was chosen over a linear report format to empower users to directly compare countries across key themes, facilitating a more intuitive and task-oriented exploration of the data. A sticky navigation bar allows for easy movement between these logical sections, enhancing usability. Each section features interactive charts and dynamic text panels, allowing users to select a country and immediately see relevant data and analysis, which is more engaging than passively reading static text. -->
+    <!-- Visualization & Content Choices: 
+        - Macro & Tech Trends: Goal is to compare national priorities. A horizontal bar chart (Chart.js/Canvas) was chosen for its clarity in comparing percentage values across multiple categories. Interaction: Users click country buttons to dynamically update the chart and an accompanying text block with specific analysis. Justification: This provides a clear, direct comparison tool, which is the core task.
+        - AI Exposure & Skills: Goal is to inform and compare key metrics. Simple vertical bar charts (Chart.js/Canvas) are used for straightforward comparison of AI adoption and skill disruption rates.
+        - Talent Policies: Goal is to organize and compare qualitative policy preferences. A structured HTML/CSS grid of cards was chosen over a chart. Justification: This method presents the ranked list of policies for each country more clearly and legibly than a complex chart would allow.
+        - All visualizations are powered by Chart.js on Canvas, with data stored in JavaScript objects for dynamic updates. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 450px;
+            max-height: 60vh;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button.active {
+            background-color: #0d9488; /* teal-600 */
+            color: white;
+            font-weight: 700;
+        }
+        .section-intro {
+            max-width: 800px;
+            margin: 0 auto 2rem auto;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-md">
+        <nav class="container mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-teal-700 mb-2 sm:mb-0">G7 & 대한민국 미래 동력 분석</h1>
+            <div class="flex space-x-2 md:space-x-4 text-sm md:text-base">
+                <a href="#macro" class="px-3 py-2 rounded-md hover:bg-teal-100 transition">거시 동력</a>
+                <a href="#tech" class="px-3 py-2 rounded-md hover:bg-teal-100 transition">기술 동력</a>
+                <a href="#talent" class="px-3 py-2 rounded-md hover:bg-teal-100 transition">AI와 인재</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+
+        <section id="macro" class="py-12 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4">제 1장: 거시경제 체스판</h2>
+            <p class="text-lg text-slate-600 text-center section-intro">
+                기업의 미래 전략을 형성하는 거시경제적 동력은 국가별로 뚜렷한 차이를 보입니다. 아래 컨트롤을 사용하여 G7 국가와 대한민국의 기업들이 어떤 거시적 흐름을 가장 중요하게 인식하는지 비교해보세요. 각 국가가 처한 고유한 경제 및 사회적 압력을 시각적으로 확인할 수 있습니다.
+            </p>
+            <div id="macro-controls" class="flex flex-wrap justify-center gap-2 mb-8"></div>
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                <div class="chart-container">
+                    <canvas id="macroChart"></canvas>
+                </div>
+                <div id="macro-analysis" class="mt-6 p-4 bg-slate-50 rounded-lg">
+                    <h3 class="font-bold text-lg mb-2">분석 요약</h3>
+                    <p class="text-slate-700"></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="tech" class="py-12 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4">제 2장: 기술 경쟁의 최전선</h2>
+            <p class="text-lg text-slate-600 text-center section-intro">
+                미래 산업의 혁신은 기술에 의해 좌우됩니다. 모든 국가가 'AI와 빅데이터'를 핵심 동력으로 꼽는 가운데, 다른 기술에 대한 우선순위는 각국의 산업 전략을 보여줍니다. 국가를 선택하여 기술 포트폴리오의 차이점을 탐색하고, 특히 대한민국의 '반도체 역설'에 대한 분석을 확인해보세요.
+            </p>
+            <div id="tech-controls" class="flex flex-wrap justify-center gap-2 mb-8"></div>
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                <div class="chart-container">
+                    <canvas id="techChart"></canvas>
+                </div>
+                <div id="tech-analysis" class="mt-6 p-4 bg-slate-50 rounded-lg">
+                    <h3 class="font-bold text-lg mb-2">분석 요약</h3>
+                    <p class="text-slate-700"></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="talent" class="py-12 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4">제 3장: AI 혁명과 인적 자본</h2>
+            <p class="text-lg text-slate-600 text-center section-intro">
+                기술 변혁의 성패는 결국 '사람'에 달려있습니다. AI 도입이 노동 시장에 미치는 영향과 이에 대응하기 위한 각국의 인재 확보 전략은 어떻게 다를까요? 아래 차트와 비교표를 통해 AI 노출도, 스킬 변화, 그리고 인재 확보를 위한 정책 선호도의 국가별 차이를 살펴보세요.
+            </p>
+            <div class="grid md:grid-cols-2 gap-8 mt-8">
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold text-center mb-4">AI 도입 현황 (AI 프로그램 운영 기업 비율)</h3>
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="aiExposureChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold text-center mb-4">핵심 스킬 변화 전망 (향후 5년)</h3>
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="skillDisruptionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg mt-8">
+                <h3 class="text-2xl font-bold text-center mb-6">인재 격차 해소, 각국의 처방은? (정책 선호도 TOP 3)</h3>
+                <div id="policy-comparison" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-white text-center p-4 mt-12">
+        <p>본 데이터는 세계경제포럼(WEF) '미래 직업 보고서 2023'을 기반으로 재구성되었습니다.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const countries = {
+                KOR: '대한민국', USA: '미국', JPN: '일본', DEU: '독일', GBR: '영국', FRA: '프랑스', ITA: '이탈리아', CAN: '캐나다'
+            };
+
+            const macroData = {
+                labels: ['고령화/인구감소', '생활비 상승', '저성장 기조', '지정학적 분쟁', '디지털 접근성 확대', '탄소 감축 노력'],
+                datasets: {
+                    KOR: [59, 47, 59, 71, 71, 65],
+                    USA: [47, 55, 60, 60, 97, 94],
+                    JPN: [96, 60, 64, 60, 69, 68],
+                    DEU: [92, 42, 60, 80, 93, 92],
+                    GBR: [48, 64, 56, 57, 60, 60],
+                    FRA: [49, 57, 47, 47, 93, 95],
+                    ITA: [48, 65, 46, 60, 96, 88],
+                    CAN: [42, 52, 52, 58, 70, 54]
+                }
+            };
+            
+            const macroAnalysis = {
+                KOR: "대한민국 기업들은 '디지털 접근성 확대'와 '지정학적 분쟁 심화'를 비즈니스 변혁의 가장 큰 동력으로 꼽았습니다. 이는 분단국가로서의 지정학적 취약성과 높은 수출 의존도를 반영합니다. 또한, 세계에서 가장 빠른 고령화 속도에도 불구하고 '고령화' 문제는 당면 현안보다 후순위로 인식되고 있습니다.",
+                JPN: "일본은 '고령화 및 생산가능인구 감소'를 압도적인 1위 동력으로 인식합니다. 이는 노동력 부족이 경제의 근간을 흔드는 실존적 위기임을 보여줍니다. 모든 장기 전략이 '줄어드는 노동력'이라는 대전제 하에 수립될 수밖에 없는 상황입니다.",
+                DEU: "독일 역시 일본과 마찬가지로 '고령화'와 '탄소 감축 노력'을 최상위 리스크로 꼽았습니다. 강력한 제조업 기반 경제로서 숙련 노동력 감소와 EU의 강력한 환경 규제에 대한 압박을 동시에 받고 있음을 시사합니다.",
+                USA: "미국은 '디지털 접근성 확대'와 '탄소 감축 노력'을 가장 중요한 동력으로 보았습니다. 상대적으로 양호한 인구 구조 덕분에 고령화 문제는 후순위이며, 기술 혁신과 녹색 전환을 통한 성장 기회에 더 집중하는 모습입니다.",
+                GBR: "영국은 '생활비 상승'을 제1의 변혁 동력으로 꼽았습니다. 이는 브렉시트 이후 심각한 인플레이션과 에너지 위기를 겪은 상황을 반영하며, 소비자 구매력 약화가 서비스 중심 경제에 미치는 치명적 영향을 보여줍니다.",
+                FRA: "프랑스는 '탄소 감축 노력'과 '디지털 접근성 확대'를 가장 중요하게 생각합니다. 또한 '노동 및 사회 문제에 대한 관심 증대'가 타국에 비해 높게 나타나, 강력한 노동조합과 사회적 토론 문화가 기업 경영에 미치는 영향을 보여줍니다.",
+                ITA: "이탈리아는 '디지털 접근성 확대'와 '녹색 전환'에 대한 우려가 압도적입니다. 예상과 달리 '고령화'는 상대적으로 낮게 평가되었는데, 이는 인구 감소 자체보다 산업 기반의 현대화가 더 시급한 과제임을 시사합니다.",
+                CAN: "캐나다는 '디지털 접근성 확대'를 가장 중요한 동력으로 꼽았으며, 전반적으로 특정 이슈에 대한 극단적인 쏠림 없이 비교적 고른 분포를 보입니다. 이민을 통한 노동력 충원이 용이하여 고령화에 대한 우려는 상대적으로 낮습니다."
+            };
+
+            const techData = {
+                labels: ['AI/빅데이터', '로봇/자율시스템', '에너지 기술', '신소재', '반도체/컴퓨팅', '양자 기술'],
+                datasets: {
+                    KOR: [88, 85, 47, 58, 53, 47],
+                    USA: [94, 86, 84, 68, 41, 19],
+                    JPN: [94, 86, 58, 35, 84, 27],
+                    DEU: [93, 86, 68, 87, 42, 18],
+                    GBR: [92, 86, 82, 32, 68, 23],
+                    FRA: [92, 86, 83, 58, 42, 19],
+                    ITA: [86, 86, 85, 58, 49, 18],
+                    CAN: [97, 86, 68, 54, 40, 14]
+                }
+            };
+            
+            const techAnalysis = {
+                KOR: "대한민국은 'AI/빅데이터'와 '로봇/자율시스템'을 압도적인 기술 동력으로 꼽았습니다. 반도체 강국임에도 '반도체 기술' 자체의 중요성을 일본보다 낮게 평가하는 '반도체 역설'이 나타납니다. 이는 이미 확보된 하드웨어 우위를 기반으로 AI, 로봇 등 응용 기술 분야에서 새로운 가치를 창출하려는 '활용자(Deployer)' 관점의 전략을 보여줍니다.",
+                JPN: "일본은 'AI/빅데이터'와 함께 '반도체 기술'의 중요성을 매우 높게 평가했습니다. 이는 반도체 산업 부활을 국가적 과제로 삼고, 제조업의 근간이 되는 기초 기술 경쟁력을 다시 확보하려는 '생산자(Producer)' 관점의 전략을 명확히 보여줍니다.",
+                DEU: "독일은 'AI'와 '로봇' 외에 '신소재' 기술을 매우 중요하게 여깁니다. 이는 고부가가치 제조업과 '미텔슈탄트'의 경쟁력이 소재 과학의 우위에서 비롯된다는 인식을 반영하며, 핵심 경쟁력을 수성하고 고도화하려는 전략입니다.",
+                USA: "미국은 'AI'와 '로봇'과 더불어 '에너지 기술'에 높은 우선순위를 부여했습니다. 이는 에너지 안보 확보와 녹색 전환 주도라는 국가적 목표를 달성하기 위한 기술 투자의 중요성을 보여줍니다.",
+                GBR: "영국은 'AI'와 '에너지 기술'에 대한 관심이 높으며, 특히 '반도체 기술'에 대한 중요도 인식이 일본 다음으로 높습니다. 이는 자체적인 반도체 생태계 구축의 필요성을 느끼고 있음을 시사합니다.",
+                FRA: "프랑스는 'AI', '로봇', '에너지 기술'을 3대 핵심 기술로 인식하며, 유럽의 주요 국가들과 유사한 기술 우선순위 패턴을 보입니다. 녹색 전환과 디지털 전환을 동시에 추구하는 전략입니다.",
+                ITA: "이탈리아 역시 'AI', '로봇', '에너지 기술'을 핵심 동력으로 꼽아, 산업 현대화와 에너지 전환이라는 시급한 과제에 기술적 해법을 찾고 있음을 보여줍니다.",
+                CAN: "캐나다는 'AI/빅데이터'에 대한 중요도 인식이 조사 대상국 중 가장 높게 나타났습니다. 이는 자원 기반 경제에서 디지털 경제로의 전환을 가속화하려는 강력한 의지를 반영합니다."
+            };
+
+            const talentData = {
+                aiExposure: {
+                    labels: ['대한민국', '미국', '일본', '독일', '영국', '프랑스', '이탈리아', '캐나다'],
+                    data: [38, 35, 90, 63, 93, 33, 88, 76]
+                },
+                skillDisruption: {
+                    labels: ['대한민국', '미국', '일본', '독일', '영국', '프랑스', '이탈리아', '캐나다'],
+                    data: [22, 23, 22, 21, 22, 19, 18, 22]
+                },
+                policies: {
+                    KOR: ['재교육 자금 지원 (58%)', '이민법 개정 (42%)', '고용 유연성 (33%)'],
+                    USA: ['재교육 자금 지원 (55%)', '교육 시스템 개선 (41%)', '고용 유연성 (33%)'],
+                    JPN: ['임금 유연성 (43%)', '재교육 프로그램 제공 (38%)', '고용 유연성 (33%)'],
+                    DEU: ['고용 유연성 (50%)', '재교육 프로그램 제공 (44%)', '재교육 자금 지원 (33%)'],
+                    GBR: ['고용 유연성 (52%)', '교육 시스템 개선 (46%)', '이민법 개정 (42%)'],
+                    FRA: ['교육 시스템 개선 (52%)', '원격근무 관련법 (41%)', '재교육 자금 지원 (33%)'],
+                    ITA: ['재교육 프로그램 제공 (61%)', '교육 시스템 개선 (49%)', '원격근무 관련법 (47%)'],
+                    CAN: ['재교육 프로그램 제공 (54%)', '재교육 자금 지원 (48%)', '고용 유연성 (46%)']
+                }
+            };
+
+            const chartOptions = (title) => ({
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: { color: '#e2e8f0' },
+                        ticks: {
+                            callback: function(value) { return value + '%' },
+                            color: '#475569'
+                        }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { color: '#475569' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: title,
+                        font: { size: 16, weight: 'bold' },
+                        color: '#1e293b'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.raw}%`;
+                            }
+                        }
+                    }
+                }
+            });
+
+            const barChartOptions = (title) => ({
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#e2e8f0' },
+                        ticks: {
+                            callback: function(value) { return value + '%' },
+                            color: '#475569'
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#475569' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: false
+                    },
+                     tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.raw}%`;
+                            }
+                        }
+                    }
+                }
+            });
+            
+            let macroChart, techChart;
+
+            function createButtons(containerId, data, chart, analysisContainerId, analysisData) {
+                const container = document.getElementById(containerId);
+                Object.keys(countries).forEach(code => {
+                    const button = document.createElement('button');
+                    button.textContent = countries[code];
+                    button.dataset.country = code;
+                    button.className = 'nav-button px-4 py-2 text-sm font-semibold rounded-full bg-white shadow-sm hover:bg-teal-500 hover:text-white border border-slate-200';
+                    button.addEventListener('click', () => {
+                        updateChart(chart, data, code);
+                        updateAnalysis(analysisContainerId, analysisData, code);
+                        container.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                    });
+                    container.appendChild(button);
+                });
+                container.querySelector('button').click();
+            }
+
+            function updateChart(chart, data, countryCode) {
+                chart.data.datasets[0].data = data.datasets[countryCode];
+                chart.data.datasets[0].label = countries[countryCode];
+                chart.options.plugins.title.text = `${countries[countryCode]}의 주요 동력`;
+                chart.update();
+            }
+
+            function updateAnalysis(containerId, analysisData, countryCode) {
+                const container = document.getElementById(containerId);
+                container.querySelector('h3').textContent = `${countries[countryCode]} 분석 요약`;
+                container.querySelector('p').textContent = analysisData[countryCode];
+            }
+
+            const macroCtx = document.getElementById('macroChart').getContext('2d');
+            macroChart = new Chart(macroCtx, {
+                type: 'bar',
+                data: {
+                    labels: macroData.labels,
+                    datasets: [{
+                        label: '',
+                        data: [],
+                        backgroundColor: '#14b8a6', // teal-500
+                        borderColor: '#0f766e', // teal-700
+                        borderWidth: 1,
+                        borderRadius: 5,
+                    }]
+                },
+                options: chartOptions('주요 거시경제 동력')
+            });
+
+            const techCtx = document.getElementById('techChart').getContext('2d');
+            techChart = new Chart(techCtx, {
+                type: 'bar',
+                data: {
+                    labels: techData.labels,
+                    datasets: [{
+                        label: '',
+                        data: [],
+                        backgroundColor: '#0ea5e9', // sky-500
+                        borderColor: '#0369a1', // sky-700
+                        borderWidth: 1,
+                        borderRadius: 5,
+                    }]
+                },
+                options: chartOptions('주요 기술 동력')
+            });
+
+            createButtons('macro-controls', macroData, macroChart, 'macro-analysis', macroAnalysis);
+            createButtons('tech-controls', techData, techChart, 'tech-analysis', techAnalysis);
+
+            const aiExposureCtx = document.getElementById('aiExposureChart').getContext('2d');
+            new Chart(aiExposureCtx, {
+                type: 'bar',
+                data: {
+                    labels: talentData.aiExposure.labels,
+                    datasets: [{
+                        data: talentData.aiExposure.data,
+                        backgroundColor: ['#f87171', '#fb923c', '#fbbf24', '#a3e635', '#4ade80', '#22d3ee', '#60a5fa', '#a78bfa'],
+                    }]
+                },
+                options: barChartOptions('AI 도입 현황')
+            });
+
+            const skillDisruptionCtx = document.getElementById('skillDisruptionChart').getContext('2d');
+            new Chart(skillDisruptionCtx, {
+                type: 'bar',
+                data: {
+                    labels: talentData.skillDisruption.labels,
+                    datasets: [{
+                        data: talentData.skillDisruption.data,
+                        backgroundColor: ['#f87171', '#fb923c', '#fbbf24', '#a3e635', '#4ade80', '#22d3ee', '#60a5fa', '#a78bfa'],
+                    }]
+                },
+                options: barChartOptions('핵심 스킬 변화 전망')
+            });
+
+            const policyContainer = document.getElementById('policy-comparison');
+            Object.keys(countries).forEach(code => {
+                const card = document.createElement('div');
+                card.className = 'p-4 rounded-lg bg-slate-50 border border-slate-200';
+                let content = `<h4 class="font-bold text-lg text-slate-700 mb-2">${countries[code]}</h4><ol class="list-decimal list-inside space-y-1 text-slate-600">`;
+                talentData.policies[code].forEach(policy => {
+                    content += `<li>${policy}</li>`;
+                });
+                content += '</ol>';
+                card.innerHTML = content;
+                policyContainer.appendChild(card);
+            });
+            
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
