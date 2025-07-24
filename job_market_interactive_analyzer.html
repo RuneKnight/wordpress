@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일자리의 명암: 8개국 직업 미래 보고서</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony Neutrals -->
+    <!-- Application Structure Plan: A multi-section, dashboard-style SPA. It starts with a global overview (toggling between rising/declining jobs), then allows a deep-dive into specific countries via a selector that updates both a chart and a qualitative analysis text block. A final section presents the report's key comparative narratives (e.g., US/UK vs. DE/JP) as interactive "stories". This structure was chosen to guide the user from general trends to specific, nuanced insights, making complex comparisons intuitive and user-driven rather than forcing a linear read-through of the original report. -->
+    <!-- Visualization & Content Choices: 1. Global Trends: Horizontal Bar Chart (Chart.js) to show average job growth/decline, updated by toggle buttons. Clear and simple for establishing a baseline. 2. Country Deep-Dive: A linked Horizontal Bar Chart and text block, updated by a country selector. This creates a powerful, cohesive view of a country's specific data and the story behind it. 3. Comparative Stories: Styled HTML cards and text blocks (Tailwind) instead of charts. For these narrative points, highlighting a key statistic and providing explanatory text is more impactful and avoids chart overload. This approach directly translates the report's analytical arguments into digestible interactive content. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #F8F7F4;
+            color: #3D405B;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 350px;
+                max-height: 60vh;
+            }
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button.active {
+            background-color: #81B29A;
+            color: #FFFFFF;
+            font-weight: 700;
+        }
+        .nav-button:not(.active) {
+            background-color: #FFFFFF;
+            color: #3D405B;
+        }
+        .story-button.active {
+            background-color: #E07A5F;
+            color: #FFFFFF;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .country-selector-button.active {
+            border-color: #81B29A;
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <h1 class="text-2xl md:text-3xl font-bold text-center text-[#3D405B]">일자리의 명암: 미래 직업 탐색기</h1>
+            <p class="text-center text-gray-500 mt-1">8개국 데이터를 통해 알아보는 미래 유망 및 쇠퇴 직업</p>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
+
+        <section id="global-trends" class="mb-12">
+            <h2 class="text-xl md:text-2xl font-bold mb-2 text-center">글로벌 직업 동향</h2>
+            <p class="text-center text-gray-600 mb-6 max-w-3xl mx-auto">
+                전 세계적으로 기술 발전과 자동화는 직업 시장을 재편하고 있습니다. AI, 데이터 관련 직무는 보편적으로 급부상하는 반면, 반복적인 행정 업무는 감소하는 뚜렷한 경향을 보입니다. 아래 버튼을 눌러 전체적인 흐름을 확인해 보세요.
+            </p>
+            <div class="flex justify-center space-x-4 mb-6">
+                <button id="show-rising-global" class="nav-button py-2 px-6 rounded-full shadow-md font-semibold">▲ 뜨는 직업</button>
+                <button id="show-declining-global" class="nav-button py-2 px-6 rounded-full shadow-md font-semibold">▼ 지는 직업</button>
+            </div>
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                <div class="chart-container">
+                    <canvas id="global-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-12 border-gray-300">
+
+        <section id="country-deep-dive" class="mb-12">
+            <h2 class="text-xl md:text-2xl font-bold mb-2 text-center">국가별 심층 분석</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">
+                글로벌 트렌드 속에서도 각국의 산업 구조와 정책에 따라 직업 수요는 다르게 나타납니다. 국가를 선택하여 해당 국가의 고유한 직업 시장 동향과 그 배경에 대한 심층 분석을 확인하세요.
+            </p>
+            <div id="country-selector" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
+            </div>
+            <div class="bg-white p-4 md:p-8 rounded-xl shadow-lg mt-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div class="order-2 lg:order-1">
+                        <h3 id="country-analysis-title" class="text-lg md:text-xl font-bold mb-4"></h3>
+                        <p id="country-analysis-text" class="text-gray-700 leading-relaxed"></p>
+                    </div>
+                    <div class="order-1 lg:order-2 chart-container h-96 md:h-[450px]">
+                        <canvas id="country-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-12 border-gray-300">
+
+        <section id="comparative-analysis">
+            <h2 class="text-xl md:text-2xl font-bold mb-2 text-center">주제별 비교 분석</h2>
+             <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">
+                보고서의 핵심적인 분석 내용을 주제별로 깊이 있게 살펴보세요. 각국의 독특한 경제 전략과 대응 방식이 어떻게 직업 시장에 반영되는지 비교하며 이해할 수 있습니다.
+            </p>
+            <div class="flex flex-wrap justify-center gap-3 md:gap-4 mb-8">
+                <button class="story-button py-2 px-5 rounded-lg bg-white shadow transition" data-story="story1">미국 vs 영국: 데이터 자본</button>
+                <button class="story-button py-2 px-5 rounded-lg bg-white shadow transition" data-story="story2">독일 vs 일본: 자동화 전략</button>
+                <button class="story-button py-2 px-5 rounded-lg bg-white shadow transition" data-story="story3">국가별 특이 직업</button>
+            </div>
+
+            <div id="story-content" class="bg-white p-6 md:p-8 rounded-xl shadow-lg min-h-[300px]">
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center p-6 mt-8 text-gray-500 text-sm">
+        <p>본 데이터는 세계경제포럼(WEF)의 '일자리의 미래' 보고서를 기반으로 재구성되었습니다.</p>
+        <p>&copy; 2025 Interactive Job Market Analyzer. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        const appData = {
+            countries: {
+                USA: { name: '미국', flag: '🇺🇸', rising: [{ l: 'AI 및 머신러닝 전문가', v: 142 }, { l: '데이터 분석가/과학자', v: 40 }, { l: '행정 및 총무 비서', v: 19 }], declining: [], analysisTitle: '미국: 데이터 경제의 심장과 행정직의 진화', analysisText: '미국은 \'AI 및 머신러닝 전문가\'가 142%라는 압도적인 성장률을 보이며 데이터 경제를 선도하고 있습니다. 이는 성숙한 디지털 생태계와 클라우드 인프라에 대한 막대한 투자의 결과입니다. 특이한 점은 다른 국가들과 달리 \'행정 비서\' 직무가 19% 성장했다는 것입니다. 이는 단순 반복 업무가 자동화되는 대신, 고위 임원을 보좌하는 고부가가치 \'이그제큐티브 어시스턴트\'로 역할이 진화하고 있음을 시사합니다. 즉, 미국은 단순 대체가 아닌 \'증강\' 모델을 통해 행정 직무를 재편하고 있습니다.' },
+                GBR: { name: '영국', flag: '🇬🇧', rising: [{ l: '빅데이터 전문가', v: 100 }, { l: 'AI 및 머신러닝 전문가', v: 92 }, { l: '데이터 분석가/과학자', v: 73 }], declining: [{ l: '데이터 입력원', v: -26 }], analysisTitle: '영국: 빅데이터 허브로의 도약', analysisText: '영국은 \'빅데이터 전문가\'가 100% 성장하며 미국과 함께 글로벌 \'데이터 자본\'의 허브로 자리매김하고 있습니다. 정부의 적극적인 데이터 경제 육성 정책과 금융, 미디어 등 데이터 집약적 산업의 발달이 이러한 성장을 견인하고 있습니다. 반면, \'데이터 입력원\'의 감소는 자동화가 정형화된 업무를 빠르게 대체하고 있음을 명확히 보여줍니다.' },
+                CAN: { name: '캐나다', flag: '🇨🇦', rising: [{ l: 'AI 및 머신러닝 전문가', v: 100 }, { l: '변호사', v: 90 }, { l: '데이터 분석가/과학자', v: 77 }], declining: [{ l: '회계사 및 감사인', v: -103 }], analysisTitle: '캐나다: 규제와 전환의 시대, 법률 전문가의 부상', analysisText: '캐나다에서는 \'변호사\'가 90%라는 이례적으로 높은 성장률을 보입니다. 이는 디지털 전환, ESG 경영, 녹색 에너지 정책 등으로 인해 규제 환경이 복잡해지면서, 기업들이 법률 전문가를 단순한 법률 자문이 아닌 핵심 \'비즈니스 전환 파트너\'로 인식하고 있음을 의미합니다. 복잡한 규제 환경을 헤쳐나가는 것이 캐나다 기업들의 핵심 과제가 된 것입니다.' },
+                DEU: { name: '독일', flag: '🇩🇪', rising: [{ l: 'AI 및 머신러닝 전문가', v: 100 }, { l: '데이터 분석가/과학자', v: 74 }, { l: '조립 및 공장 근로자', v: 68 }], declining: [{ l: '행정/총무 비서', v: -18 }], analysisTitle: '독일: 제조업 강국의 \'증강\' 전략', analysisText: '독일의 데이터에서 가장 놀라운 점은 \'조립 및 공장 근로자\'가 68%라는 높은 성장률을 보인다는 것입니다. 이는 \'로봇이 노동자를 대체한다\'는 통념을 뒤집는 결과입니다. 독일은 고도로 숙련된 인간 노동자와 로봇이 협업하여 생산성을 극대화하는 \'증강(Augmentation)\' 전략을 채택하고 있습니다. 자동화는 일자리를 없애는 대신, 기존 노동자를 스마트 팩토리 환경에 맞게 상향 숙련시키는 도구로 활용됩니다.' },
+                FRA: { name: '프랑스', flag: '🇫🇷', rising: [{ l: 'AI 및 머신러닝 전문가', v: 72 }, { l: '데이터 분석가/과학자', v: 26 }], declining: [], analysisTitle: '프랑스: 점진적인 디지털 전환', analysisText: '프랑스는 다른 주요국들과 마찬가지로 AI 및 데이터 관련 직업이 꾸준히 성장하고 있습니다. 하지만 미국이나 영국에 비해서는 그 성장률이 다소 완만하게 나타납니다. 이는 프랑스가 점진적으로 디지털 경제로 전환하고 있음을 보여주며, 강력한 노동 규제와 사회적 합의를 중시하는 문화가 급격한 변화보다는 안정적인 전환을 선호하게 만드는 요인으로 작용할 수 있습니다.' },
+                ITA: { name: '이탈리아', flag: '🇮🇹', rising: [{ l: 'AI 및 머신러닝 전문가', v: 37 }, { l: '비즈니스 인텔리전스 분석가', v: 16 }], declining: [{ l: '회계사 및 감사인', v: -14 }], analysisTitle: '이탈리아: 디지털 전환의 초기 단계', analysisText: '이탈리아는 8개국 중 기술 직군 성장률이 상대적으로 낮은 편에 속하지만, AI 전문가와 비즈니스 인텔리전스 분석가에 대한 수요는 분명히 존재합니다. 이는 이탈리아 경제가 디지털 전환의 초기 단계에 있으며, 전통적인 산업 구조에서 새로운 기술을 점진적으로 도입하고 있음을 시사합니다. 중소기업 중심의 경제 구조가 대규모 디지털 투자를 더디게 만들 수 있습니다.' },
+                JPN: { name: '일본', flag: '🇯🇵', rising: [{ l: 'AI 및 머신러닝 전문가', v: 100 }], declining: [{ l: '회계/경리 사무원', v: -19 }, { l: '행정/총무 비서', v: -16 }], analysisTitle: '일본: 인구 위기 대응으로서의 자동화', analysisText: '일본에서 행정 및 회계 직무가 뚜렷하게 감소하는 것은 심각한 고령화와 노동 인구 부족에 대응하기 위한 \'인구 통계학적 필수 과제\'로서의 자동화 도입을 보여줍니다. 일본의 자동화는 비용 절감보다는 노동력 부족을 메우기 위한 생존 전략에 가깝습니다. 이는 노동력을 보강하는 \'대체(Replacement)\' 모델로, 독일의 \'증강\' 모델과는 뚜렷한 차이를 보입니다.' },
+                KOR: { name: '대한민국', flag: '🇰🇷', rising: [{ l: 'AI 및 머신러닝 전문가', v: 82 }, { l: '시스템 엔지니어', v: 41 }], declining: [{ l: '회계/경리 사무원', v: -14 }], analysisTitle: '대한민국: 디지털 인프라의 설계자, 시스템 엔지니어', analysisText: '대한민국에서는 \'시스템 엔지니어\'가 41%라는 높은 성장률을 기록한 점이 매우 독특합니다. 이는 \'4차 산업혁명\' 선도 국가가 되겠다는 국가적 전략을 반영합니다. 정부 주도의 스마트 팩토리 구축, 제조업 혁신 등은 복잡한 기술들을 통합하고 관리하는 시스템 엔지니어에 대한 막대한 수요를 창출합니다. 이는 한국이 데이터 활용(소프트웨어)을 넘어, 디지털 인프라(하드웨어) 자체를 구축하는 데 집중하고 있음을 보여주는 강력한 신호입니다.' }
+            },
+            stories: {
+                story1: {
+                    title: '미국 vs 영국: 데이터 자본의 두 거인',
+                    content: `
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="border-l-4 border-[#81B29A] pl-4">
+                                <h4 class="font-bold text-lg">미국: AI 혁신의 선두주자</h4>
+                                <p class="mt-2">AI 및 머신러닝 전문가 성장률 <span class="text-2xl font-bold text-[#81B29A]">+142%</span>. 세계 최대 기술 기업들을 기반으로 한 성숙한 디지털 생태계와 클라우드 인프라가 압도적인 성장을 이끌고 있습니다. 미국은 전 세계 데이터 흐름을 처리하고 가치를 창출하는 글로벌 허브입니다.</p>
+                            </div>
+                            <div class="border-l-4 border-[#81B29A] pl-4">
+                                <h4 class="font-bold text-lg">영국: 빅데이터 강국</h4>
+                                <p class="mt-2">빅데이터 전문가 성장률 <span class="text-2xl font-bold text-[#81B29A]">+100%</span>. 정부의 강력한 데이터 경제 육성 정책과 런던을 중심으로 한 금융 허브의 시너지가 빅데이터 전문가에 대한 폭발적인 수요를 만들고 있습니다. 미국과 함께 '데이터 자본'의 양대 축을 형성합니다.</p>
+                            </div>
+                        </div>
+                        <p class="mt-6 text-sm text-gray-600"><strong>결론:</strong> 두 국가는 단순히 기술을 사용하는 것을 넘어, 전 세계 데이터를 처리하고 수익화하는 인프라, 인재, 규제 환경을 갖춘 '데이터 자본'의 글로벌 허브로 자리매김하며 새로운 경제적 해자를 구축하고 있습니다.</p>
+                    `
+                },
+                story2: {
+                    title: '독일 vs 일본: 자동화 전략의 두 갈래 길',
+                    content: `
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="border-l-4 border-[#E07A5F] pl-4">
+                                <h4 class="font-bold text-lg">독일: 증강(Augmentation)</h4>
+                                <p class="mt-2">조립 및 공장 근로자 성장률 <span class="text-2xl font-bold text-[#81B29A]">+68%</span>. 독일은 로봇과 숙련공이 협업하여 생산성을 극대화합니다. 자동화는 기존 노동자의 역량을 강화하는 도구이며, 일자리를 대체하기보다 상향 숙련을 통해 함께 발전하는 모델을 추구합니다.</p>
+                            </div>
+                            <div class="border-l-4 border-[#E07A5F] pl-4">
+                                <h4 class="font-bold text-lg">일본: 대체(Replacement)</h4>
+                                <p class="mt-2">행정/총무 비서 감소율 <span class="text-2xl font-bold text-[#E07A5F]">-16%</span>. 일본의 자동화는 심각한 노동력 부족에 대응하기 위한 생존 전략입니다. 사라진 노동력을 기술로 메우는 '대체' 모델에 가까우며, 이는 인구 통계학적 위기라는 특수한 상황이 반영된 결과입니다.</p>
+                            </div>
+                        </div>
+                        <p class="mt-6 text-sm text-gray-600"><strong>결론:</strong> 자동화는 단일한 현상이 아닙니다. 독일처럼 기존 노동력의 역량을 강화하는 '증강'의 도구가 될 수도 있고, 일본처럼 부족한 노동력을 메우는 '대체'의 도구가 될 수도 있습니다. 각국의 전략은 경제 구조와 사회적 필요에 따라 결정됩니다.</p>
+                    `
+                },
+                story3: {
+                    title: '국가별 특이 직업: 경제 전략의 시그니처',
+                    content: `
+                        <div class="grid md:grid-cols-3 gap-6 text-center">
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <h4 class="font-bold text-lg">대한민국 🇰🇷</h4>
+                                <p class="text-md mt-1">시스템 엔지니어</p>
+                                <p class="text-4xl font-bold text-[#81B29A] mt-2">+41%</p>
+                                <p class="text-xs text-gray-500 mt-2">국가 주도의 디지털 인프라 구축과 제조업 혁신을 상징합니다.</p>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <h4 class="font-bold text-lg">캐나다 🇨🇦</h4>
+                                <p class="text-md mt-1">변호사</p>
+                                <p class="text-4xl font-bold text-[#81B29A] mt-2">+90%</p>
+                                <p class="text-xs text-gray-500 mt-2">디지털, ESG 전환 속 복잡해진 규제 환경을 헤쳐나가는 길잡이 역할이 부상합니다.</p>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <h4 class="font-bold text-lg">독일 🇩🇪</h4>
+                                <p class="text-md mt-1">조립 및 공장 근로자</p>
+                                <p class="text-4xl font-bold text-[#81B29A] mt-2">+68%</p>
+                                <p class="text-xs text-gray-500 mt-2">'인간-로봇 협업'을 통한 제조업 고도화, 즉 '증강' 전략을 보여줍니다.</p>
+                            </div>
+                        </div>
+                        <p class="mt-6 text-sm text-gray-600"><strong>결론:</strong> 특정 직업에 대한 유별난 수요는 각국이 처한 고유한 경제 상황과 미래 전략을 보여주는 중요한 지표입니다. 이는 글로벌 트렌드를 넘어서는 국가별 특수성을 이해하는 열쇠입니다.</p>
+                    `
+                }
+            }
+        };
+
+        let globalChartInstance;
+        let countryChartInstance;
+        let currentCountry = 'KOR';
+        let currentGlobalView = 'rising';
+        let currentStory = 'story1';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupCountrySelector();
+            updateGlobalChartView();
+            updateCountryView();
+            updateStoryView();
+            
+            document.getElementById('show-rising-global').addEventListener('click', () => {
+                currentGlobalView = 'rising';
+                updateGlobalChartView();
+            });
+
+            document.getElementById('show-declining-global').addEventListener('click', () => {
+                currentGlobalView = 'declining';
+                updateGlobalChartView();
+            });
+
+            document.querySelectorAll('.story-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    currentStory = button.dataset.story;
+                    updateStoryView();
+                });
+            });
+        });
+
+        function setupCountrySelector() {
+            const selectorContainer = document.getElementById('country-selector');
+            Object.keys(appData.countries).forEach(code => {
+                const country = appData.countries[code];
+                const button = document.createElement('button');
+                button.className = 'country-selector-button p-3 bg-white rounded-lg shadow border-2 border-transparent transition-all duration-300 flex flex-col items-center';
+                button.dataset.country = code;
+                button.innerHTML = `<span class="text-3xl">${country.flag}</span><span class="mt-2 text-sm font-medium">${country.name}</span>`;
+                button.addEventListener('click', () => {
+                    currentCountry = code;
+                    updateCountryView();
+                });
+                selectorContainer.appendChild(button);
+            });
+        }
+
+        function createOrUpdateChart(chartInstance, canvasId, labels, data, title, defaultColor, isHorizontal = true) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            
+            const chartData = {
+                labels: labels,
+                datasets: [{
+                    label: '순 성장률 (%)',
+                    data: data,
+                    backgroundColor: data.map(v => v >= 0 ? '#81B29A' : '#E07A5F'),
+                    borderColor: data.map(v => v >= 0 ? '#6A9C89' : '#D06A4F'),
+                    borderWidth: 1
+                }]
+            };
+
+            const options = {
+                indexAxis: isHorizontal ? 'y' : 'x',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: title,
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        padding: {
+                            bottom: 20
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `순 성장률: ${context.raw}%`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#e5e7eb'
+                        }
+                    },
+                    y: {
+                         grid: {
+                            display: false
+                        }
+                    }
+                }
+            };
+            
+            return new Chart(ctx, {
+                type: 'bar',
+                data: chartData,
+                options: options
+            });
+        }
+
+        function updateGlobalChartView() {
+            document.getElementById('show-rising-global').classList.toggle('active', currentGlobalView === 'rising');
+            document.getElementById('show-declining-global').classList.toggle('active', currentGlobalView === 'declining');
+
+            let aggregatedData = {};
+            Object.values(appData.countries).forEach(country => {
+                const jobs = currentGlobalView === 'rising' ? country.rising : country.declining;
+                jobs.forEach(job => {
+                    if (!aggregatedData[job.l]) {
+                        aggregatedData[job.l] = { sum: 0, count: 0 };
+                    }
+                    aggregatedData[job.l].sum += job.v;
+                    aggregatedData[job.l].count++;
+                });
+            });
+
+            let averagedData = Object.entries(aggregatedData).map(([label, {sum, count}]) => ({
+                l: label,
+                v: parseFloat((sum / count).toFixed(1))
+            }));
+
+            averagedData.sort((a, b) => currentGlobalView === 'rising' ? b.v - a.v : a.v - b.v);
+            
+            const topData = averagedData.slice(0, 7);
+            const labels = topData.map(d => d.l);
+            const data = topData.map(d => d.v);
+            const title = `글로벌 평균 ${currentGlobalView === 'rising' ? '성장' : '감소'} 상위 직업`;
+            
+            globalChartInstance = createOrUpdateChart(globalChartInstance, 'global-chart', labels, data, title, '#81B29A');
+        }
+
+        function updateCountryView() {
+            document.querySelectorAll('.country-selector-button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.country === currentCountry);
+            });
+
+            const countryData = appData.countries[currentCountry];
+            
+            document.getElementById('country-analysis-title').textContent = countryData.analysisTitle;
+            document.getElementById('country-analysis-text').textContent = countryData.analysisText;
+
+            const combinedData = [...countryData.rising, ...countryData.declining].sort((a, b) => b.v - a.v);
+            const labels = combinedData.map(d => d.l);
+            const data = combinedData.map(d => d.v);
+            const title = `${countryData.name} 주요 성장 및 하락 직업`;
+
+            countryChartInstance = createOrUpdateChart(countryChartInstance, 'country-chart', labels, data, title, null);
+        }
+
+        function updateStoryView() {
+            document.querySelectorAll('.story-button').forEach(button => {
+                button.classList.toggle('active', button.dataset.story === currentStory);
+            });
+            const storyData = appData.stories[currentStory];
+            const storyContainer = document.getElementById('story-content');
+            storyContainer.innerHTML = `
+                <h3 class="text-lg md:text-xl font-bold mb-4 text-center">${storyData.title}</h3>
+                <div class="mt-4">${storyData.content}</div>
+            `;
+        }
+    </script>
+</body>
+</html>
