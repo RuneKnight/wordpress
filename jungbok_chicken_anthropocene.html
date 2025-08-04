@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인류세의 증거: 닭과 플라스틱의 시대</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Subtle Accents -->
+    <!-- Application Structure Plan: A vertically scrolling, single-page 'digital exhibit' structure. The flow is designed to guide the user through the evidence and debate logically: 1. A captivating introduction to the Anthropocene. 2. An interactive data visualization of the 'Great Acceleration' to set the context. 3. A core 'Evidence' section with interactive tabs for comparing the main candidates (Chicken, Plastic, Others), allowing non-linear exploration. 4. A clear 'Verdict' section visualizing the official scientific decision. 5. A concluding 'Legacy' section for reflection. This structure was chosen over a linear report to enhance user engagement and comprehension by breaking down complex information into digestible, interactive modules. -->
+    <!-- Visualization & Content Choices: 
+        - Plastic Production (Report Info) -> Goal: Show change -> Viz: Line Chart (Chart.js) -> Interaction: Hover tooltips -> Justification: Best for showing exponential trend over time.
+        - Chicken Dominance (Report Info) -> Goal: Compare/Proportion -> Viz: Doughnut Chart (Chart.js) -> Interaction: Hover tooltips -> Justification: Instantly visualizes the species' overwhelming biomass.
+        - Candidate Comparison (Report Info) -> Goal: Organize/Compare -> Viz: Interactive HTML Table -> Interaction: Row highlight on hover -> Justification: More engaging and scannable than a static table.
+        - IUGS Vote (Report Info) -> Goal: Inform -> Viz: Styled HTML Flexbox -> Interaction: None -> Justification: Simple, high-impact visual for a key data point.
+        All choices support the 'digital exhibit' structure and prioritize clarity and user interaction.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #F8F7F2;
+            color: #3a3a3a;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 40vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #C86A50;
+            border-bottom-color: #C86A50;
+        }
+        .tab-button {
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .tab-button.active {
+            background-color: #C86A50;
+            color: #FFFFFF;
+        }
+        .smooth-scroll {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="smooth-scroll">
+
+    <header id="header" class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-gray-800">인류세 보고서</h1>
+            <div class="hidden md:flex space-x-8">
+                <a href="#intro" class="nav-link pb-1">소개</a>
+                <a href="#evidence" class="nav-link pb-1">핵심 증거</a>
+                <a href="#verdict" class="nav-link pb-1">과학계의 평결</a>
+                <a href="#legacy" class="nav-link pb-1">우리의 유산</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="intro" class="min-h-screen flex flex-col justify-center items-center text-center px-6 py-20 bg-cover bg-center" style="background-color: #F8F7F2;">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-4xl md:text-6xl font-bold text-gray-800 mb-4 leading-tight">인류의 시대는<br><span class="text-[#C86A50]">닭과 플라스틱</span>으로 기억될 것인가?</h2>
+                <p class="text-lg md:text-xl text-gray-600 mt-6 mb-12 max-w-2xl mx-auto">
+                    인류의 활동이 지구 시스템을 근본적으로 바꾸고 있다는 '인류세' 개념이 등장했습니다. 먼 미래의 지질학자들은 우리 시대를 무엇으로 식별할까요? 이 보고서는 닭과 플라스틱이 인류세의 가장 강력한 상징이 될 수 있다는 주장을 탐색합니다.
+                </p>
+                <a href="#acceleration" class="bg-[#C86A50] text-white font-bold py-3 px-8 rounded-full hover:bg-[#b35d45] transition-colors duration-300">
+                    증거 탐색하기
+                </a>
+            </div>
+        </section>
+
+        <section id="acceleration" class="py-20 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center max-w-3xl mx-auto">
+                    <h3 class="text-3xl font-bold mb-4">거대 가속 (The Great Acceleration)</h3>
+                    <p class="text-gray-600 mb-12">
+                        인류세 논의의 핵심은 1950년대 이후 인류 활동의 폭발적인 증가입니다. 이 시기부터 플라스틱 생산량, 육계 사육 수 등 주요 지표들이 급격한 상승 곡선을 그리기 시작했습니다. 이는 인류가 지구에 미치는 영향이 지질학적 힘으로 작용하기 시작했음을 보여주는 명백한 데이터입니다.
+                    </p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="accelerationChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="evidence" class="py-20">
+            <div class="container mx-auto px-6">
+                <div class="text-center max-w-3xl mx-auto">
+                    <h3 class="text-3xl font-bold mb-4">인류세의 핵심 증거</h3>
+                    <p class="text-gray-600 mb-12">
+                        우리 시대를 정의할 지질학적 증거로 여러 후보가 있습니다. 그중에서도 닭과 플라스틱은 우리 문명의 대량 생산-소비 시스템을 가장 직접적으로 상징합니다. 각 후보가 왜 인류세의 지표로 거론되는지, 그 근거를 자세히 살펴보세요.
+                    </p>
+                </div>
+
+                <div class="max-w-4xl mx-auto">
+                    <div class="flex justify-center mb-8 border-b border-gray-200">
+                        <button id="tab-chicken" class="tab-button text-lg font-semibold py-3 px-6 rounded-t-lg active">🐔 닭</button>
+                        <button id="tab-plastic" class="tab-button text-lg font-semibold py-3 px-6 rounded-t-lg">♻️ 플라스틱</button>
+                        <button id="tab-others" class="tab-button text-lg font-semibold py-3 px-6 rounded-t-lg">⚛️ 다른 후보들</button>
+                    </div>
+
+                    <div id="content-chicken" class="tab-content">
+                        <div class="grid md:grid-cols-2 gap-12 items-center">
+                            <div>
+                                <h4 class="text-2xl font-bold mb-4">생물권의 재편: 육계(Broiler Chicken)</h4>
+                                <p class="text-gray-600 mb-6">현대 육계는 자연선택이 아닌, 오직 인간의 필요에 의해 수십 년 만에 급격히 변형된 '인공 생물'입니다. 그 압도적인 수와 독특한 뼈 형태는 전 지구의 지층에 명확한 생물학적 신호를 남기고 있습니다.</p>
+                                <ul class="space-y-4 text-gray-700">
+                                    <li class="flex items-start"><span class="text-[#C86A50] font-bold mr-2">●</span><strong>전례 없는 생물량:</strong> 연간 650억 마리 이상 도축. 지구상 모든 조류의 생물량을 합친 것보다 많습니다.</li>
+                                    <li class="flex items-start"><span class="text-[#C86A50] font-bold mr-2">●</span><strong>독특한 형태:</strong> 빠른 성장을 위해 거대해진 뼈는 조상과 명확히 구분되는 '표준화석'의 특징을 가집니다.</li>
+                                    <li class="flex items-start"><span class="text-[#C86A50] font-bold mr-2">●</span><strong>광범위한 분포:</strong> 소비 후 버려진 뼈는 전 세계 쓰레기 매립지에 쌓여 동시다발적 화석 기록을 형성합니다.</li>
+                                </ul>
+                            </div>
+                            <div class="chart-container h-64 md:h-80">
+                                <canvas id="chickenChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="content-plastic" class="tab-content hidden">
+                        <div class="grid md:grid-cols-2 gap-12 items-center">
+                            <div>
+                                <h4 class="text-2xl font-bold mb-4">지워지지 않는 흔적: 플라스틱</h4>
+                                <p class="text-gray-600 mb-6">자연에 존재하지 않던 인공 물질인 플라스틱은 썩지 않고 지구 모든 곳에 축적되고 있습니다. 단순한 쓰레기를 넘어, 지층에 새로운 암석('플라스티글로머레이트')을 형성하며 영구적인 기술적 화석, 즉 '테크노포실'이 되고 있습니다.</p>
+                                <ul class="space-y-4 text-gray-700">
+                                    <li class="flex items-start"><span class="text-[#85A293] font-bold mr-2">●</span><strong>폭발적 생산량:</strong> 1950년 200만 톤에서 현재 연간 4억 톤 이상으로 급증했습니다.</li>
+                                    <li class="flex items-start"><span class="text-[#85A293] font-bold mr-2">●</span><strong>극도의 내구성:</strong> 수백, 수천 년간 분해되지 않아 지층에 뚜렷한 화학적 신호를 남깁니다.</li>
+                                    <li class="flex items-start"><span class="text-[#85A293] font-bold mr-2">●</span><strong>새로운 암석 형성:</strong> 녹은 플라스틱이 퇴적물과 엉겨 붙어 '플라스틱 암석'이라는 새로운 지질 기록을 만듭니다.</li>
+                                </ul>
+                            </div>
+                            <div class="chart-container h-64 md:h-80">
+                                <canvas id="plasticChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="content-others" class="tab-content hidden">
+                        <div>
+                            <h4 class="text-2xl font-bold mb-4 text-center">주요 후보 물질 비교</h4>
+                            <p class="text-gray-600 mb-8 text-center max-w-2xl mx-auto">닭과 플라스틱 외에도, 인류세의 시작을 알리는 '황금못' 후보로 여러 물질이 제안되었습니다. 각 후보는 인류 활동의 다른 측면을 보여주며, 저마다 뚜렷한 장단점을 가집니다.</p>
+                            <div class="overflow-x-auto bg-white rounded-lg shadow">
+                                <table class="w-full text-sm text-left text-gray-500">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3">지표</th>
+                                            <th scope="col" class="px-6 py-3">유형</th>
+                                            <th scope="col" class="px-6 py-3">장점 (지질학적 신호로서)</th>
+                                            <th scope="col" class="px-6 py-3">시작점의 명확성</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="bg-white border-b hover:bg-gray-50">
+                                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">플루토늄-239</th>
+                                            <td class="px-6 py-4">지구화학적</td>
+                                            <td class="px-6 py-4">전 지구적 동시 발생, 인공 원소라 명확함</td>
+                                            <td class="px-6 py-4 text-green-600 font-bold">매우 높음 (1952년 급증)</td>
+                                        </tr>
+                                        <tr class="bg-white border-b hover:bg-gray-50">
+                                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">구형 탄소 입자</th>
+                                            <td class="px-6 py-4">지구화학적</td>
+                                            <td class="px-6 py-4">화석연료 연소의 직접적 증거, 전 지구적 분포</td>
+                                            <td class="px-6 py-4 text-yellow-600 font-bold">높음 (1950년 이후 급증)</td>
+                                        </tr>
+                                        <tr class="bg-white border-b hover:bg-gray-50">
+                                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">콘크리트</th>
+                                            <td class="px-6 py-4">테크노포실</td>
+                                            <td class="px-6 py-4">압도적인 질량, 영구적인 구조물 형성</td>
+                                            <td class="px-6 py-4 text-red-600 font-bold">낮음 (지역별로 상이)</td>
+                                        </tr>
+                                        <tr class="bg-white hover:bg-gray-50">
+                                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">닭/플라스틱</th>
+                                            <td class="px-6 py-4">생물학적/테크노포실</td>
+                                            <td class="px-6 py-4">대량소비 문화를 상징, 전 지구적 분포</td>
+                                            <td class="px-6 py-4 text-yellow-600 font-bold">중간 (1950년 이후 급증)</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="verdict" class="py-20 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center max-w-3xl mx-auto">
+                    <h3 class="text-3xl font-bold mb-4">과학계의 평결: 거부된 제안</h3>
+                    <p class="text-gray-600 mb-12">
+                        15년간의 연구 끝에, 인류세를 공식 지질 시대로 지정하자는 제안은 2024년 국제지질과학연맹(IUGS) 산하 소위원회 투표에서 부결되었습니다. 이는 인류의 영향을 부정한 것이 아니라, '세(epoch)'라는 공식 단위를 적용하기에는 너무 최근이고 논쟁적이라는 엄격한 지질학적 방법론에 따른 결정이었습니다.
+                    </p>
+                </div>
+                <div class="max-w-3xl mx-auto bg-gray-50 p-8 rounded-lg shadow-inner">
+                    <h4 class="text-xl font-bold text-center mb-6">제4기층서 소위원회(SQS) 투표 결과</h4>
+                    <div class="flex justify-center items-end space-x-4">
+                        <div class="text-center">
+                            <div class="bg-red-500 w-16 h-48 rounded-t-lg" title="반대"></div>
+                            <p class="font-bold text-3xl mt-2">12</p>
+                            <p class="text-sm text-gray-600">반대</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="bg-green-500 w-16 h-16 rounded-t-lg" title="찬성"></div>
+                            <p class="font-bold text-3xl mt-2">4</p>
+                            <p class="text-sm text-gray-600">찬성</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="bg-gray-400 w-16 h-12 rounded-t-lg" title="기권"></div>
+                            <p class="font-bold text-3xl mt-2">3</p>
+                            <p class="text-sm text-gray-600">기권</p>
+                        </div>
+                    </div>
+                    <p class="text-center text-sm text-gray-500 mt-8">
+                        부결의 주된 이유: 너무 최근인 시작점(70년), 인간 영향의 시공간적 불균일성, 기존 지질 시대 위계와의 부조화 등.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="legacy" class="py-20">
+            <div class="container mx-auto px-6 text-center max-w-4xl">
+                <h3 class="text-3xl font-bold mb-4">황금못을 넘어, 우리 시대의 유산</h3>
+                <p class="text-lg text-gray-600 mb-8">
+                    공식 명칭 등재는 무산되었지만, '인류세'라는 개념은 사라지지 않았습니다. 오히려 우리 시대가 직면한 환경 위기를 설명하고 행동을 촉구하는 가장 강력한 용어로 남았습니다. 공식 지표가 무엇이든, 지층에 새겨질 수십억 개의 닭 뼈와 썩지 않는 플라스틱의 막은 우리 문명의 가장 정직한 자화상일 것입니다.
+                </p>
+                <blockquote class="border-l-4 border-[#C86A50] pl-6 italic text-xl text-gray-700 max-w-3xl mx-auto">
+                    "먼 훗날 우리의 시간을 해독하려는 모든 지적 존재는, 그 증거 앞에서 우리 시대를 '닭과 플라스틱의 시대'로 기억할 수밖에 없을 것입니다."
+                </blockquote>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2024 인류세 대화형 보고서. 모든 정보는 제공된 연구 보고서를 기반으로 합니다.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const accelerationData = {
+                labels: ['1950', '1960', '1970', '1980', '1990', '2000', '2010', '2020'],
+                datasets: [{
+                    label: '플라스틱 생산량 (백만 톤)',
+                    data: [2, 15, 47, 90, 150, 270, 335, 460],
+                    borderColor: '#85A293',
+                    backgroundColor: 'rgba(133, 162, 147, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: '육계 사육 수 (십억 마리)',
+                    data: [0.5, 1.5, 3, 5, 8, 14, 19, 23],
+                    borderColor: '#C86A50',
+                    backgroundColor: 'rgba(200, 106, 80, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            };
+
+            new Chart(document.getElementById('accelerationChart'), {
+                type: 'line',
+                data: accelerationData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: '주요 지표의 기하급수적 증가 (1950-2020)' },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            const chickenData = {
+                labels: ['현대 육계 생물량', '기타 모든 조류 생물량'],
+                datasets: [{
+                    data: [70, 30],
+                    backgroundColor: ['#C86A50', '#EAEAEA'],
+                    hoverBackgroundColor: ['#b35d45', '#dcdcdc']
+                }]
+            };
+
+            new Chart(document.getElementById('chickenChart'), {
+                type: 'doughnut',
+                data: chickenData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: '전체 조류 생물량에서 육계의 비중' },
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            const plasticData = {
+                labels: ['1950', '1970', '1990', '2010', '2019'],
+                datasets: [{
+                    label: '연간 플라스틱 생산량 (백만 톤)',
+                    data: [2, 47, 150, 335, 460],
+                    backgroundColor: '#85A293',
+                    borderColor: '#6a8578',
+                    borderWidth: 1
+                }]
+            };
+
+            new Chart(document.getElementById('plasticChart'), {
+                type: 'bar',
+                data: plasticData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: '플라스틱 생산량의 폭발적 증가' },
+                        legend: { display: false }
+                    },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            const tabs = document.querySelectorAll('.tab-button');
+            const contents = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    const targetId = 'content-' + tab.id.split('-')[1];
+                    contents.forEach(content => {
+                        if (content.id === targetId) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 60) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
