@@ -169,7 +169,7 @@
                     
                     <div id="user-extra-time-display" class="mb-6 text-lg">남은 추가 시간: <span id="current-user-extra-time" class="font-bold">0</span>초</div>
 
-                    <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="w-full px-4 sm:px-0 sm:max-w-xs sm:mx-auto">
                         <button id="next-turn-btn" class="w-full bg-amber-500 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-amber-600 shadow-md">차례 넘기기</button>
                         <button id="start-turn-btn" class="w-full bg-blue-500 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-blue-600 shadow-md hidden">시작</button>
                     </div>
@@ -655,7 +655,7 @@
                     button.disabled = false;
                 }).catch(err => {
                     console.error('이미지 저장 오류:', err);
-                    alert('이미지를 저장하는 데 실패했습니다.');
+                    alert('이미지를 저장하는 데 실패했습니다. 브라우저 보안 설정(iframe) 때문일 수 있습니다.');
                     button.textContent = '이미지로 저장';
                     button.disabled = false;
                 });
@@ -688,16 +688,28 @@
             }
 
             function movePlayer(index, direction) {
+                if (isTimerRunning) {
+                    recordTime();
+                } else {
+                    stopTimer();
+                }
+
+                const currentTurnPlayerName = users[currentUserIndex].name;
+
                 if (direction === 'up' && index > 0) {
                     [users[index], users[index - 1]] = [users[index - 1], users[index]];
                 } else if (direction === 'down' && index < users.length - 1) {
                     [users[index], users[index + 1]] = [users[index + 1], users[index]];
                 }
                 
-                const currentUserName = users[currentUserIndex].name;
-                currentUserIndex = users.findIndex(u => u.name === currentUserName);
-
-                renderLeaderboard();
+                // 순서 변경 후, 이전에 턴을 진행하던 플레이어의 새 위치를 찾습니다.
+                currentUserIndex = users.findIndex(u => u.name === currentTurnPlayerName);
+                
+                updateUIForCurrentUser();
+                
+                nextTurnBtn.classList.add('hidden');
+                nextTurnBtn.disabled = true;
+                startTurnBtn.classList.remove('hidden');
             }
 
             function moveToNextUser() {
@@ -746,7 +758,7 @@
 
             function renderLeaderboard() {
                 leaderboardDiv.innerHTML = '';
-                users.forEach((user, index) => { user.totalTimeUsed = user.lapTimes.reduce((sum, lap) => sum + lap, 0); });
+                users.forEach((user) => { user.totalTimeUsed = user.lapTimes.reduce((sum, lap) => sum + lap, 0); });
                 
                 leaderboardDiv.innerHTML = users.map((user, index) => {
                     const isCurrentUser = index === currentUserIndex;
