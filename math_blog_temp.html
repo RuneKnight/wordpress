@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Chosen Palette: "Deep Thought" - A refined and focused palette. The base is a clean, academic off-white (bg-slate-50). Text is a clear, dark slate (text-slate-800). Accent colors are a strong, intellectual navy (indigo-600) for core concepts, and a vibrant, motivational orange (orange-500) for challenges and AI interactions, symbolizing insight and breakthrough. -->
+    <!-- Application Structure Plan: The structure remains a single-page hub. The key addition is enhancing the 'Deep Dive Challenge' section. When a problem is generated, it now includes a button to open a new 'Instructor's Guide' modal. This modal displays the answer, a step-by-step solution, and educational insights. This requires a more complex, structured JSON response from the Gemini API, separating the problem from its instructional guide, and new UI elements (button and modal) to present this information on demand. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: AI-Generated Deep Dive Problems with Instructor Guides. Goal: Provide a complete tool for both student challenge and instructor preparation. Viz/Method: The challenge card now includes a 'View Guide' button. This button triggers a new modal window. Interaction: Clicking 'Generate Challenge' fetches a structured JSON object. The problem is displayed. Clicking the 'View Guide' button on the card opens a modal with the corresponding answer, solution, and educational insight. Justification: This separation keeps the student-facing view clean and challenging, while providing rich, on-demand support for the instructor in a non-intrusive way.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <title>수학 탐험가 제미 | 황소수학 융합 기획 허브</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc; /* bg-slate-50 */
+            color: #1e293b; /* text-slate-800 */
+        }
+        h1, h2, h3, .font-display {
+            font-family: 'Gowun Dodum', sans-serif;
+        }
+        .nav-button.active {
+            color: #ea580c; /* orange-600 */
+            border-bottom-color: #ea580c; /* orange-600 */
+        }
+        .grade-filter-button.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .table-responsive {
+            display: block;
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #4f46e5; /* indigo-600 */
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .mission-card {
+            border-left: 5px solid #f97316; /* orange-500 */
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <header class="bg-white/90 backdrop-blur-sm shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl md:text-2xl font-bold text-slate-800">
+                        <span class="text-indigo-600">수학 탐험가 제미</span> | 융합 기획 허브
+                    </h1>
+                </div>
+                <nav class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#curriculum" class="nav-button text-slate-600 hover:text-orange-600 px-3 py-2 text-sm font-bold border-b-2 border-transparent transition-all duration-300">커리큘럼 맵</a>
+                        <a href="#challenge" class="nav-button text-slate-600 hover:text-orange-600 px-3 py-2 text-sm font-bold border-b-2 border-transparent transition-all duration-300">사고력 챌린지</a>
+                        <a href="#engagement" class="nav-button text-slate-600 hover:text-orange-600 px-3 py-2 text-sm font-bold border-b-2 border-transparent transition-all duration-300">참여 전략</a>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:px-8">
+
+        <!-- Intro -->
+        <section class="text-center mb-16">
+            <h2 class="text-4xl font-bold text-slate-800 mb-4">개념 탐험과 사고력 훈련의 만남</h2>
+            <p class="text-lg max-w-3xl mx-auto text-slate-600">
+                '수학 탐험가 제미'의 즐거운 탐구 방식에 '황소수학'의 깊이 있는 사고력 훈련을 더했습니다. 아이들이 개념을 넘어 문제의 본질을 꿰뚫어 보도록 이끌어주는 새로운 교육 여정을 제안합니다.
+            </p>
+        </section>
+
+        <!-- Section 1: Curriculum Map -->
+        <section id="curriculum" class="scroll-mt-20 mb-16">
+            <div class="text-center mb-12">
+                <span class="bg-indigo-100 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full">PLAN</span>
+                <h2 class="text-3xl font-bold mt-2">융합 커리큘럼 맵</h2>
+                <p class="mt-4 max-w-2xl mx-auto text-slate-600">학년별 학습 목표와 함께, 황소수학이 추구하는 '사고력 목표'를 추가했습니다. AI 도우미에게 아이의 생각을 이끌어내는 '발문법'에 대한 조언을 구해보세요.</p>
+            </div>
+
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                <div class="flex flex-wrap justify-center gap-2 sm:gap-3 mb-6">
+                    <button class="grade-filter-button active px-4 py-2 text-sm sm:text-base font-bold bg-white border border-slate-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200" data-grade="all">전체보기</button>
+                    <button class="grade-filter-button px-4 py-2 text-sm sm:text-base font-bold bg-white border border-slate-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200" data-grade="2학년">2학년</button>
+                    <button class="grade-filter-button px-4 py-2 text-sm sm:text-base font-bold bg-white border border-slate-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200" data-grade="3학년">3학년</button>
+                    <button class="grade-filter-button px-4 py-2 text-sm sm:text-base font-bold bg-white border border-slate-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200" data-grade="4학년">4학년</button>
+                    <button class="grade-filter-button px-4 py-2 text-sm sm:text-base font-bold bg-white border border-slate-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200" data-grade="5학년">5학년</button>
+                    <button class="grade-filter-button px-4 py-2 text-sm sm:text-base font-bold bg-white border border-slate-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200" data-grade="6학년">6학년</button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="w-full text-sm text-left text-slate-600" id="curriculum-table">
+                        <thead class="text-xs text-slate-700 uppercase bg-slate-100">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">학년</th>
+                                <th scope="col" class="px-6 py-3">주요 학습 개념</th>
+                                <th scope="col" class="px-6 py-3">사고력 목표 (황소수학)</th>
+                                <th scope="col" class="px-6 py-3">Struggle Point</th>
+                                <th scope="col" class="px-6 py-3">AI 발문 코칭</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                            <!-- Table data rows will be injected here by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Deep Dive Challenge -->
+        <section id="challenge" class="scroll-mt-20 mb-16">
+            <div class="text-center mb-12">
+                <span class="bg-orange-100 text-orange-800 text-sm font-bold px-3 py-1 rounded-full">CHALLENGE</span>
+                <h2 class="text-3xl font-bold mt-2">AI 황소수학 챌린지 생성기</h2>
+                <p class="mt-4 max-w-2xl mx-auto text-slate-600">개념 학습 후, 더 깊은 사고가 필요한 문제에 도전해보세요. AI가 생성한 문제의 해설과 교육적 가이드는 '지도자용 가이드'에서 확인할 수 있습니다.</p>
+            </div>
+            
+             <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg mb-8">
+                <div class="grid md:grid-cols-3 gap-4 items-end">
+                    <div>
+                        <label for="grade-select" class="block text-sm font-medium text-slate-700">학년 선택</label>
+                        <select id="grade-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"></select>
+                    </div>
+                    <div>
+                        <label for="concept-select" class="block text-sm font-medium text-slate-700">학습 개념 선택</label>
+                        <select id="concept-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"></select>
+                    </div>
+                    <button id="generate-challenge-btn" class="w-full bg-orange-500 text-white font-bold py-2 px-4 rounded-md hover:bg-orange-600 transition-colors flex items-center justify-center">
+                        🔥 챌린지 생성!
+                    </button>
+                </div>
+            </div>
+
+            <div id="challenge-output" class="relative">
+                 <div id="challenge-loader" class="hidden justify-center items-center py-8">
+                    <div class="loader"></div>
+                    <p class="ml-4 text-slate-600 font-semibold">AI가 사고력 문제를 만들고 있어요...</p>
+                 </div>
+                <div id="challenge-card-container" class="space-y-6">
+                    <!-- AI Generated challenge cards will be injected here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Engagement -->
+        <section id="engagement" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <span class="bg-indigo-100 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full">ENGAGE</span>
+                <h2 class="text-3xl font-bold mt-2">도전하고 성장하는 커뮤니티</h2>
+                <p class="mt-4 max-w-2xl mx-auto text-slate-600">황소수학의 '도전 정신'을 커뮤니티에 적용하여, 아이와 부모 모두 함께 성장하는 참여 전략을 제안합니다.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Engagement cards will be injected here by JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-white mt-16">
+        <div class="container mx-auto py-6 px-4 text-center">
+            <p class="font-display text-lg">수학 탐험가 제미</p>
+            <p class="text-sm text-slate-400">생각의 힘을 키우는 모든 탐험가를 응원합니다.</p>
+        </div>
+    </footer>
+    
+    <!-- Modals -->
+    <div id="ai-help-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 hidden" role="dialog" aria-modal="true">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-lg p-6 transform scale-95">
+            <div class="flex justify-between items-start">
+                <h3 class="text-lg font-bold font-display text-indigo-700">💡 AI 발문 코칭</h3>
+                <button class="js-modal-close text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+            </div>
+            <div class="modal-body mt-4 text-slate-600 min-h-[120px] flex items-center justify-center"></div>
+        </div>
+    </div>
+    
+    <div id="guide-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 hidden" role="dialog" aria-modal="true">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 transform scale-95 overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-start sticky top-0 bg-white py-2">
+                <h3 class="text-lg font-bold font-display text-orange-600">🎓 지도자용 가이드</h3>
+                <button class="js-modal-close text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+            </div>
+            <div class="modal-body mt-4 text-slate-700 space-y-4"></div>
+        </div>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // --- Data Storage ---
+        const curriculumData = [
+            { grade: '2학년', concept: '세 자리 수', thinkingGoal: '자릿값의 원리를 이용해 수의 크기를 논리적으로 비교하고 설명하기', struggle: '자릿값 개념의 혼동' },
+            { grade: '2학년', concept: '곱셈구구', thinkingGoal: '반복되는 덧셈의 규칙성을 발견하고 곱셈식으로 일반화하기', struggle: '무의미한 암기로 인한 지루함' },
+            { grade: '3학년', concept: '나눗셈', thinkingGoal: '다양한 나눗셈 상황을 식으로 표현하고, 실생활 문제에 적용하기', struggle: '몫과 나머지 개념 혼동' },
+            { grade: '3학년', concept: '분수와 소수', thinkingGoal: '전체를 똑같이 나눈다는 개념(등분할)을 이용해 여러 상황을 분수로 모델링하기', struggle: '자연수와 다른 수 체계에 대한 혼란' },
+            { grade: '4학년', concept: '혼합계산', thinkingGoal: '계산 순서의 이유를 이해하고, 복잡한 문제 상황을 하나의 식으로 표현하기', struggle: '계산 순서 규칙의 복잡함' },
+            { grade: '4학년', concept: '평면도형의 이동', thinkingGoal: '도형의 이동 규칙을 예측하고, 이동 전후의 관계를 논리적으로 설명하기', struggle: '머릿속으로 도형을 조작하는 어려움' },
+            { grade: '5학년', concept: '약수와 배수', thinkingGoal: '두 수의 관계를 파악하고, 최대공약수/최소공배수를 활용해 실생활의 효율성 문제 해결하기', struggle: '수 사이의 관계 파악의 추상성' },
+            { grade: '5학년', concept: '분수의 덧셈과 뺄셈', thinkingGoal: '통분의 필요성을 이해하고, 기준이 다른 두 양을 비교하는 논리 터득하기', struggle: '통분이라는 복잡한 절차' },
+            { grade: '6학년', concept: '비와 비율', thinkingGoal: '비율을 이용해 전체와 부분의 관계를 추론하고, 변화하는 상황 예측하기', struggle: '개념 자체의 추상성, 문제 적용의 어려움' },
+            { grade: '6학년', concept: '경우의 수', thinkingGoal: '조건에 맞는 모든 가능성을 체계적으로, 중복과 누락 없이 찾아내는 전략 세우기', struggle: '논리적 체계 부족' },
+        ];
+
+        const engagementData = [
+            { icon: '🎯', title: '이번 주 사고력 챌린지', content: "매주 블로그에 올라오는 '황소수학 챌린지'에 도전! <strong>정답보다 중요한 것은 끝까지 고민한 흔적!</strong> 풀이 과정을 댓글로 공유하고, 다른 친구들의 풀이와 비교하며 함께 성장해요." },
+            { icon: '🏆', title: '명예의 전당 & 배지', content: '<strong>- 생각의 씨앗 🌱:</strong> 첫 챌린지 도전!<br><strong>- 끈기있는 탐험가 🧭:</strong> 한 달간 꾸준히 챌린지 참여<br><strong>- 문제 해결사 💡:</strong> 어려운 문제의 핵심을 짚어낸 친구에게 수여<br>월간 우수 해결사 \'명예의 전당\'에 등극!' },
+            { icon: '💡', title: '학부모님을 위한 발문법 Tip', content: '<strong>- "왜 그렇게 생각해?"</strong>: 아이의 답이 틀려도 바로 지적하기보다, 생각의 과정을 물어봐 주세요.<br><strong>- "다른 방법은 없을까?":</strong> 하나의 정답에 만족하지 않고, 더 효율적이거나 창의적인 방법을 찾도록 유도해 주세요.<br><strong>- "만약 ~라면 어떨까?":</strong> 문제의 조건을 살짝 바꿔 질문하며, 개념을 더 깊고 넓게 이해하도록 도와주세요.' },
+            { icon: '💬', title: '함께 푸는 수학, 댓글 토론', content: '<strong>- 나의 풀이법 자랑하기:</strong> "저는 이 문제를 이렇게 풀었어요! 여러분의 생각은 어때요?"<br><strong>- 막히는 부분 질문하기:</strong> "여기까지는 알겠는데, 그 다음은 어떻게 해야 할까요? 힌트 좀 주세요!"<br>서로 돕고 토론하며 집단 지성의 힘을 경험하게 합니다.' },
+        ];
+        
+        // --- Gemini API ---
+        const apiKey = ""; 
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+        async function callGemini(prompt, isJson = false) {
+             let payload = {
+                contents: [{ role: "user", parts: [{ text: prompt }] }]
+            };
+            if(isJson) {
+                payload.generationConfig = {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            title: { type: "STRING" },
+                            problem: { type: "STRING" },
+                            answer: { type: "STRING" },
+                            solution: { type: "STRING" },
+                            insight: { type: "STRING" }
+                        },
+                        required: ["title", "problem", "answer", "solution", "insight"]
+                    }
+                }
+            }
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    throw new Error("No content from API.");
+                }
+            } catch (error) {
+                console.error("Gemini API call error:", error);
+                return "AI 응답을 가져오는 데 실패했습니다. 잠시 후 다시 시도해 주세요.";
+            }
+        }
+
+        // --- Render Functions ---
+        function renderCurriculumTable() {
+            const tbody = document.querySelector('#curriculum-table tbody');
+            tbody.innerHTML = curriculumData.map(row => `
+                <tr class="bg-white hover:bg-slate-50/50 curriculum-row" data-grade="${row.grade}">
+                    <td class="px-6 py-4 font-bold text-slate-800">${row.grade}</td>
+                    <td class="px-6 py-4 font-bold text-indigo-700">${row.concept}</td>
+                    <td class="px-6 py-4">${row.thinkingGoal}</td>
+                    <td class="px-6 py-4 text-orange-600">${row.struggle}</td>
+                    <td class="px-6 py-4 text-center">
+                        <button class="ai-help-btn text-indigo-500 hover:text-indigo-700 font-bold" data-concept="${row.concept}" data-struggle="${row.struggle}">
+                            💡 코칭받기
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            addAiHelpEventListeners();
+        }
+
+        function renderEngagementCards() {
+            const container = document.querySelector('#engagement .grid');
+            container.innerHTML = engagementData.map(item => `
+                <div class="bg-white p-6 rounded-2xl shadow-lg h-full">
+                    <h3 class="text-xl font-bold font-display mb-3">
+                        <span class="text-2xl mr-2">${item.icon}</span>${item.title}
+                    </h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">${item.content}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderAiChallengeCard(challengeData) {
+            const container = document.getElementById('challenge-card-container');
+            container.innerHTML = ''; // Clear previous card
+            const missionCard = document.createElement('div');
+            missionCard.className = 'mission-card bg-white p-6 rounded-lg shadow-md';
+            
+            missionCard.innerHTML = `
+                <h4 class="font-display text-lg font-bold text-orange-600 mb-2">${challengeData.title}</h4>
+                <p class="text-slate-700 leading-relaxed">${challengeData.problem.replace(/\n/g, '<br>')}</p>
+                <div class="text-right mt-4">
+                    <button class="guide-btn bg-indigo-500 text-white text-sm font-bold py-2 px-4 rounded-md hover:bg-indigo-600 transition-colors">
+                        🎓 지도자용 가이드 보기
+                    </button>
+                </div>
+            `;
+            
+            missionCard.querySelector('.guide-btn').addEventListener('click', () => {
+                const guideModal = document.getElementById('guide-modal');
+                const guideBody = guideModal.querySelector('.modal-body');
+                guideBody.innerHTML = `
+                    <div class="p-4 bg-slate-100 rounded-lg">
+                        <h4 class="font-bold text-slate-800">정답</h4>
+                        <p>${challengeData.answer}</p>
+                    </div>
+                    <div class="p-4 bg-slate-100 rounded-lg">
+                        <h4 class="font-bold text-slate-800">풀이 과정</h4>
+                        <p>${challengeData.solution.replace(/\n/g, '<br>')}</p>
+                    </div>
+                    <div class="p-4 bg-slate-100 rounded-lg">
+                        <h4 class="font-bold text-slate-800">교육적 활용 가이드</h4>
+                        <p>${challengeData.insight.replace(/\n/g, '<br>')}</p>
+                    </div>
+                `;
+                guideModal.classList.remove('hidden');
+            });
+
+            container.appendChild(missionCard);
+        }
+
+        // --- Event Listeners and Initial Calls ---
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+            modal.querySelector('.js-modal-close').addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+        });
+        
+        function showModalLoader(modal) {
+             const body = modal.querySelector('.modal-body');
+             body.innerHTML = '<div class="loader"></div><p class="ml-3 text-slate-500">AI가 생각 중입니다...</p>';
+        }
+
+        function addAiHelpEventListeners() {
+            const helpModal = document.getElementById('ai-help-modal');
+            document.querySelectorAll('.ai-help-btn').forEach(button => {
+                button.addEventListener('click', async () => {
+                    const concept = button.dataset.concept;
+                    const struggle = button.dataset.struggle;
+                    helpModal.classList.remove('hidden');
+                    showModalLoader(helpModal);
+
+                    const prompt = `You are a Socratic math coach for parents, in the style of 'Hwangso Math'. A parent is struggling because their child has difficulty with '${struggle}' while learning '${concept}'. Provide two simple but powerful Socratic questions (발문) in Korean that the parent can ask the child. These questions should not give away the answer but should prompt the child to think deeper about the problem on their own. Explain briefly in one sentence why each question is effective. Format as: \n\n질문 1: [Question]\n(효과: [Reason])\n\n질문 2: [Question]\n(효과: [Reason])`;
+                    const response = await callGemini(prompt);
+                    helpModal.querySelector('.modal-body').innerHTML = `<div class="text-left w-full">${response.replace(/\n/g, '<br>')}</div>`;
+                });
+            });
+        }
+        
+        // Challenge Generator Logic
+        const gradeSelect = document.getElementById('grade-select');
+        const conceptSelect = document.getElementById('concept-select');
+        const generateBtn = document.getElementById('generate-challenge-btn');
+        const challengeLoader = document.getElementById('challenge-loader');
+
+        function populateSelectors() {
+            const grades = [...new Set(curriculumData.map(item => item.grade))];
+            grades.forEach(grade => {
+                gradeSelect.innerHTML += `<option value="${grade}">${grade}</option>`;
+            });
+            updateConceptSelect();
+        }
+
+        function updateConceptSelect() {
+            const selectedGrade = gradeSelect.value;
+            const concepts = curriculumData
+                .filter(item => item.grade === selectedGrade)
+                .map(item => item.concept);
+            
+            conceptSelect.innerHTML = '';
+            concepts.forEach(concept => {
+                conceptSelect.innerHTML += `<option value="${concept}">${concept}</option>`;
+            });
+        }
+
+        gradeSelect.addEventListener('change', updateConceptSelect);
+
+        generateBtn.addEventListener('click', async () => {
+            const grade = gradeSelect.value;
+            const concept = conceptSelect.value;
+
+            challengeLoader.style.display = 'flex';
+            document.getElementById('challenge-card-container').innerHTML = '';
+            generateBtn.disabled = true;
+            generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            const prompt = `Create one challenging math problem for a South Korean elementary school student. This problem should be in the style of 'Hwangso Math', focusing on deep thinking and problem-solving.
+            - Grade: ${grade}
+            - Core Concept: ${concept}
+            - The problem must be solvable with the knowledge of that grade level but should require multiple steps or creative thinking.
+            - Respond with a JSON object that has the following structure: { "title": "Problem Title in Korean", "problem": "Problem statement in Korean", "answer": "The final answer in Korean", "solution": "A step-by-step solution process in Korean", "insight": "A brief explanation for an instructor about the key mathematical thinking skills this problem helps develop, in Korean." }`;
+            
+            try {
+                const responseText = await callGemini(prompt, true);
+                const challengeData = JSON.parse(responseText);
+                renderAiChallengeCard(challengeData);
+            } catch(e) {
+                document.getElementById('challenge-card-container').innerHTML = `<p class="text-center text-red-500">문제 생성에 실패했습니다. 다시 시도해 주세요.</p>`;
+                console.error("Failed to generate or parse challenge:", e);
+            }
+            
+            challengeLoader.style.display = 'none';
+            generateBtn.disabled = false;
+            generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        });
+
+        // Initial setup
+        renderCurriculumTable();
+        renderEngagementCards();
+        populateSelectors();
+
+
+        // Table filtering logic
+        document.querySelectorAll('.grade-filter-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const selectedGrade = button.dataset.grade;
+                document.querySelectorAll('.grade-filter-button').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                document.querySelectorAll('.curriculum-row').forEach(row => {
+                    row.style.display = (selectedGrade === 'all' || row.dataset.grade === selectedGrade) ? '' : 'none';
+                });
+            });
+        });
+
+        // Navigation scroll behavior
+        window.addEventListener('scroll', () => {
+            let current = '';
+            document.querySelectorAll('section').forEach(section => {
+                if (window.pageYOffset >= section.offsetTop - 80) current = section.id;
+            });
+            document.querySelectorAll('.nav-button').forEach(link => {
+                link.classList.toggle('active', link.getAttribute('href').substring(1) === current);
+            });
+        });
+        
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    });
+    </script>
+</body>
+</html>
