@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대화형 전기차 시장 대시보드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals (bg-stone-50, text-stone-800) with Slate Blue accents (bg-slate-600, text-white) -->
+    <!-- Application Structure Plan: A thematic, single-page dashboard structure is used instead of a linear report format. A sticky top navigation allows users to jump to any section of interest: Global Trends, Regional Deep Dive, Tech & Infra, Sustainability, and Future Outlook. This non-linear approach enhances usability by letting users follow their own interests. Key interactions include clicking on regions to update a detailed view (chart + text), and using dropdowns to dynamically change the parameters of the lifecycle emissions chart. This transforms passive reading into active exploration. -->
+    <!-- Visualization & Content Choices: 
+        - Global Growth (Goal: Change): A Line Chart (Chart.js) shows the exponential sales increase.
+        - Regional Analysis (Goal: Compare/Organize): Interactive cards (HTML/JS) update a central display with a regional Bar Chart (Chart.js) and text, which is more engaging than a static table.
+        - Battery Tech (Goal: Compare): Side-by-side HTML cards with icons are used for quick comparison of LFP vs. NMC vs. Na-ion. A Line Chart shows the battery price drop.
+        - Lifecycle Emissions (Goal: Explore Relationships): A dynamic Bar Chart (Chart.js) allows users to select region and vehicle size, instantly visualizing how emissions change. This makes a complex topic tangible.
+        - All visualizations are implemented using Chart.js on Canvas, adhering to the no-SVG constraint. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 45vh;
+            max-height: 450px;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 40vh;
+                max-height: 350px;
+            }
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+        .nav-link.active {
+            color: #1e293b; /* slate-800 */
+            border-bottom: 2px solid #475569; /* slate-600 */
+            font-weight: 700;
+        }
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+        .kpi-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body class="text-stone-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl md:text-2xl font-bold text-slate-800">글로벌 전기차 전환 대시보드</h1>
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="#global" class="nav-link px-3 py-2 text-stone-600 hover:text-slate-800 font-medium">글로벌 시장</a>
+                    <a href="#regional" class="nav-link px-3 py-2 text-stone-600 hover:text-slate-800 font-medium">지역별 분석</a>
+                    <a href="#tech" class="nav-link px-3 py-2 text-stone-600 hover:text-slate-800 font-medium">기술 & 인프라</a>
+                    <a href="#sustainability" class="nav-link px-3 py-2 text-stone-600 hover:text-slate-800 font-medium">지속가능성</a>
+                    <a href="#future" class="nav-link px-3 py-2 text-stone-600 hover:text-slate-800 font-medium">미래 전망</a>
+                </div>
+                 <div class="md:hidden">
+                    <select id="mobile-nav" class="bg-white border border-stone-300 rounded-md p-2 text-stone-700">
+                        <option value="global">글로벌 시장</option>
+                        <option value="regional">지역별 분석</option>
+                        <option value="tech">기술 & 인프라</option>
+                        <option value="sustainability">지속가능성</option>
+                        <option value="future">미래 전망</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <section id="global" class="section">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">글로벌 전기차 시장 지형</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">전기차 전환은 멈출 수 없는 대세가 되었지만, 그 성장은 지역별로 다른 양상을 보이며 고르지 않은 궤적을 그리고 있습니다.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div class="kpi-card">
+                    <h3 class="text-4xl font-bold text-slate-700">1,700만+</h3>
+                    <p class="text-stone-600 mt-2">2024년 글로벌 EV 판매량 (추정)</p>
+                </div>
+                <div class="kpi-card">
+                    <h3 class="text-4xl font-bold text-slate-700">20% 이상</h3>
+                    <p class="text-stone-600 mt-2">2024년 신차 시장 점유율</p>
+                </div>
+                <div class="kpi-card">
+                    <h3 class="text-4xl font-bold text-slate-700">6배+</h3>
+                    <p class="text-stone-600 mt-2">2018년 대비 2023년 판매량 증가</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                 <h3 class="text-2xl font-bold text-slate-800 mb-4 text-center">글로벌 전기차(EV) 및 내연기관차(ICE) 판매 추이</h3>
+                 <p class="text-center text-stone-500 mb-4">아래 버튼을 눌러 내연기관차 판매량 데이터를 차트에 추가하거나 제거할 수 있습니다.</p>
+                 <div class="text-center mb-4">
+                    <button id="toggleICE" class="bg-slate-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-700 transition-colors">내연기관차(ICE) 데이터 보기</button>
+                 </div>
+                <div class="chart-container">
+                    <canvas id="globalSalesChart"></canvas>
+                </div>
+                <div class="mt-6 text-stone-700 text-sm leading-relaxed">
+                    <p><strong class="text-slate-800">핵심 분석:</strong> 2018년 이후 전기차 판매는 기하급수적으로 증가한 반면, 내연기관차 판매는 2018년 정점을 찍은 후 꾸준히 감소하고 있습니다. 이는 명확한 시장 전환을 보여주는 지표입니다. 특히 저렴한 중국산 전기차의 등장은 신흥 시장의 성장을 촉진하며, 전기차 전환이 부유국을 넘어 전 세계로 확산되는 촉매제 역할을 하고 있습니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="regional" class="section">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">지역별 심층 분석</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">주요 시장의 고유한 동력과 과제를 탐색합니다. 아래 지역을 클릭하여 상세 데이터를 확인하세요.</p>
+            </div>
+            <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
+                <button class="region-btn bg-white border-slate-300 border-2 text-slate-700 font-bold py-2 px-4 rounded-full hover:bg-slate-100 transition-colors" data-region="china">중국</button>
+                <button class="region-btn bg-white border-slate-300 border-2 text-slate-700 font-bold py-2 px-4 rounded-full hover:bg-slate-100 transition-colors" data-region="europe">유럽</button>
+                <button class="region-btn bg-white border-slate-300 border-2 text-slate-700 font-bold py-2 px-4 rounded-full hover:bg-slate-100 transition-colors" data-region="usa">미국</button>
+                <button class="region-btn bg-white border-slate-300 border-2 text-slate-700 font-bold py-2 px-4 rounded-full hover:bg-slate-100 transition-colors" data-region="korea">대한민국</button>
+                <button class="region-btn bg-white border-slate-300 border-2 text-slate-700 font-bold py-2 px-4 rounded-full hover:bg-slate-100 transition-colors" data-region="norway">노르웨이</button>
+            </div>
+
+            <div id="regional-content" class="bg-white p-6 rounded-lg shadow-lg grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h3 id="region-title" class="text-2xl font-bold text-slate-800 mb-4"></h3>
+                    <p id="region-summary" class="text-stone-700 leading-relaxed mb-4"></p>
+                    <div id="region-stats" class="grid grid-cols-2 gap-4 text-center"></div>
+                    <p id="region-challenge" class="mt-4 text-sm text-stone-600 bg-stone-100 p-3 rounded-md"></p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="regionalSalesChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="tech" class="section">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">기술 생태계: 동인과 병목</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">전기차 혁명을 뒷받침하는 핵심 기술인 배터리와 충전 인프라의 현황을 분석합니다.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-4 text-center">배터리: 혁명의 심장</h3>
+                    <div class="chart-container h-64 max-h-250px mb-6">
+                        <canvas id="batteryPriceChart"></canvas>
+                    </div>
+                    <p class="text-center text-stone-600 text-sm mb-6">리튬이온 배터리 팩 가격은 2024년 kWh당 $115까지 하락하며 전기차 가격 경쟁력 확보에 결정적인 역할을 했습니다.</p>
+                    
+                    <div class="space-y-4">
+                        <div class="p-4 border rounded-lg">
+                            <h4 class="font-bold text-lg text-slate-700">🔋 NCM (니켈·코발트·망간)</h4>
+                            <p class="text-sm text-stone-600"><strong>장점:</strong> 높은 에너지 밀도 (긴 주행거리)<br><strong>단점:</strong> 높은 비용, 핵심 광물 의존도<br><strong>주요 진영:</strong> 한국, 서구 OEM</p>
+                        </div>
+                        <div class="p-4 border rounded-lg">
+                            <h4 class="font-bold text-lg text-slate-700">💰 LFP (리튬인산철)</h4>
+                            <p class="text-sm text-stone-600"><strong>장점:</strong> 저비용, 긴 수명, 높은 안전성<br><strong>단점:</strong> 상대적으로 낮은 에너지 밀도<br><strong>주요 진영:</strong> 중국 (CATL, BYD)</p>
+                        </div>
+                         <div class="p-4 border rounded-lg bg-slate-50">
+                            <h4 class="font-bold text-lg text-slate-700">🌍 나트륨이온 (Na-ion)</h4>
+                            <p class="text-sm text-stone-600"><strong>잠재력:</strong> 초저비용, 자원 풍부 (리튬 불필요)<br><strong>현황:</strong> 초기 상용화 단계, ESS 시장 유망<br><strong>주요 진영:</strong> CATL, Northvolt</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-4 text-center">충전: 미래의 주유소</h3>
+                     <p class="text-stone-700 leading-relaxed mb-6">공용 충전 인프라 부족은 대중화의 핵심 장벽입니다. 업계는 단순히 전기를 판매하는 것을 넘어, 운전자의 '체류 시간'에서 가치를 창출하는 혁신적인 비즈니스 모델을 모색하고 있습니다.</p>
+                    <div class="space-y-4">
+                        <div class="p-4 border rounded-lg flex items-start space-x-4">
+                            <div class="text-3xl">🛒</div>
+                            <div>
+                                <h4 class="font-bold text-lg text-slate-700">소매 연계 (Loss Leader)</h4>
+                                <p class="text-sm text-stone-600">쇼핑센터, 호텔 등이 고객 유치를 위해 무료/저렴한 충전을 제공하고, 매장 내 소비를 유도합니다.</p>
+                            </div>
+                        </div>
+                        <div class="p-4 border rounded-lg flex items-start space-x-4">
+                             <div class="text-3xl">🤝</div>
+                            <div>
+                                <h4 class="font-bold text-lg text-slate-700">전략적 파트너십</h4>
+                                <p class="text-sm text-stone-600">충전 사업자(CPO)가 부동산 소유주와 수익을 공유하거나, 직접 투자하여 충전기를 설치 및 운영합니다.</p>
+                            </div>
+                        </div>
+                        <div class="p-4 border rounded-lg flex items-start space-x-4">
+                             <div class="text-3xl">🔄</div>
+                            <div>
+                                <h4 class="font-bold text-lg text-slate-700">V2G (Vehicle-to-Grid)</h4>
+                                <p class="text-sm text-stone-600">전기차를 '움직이는 에너지 저장장치'로 활용하여 전력망 안정화에 기여하고, 차주는 전력 판매로 수익을 창출합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="sustainability" class="section">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">지속가능성: 전체 수명주기 분석</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">전기차의 진정한 환경 발자국은 어디서, 어떻게 사용되는지에 따라 달라집니다. 아래 옵션을 변경하여 배출량 변화를 확인해보세요.</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="flex flex-wrap justify-center gap-4 mb-6">
+                    <div>
+                        <label for="lca-region" class="font-bold text-stone-700">지역 (전력망):</label>
+                        <select id="lca-region" class="p-2 border rounded-md">
+                            <option value="usa">미국 (혼합 전력)</option>
+                            <option value="norway">노르웨이 (수력)</option>
+                            <option value="india">인도 (석탄 의존)</option>
+                            <option value="korea">대한민국 (혼합 전력)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="lca-size" class="font-bold text-stone-700">차량 크기:</label>
+                        <select id="lca-size" class="p-2 border rounded-md">
+                            <option value="midsize">중형차</option>
+                            <option value="suv">대형 SUV</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="lcaChart"></canvas>
+                </div>
+                 <div class="mt-6 text-stone-700 text-sm leading-relaxed">
+                    <p><strong class="text-slate-800">핵심 분석:</strong> 모든 시나리오에서 전기차(BEV)는 내연기관차(ICEV)보다 수명주기 동안 온실가스를 적게 배출합니다. 그러나 그 격차는 지역의 전력망 구성에 따라 크게 달라집니다. 수력 발전 비중이 높은 노르웨이에서는 감축 효과가 극대화되는 반면, 석탄 발전 의존도가 높은 인도에서는 효과가 상대적으로 작습니다. 이는 전기차 보급과 함께 전력망의 탈탄소화가 병행되어야 함을 시사합니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="future" class="section">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">미래 전망과 전략적 제언</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">글로벌 전기차 전환 2막을 맞이하여, 주요 이해관계자들이 직면한 과제와 나아갈 방향을 제시합니다.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="font-bold text-xl text-slate-800 mb-3">🚗 자동차 제조사</h3>
+                    <ul class="list-disc list-inside space-y-2 text-stone-700">
+                        <li>배터리 공급망 현지화 및 다변화</li>
+                        <li>NCM/LFP 다중 배터리 전략 개발</li>
+                        <li>소프트웨어 중심의 사용자 경험 혁신</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="font-bold text-xl text-slate-800 mb-3">🏛️ 정책 입안자</h3>
+                    <ul class="list-disc list-inside space-y-2 text-stone-700">
+                        <li>구매 보조금을 넘어선 총체적 정책 설계</li>
+                        <li>배터리 재활용 등 순환 경제 생태계 육성</li>
+                        <li>산업 보호와 글로벌 경쟁력 간의 균형</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="font-bold text-xl text-slate-800 mb-3">📈 투자자</h3>
+                    <ul class="list-disc list-inside space-y-2 text-stone-700">
+                        <li>완성차를 넘어 가치 사슬 전반에 주목</li>
+                        <li>고성장 신흥 시장의 잠재력 평가</li>
+                        <li>규제 및 정치적 리스크를 가격에 반영</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const data = {
+        globalSales: {
+            labels: ['2018', '2019', '2020', '2021', '2022', '2023', '2024(E)', '2025(F)'],
+            evSales: [2.06, 2.2, 3.2, 6.6, 10, 14, 17, 20],
+            iceSales: [83.77, 81, 75, 72, 66, 62.87, 60, 57]
+        },
+        regionalData: {
+            china: {
+                title: '중국: 명실상부한 진원지',
+                summary: '세계 최대 전기차 시장이자 생산 허브. 정부의 강력한 지원과 저비용 LFP 배터리 기술을 바탕으로 가격 경쟁력을 확보했으나, 과잉 생산과 무역 마찰이 과제로 떠오르고 있습니다.',
+                stats: { '2024 판매량': '1,100만+ 대', '2025 점유율 목표': '60%' },
+                challenge: '주요 과제: 내수 가격 전쟁, 수출 확대로 인한 무역 마찰 심화.',
+                chartData: { labels: ['2022', '2023', '2024(E)'], values: [6.8, 8.5, 11] }
+            },
+            europe: {
+                title: '유럽: 규제 주도 시장의 기로',
+                summary: '세계 2위 시장으로, 강력한 CO2 배출 규제가 성장을 이끌어왔습니다. 그러나 최근 보조금 축소로 성장세가 주춤하며, 수입산 중국 전기차의 도전에 직면해 있습니다.',
+                stats: { '2023 판매량': '240만 대', '2025 점유율 목표': '25%' },
+                challenge: '주요 과제: 보조금 축소에 따른 수요 위축, 중국산 수입 공세 대응 및 공급망 내재화.',
+                chartData: { labels: ['2022', '2023', '2024(E)'], values: [2.1, 2.4, 2.6] }
+            },
+            usa: {
+                title: '미국: 정책과 소비자 취향 사이',
+                summary: '성장세가 둔화되고 있으며, IRA와 같은 정책과 정치적 불확실성에 크게 의존합니다. 대형차 선호 현상과 높은 가격이 대중화의 장벽으로 작용하고 있습니다.',
+                stats: { '2024 판매량': '160만 대', '시장 점유율': '약 10% 미만' },
+                challenge: '주요 과제: 높은 가격, 충전 인프라 부족, 정치적 불확실성.',
+                chartData: { labels: ['2022', '2023', '2024(E)'], values: [0.9, 1.2, 1.6] }
+            },
+            korea: {
+                title: '대한민국: 초경쟁 환경 속의 항해',
+                summary: '누적 50만 대를 돌파했으나 최근 BEV 판매가 둔화되고 HEV가 강세를 보이고 있습니다. LFP 배터리를 탑재한 중국산 저가 전기차 공세에 대응하기 위해 보조금 정책을 개편했습니다.',
+                stats: { '누적 등록 (2023)': '54.4만 대', '2022년 생산 비중': '11%' },
+                challenge: '주요 과제: BEV 판매 부진, 중국산 저가 EV 공세, NCM-LFP 기술 경쟁.',
+                chartData: { labels: ['2021', '2022', '2023'], values: [10.1, 16.4, 16.2] } // 단위: 만 대
+            },
+            norway: {
+                title: '노르웨이: 정책 주도 성공의 청사진',
+                summary: '전 세계에서 가장 높은 전기차 보급률을 자랑하며, 2025년 내연기관차 판매 중단 목표 달성을 앞두고 있습니다. 강력하고 일관된 세금 정책과 인센티브가 성공의 핵심 요인입니다.',
+                stats: { '2024 신차 점유율': '88.9%', '목표': '2025년 100% ZEV' },
+                challenge: '주요 과제: 높은 보급률 이후, 인센티브를 점진적으로 축소하며 시장을 안정적으로 유지하는 것.',
+                chartData: { labels: ['2020', '2022', '2024'], values: [74.7, 87.8, 88.9] } // 시장 점유율(%)
+            }
+        },
+        batteryPrice: {
+            labels: ['2018', '2020', '2022', '2024'],
+            prices: [190, 140, 151, 115]
+        },
+        lcaData: {
+            midsize: {
+                usa: { bev: 26, icev: 69 },
+                norway: { bev: 15, icev: 69 },
+                india: { bev: 55, icev: 72 },
+                korea: { bev: 30, icev: 69 }
+            },
+            suv: {
+                usa: { bev: 32, icev: 82 },
+                norway: { bev: 19, icev: 82 },
+                india: { bev: 65, icev: 95 },
+                korea: { bev: 36, icev: 82 }
+            }
+        }
+    };
+
+    const charts = {};
+
+    function createGlobalSalesChart() {
+        const ctx = document.getElementById('globalSalesChart').getContext('2d');
+        charts.globalSales = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.globalSales.labels,
+                datasets: [{
+                    label: '전기차 판매량 (백만 대)',
+                    data: data.globalSales.evSales,
+                    borderColor: '#475569', // slate-600
+                    backgroundColor: 'rgba(71, 85, 105, 0.1)',
+                    yAxisID: 'y',
+                    fill: true,
+                    tension: 0.3,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: '판매량 (백만 대)' }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            }
+        });
+    }
+
+    function createRegionalSalesChart() {
+        const ctx = document.getElementById('regionalSalesChart').getContext('2d');
+        charts.regionalSales = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: '판매량/점유율',
+                    data: [],
+                    backgroundColor: '#64748b', // slate-500
+                    borderColor: '#475569', // slate-600
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true } },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+    
+    function createBatteryPriceChart() {
+        const ctx = document.getElementById('batteryPriceChart').getContext('2d');
+        charts.batteryPrice = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.batteryPrice.labels,
+                datasets: [{
+                    label: '리튬이온 팩 가격 ($/kWh)',
+                    data: data.batteryPrice.prices,
+                    borderColor: '#475569',
+                    backgroundColor: 'rgba(71, 85, 105, 0.1)',
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: false, title: { display: true, text: '$/kWh' } } }
+            }
+        });
+    }
+
+    function createLcaChart() {
+        const ctx = document.getElementById('lcaChart').getContext('2d');
+        charts.lca = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['순수전기차 (BEV)', '내연기관차 (ICEV)'],
+                datasets: [{
+                    label: '수명주기 배출량 (톤 CO2-eq)',
+                    data: [],
+                    backgroundColor: ['#64748b', '#d1d5db'],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: { x: { beginAtZero: true, title: { display: true, text: '수명주기 배출량 (톤 CO2-eq)' } } },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    function updateRegionalView(region) {
+        const regionInfo = data.regionalData[region];
+        document.getElementById('region-title').textContent = regionInfo.title;
+        document.getElementById('region-summary').textContent = regionInfo.summary;
+        document.getElementById('region-challenge').textContent = regionInfo.challenge;
+        
+        const statsContainer = document.getElementById('region-stats');
+        statsContainer.innerHTML = '';
+        for (const [key, value] of Object.entries(regionInfo.stats)) {
+            statsContainer.innerHTML += `
+                <div class="bg-slate-100 p-3 rounded-lg">
+                    <p class="text-2xl font-bold text-slate-700">${value}</p>
+                    <p class="text-sm text-stone-600">${key}</p>
+                </div>
+            `;
+        }
+
+        charts.regionalSales.data.labels = regionInfo.chartData.labels;
+        charts.regionalSales.data.datasets[0].data = regionInfo.chartData.values;
+        charts.regionalSales.data.datasets[0].label = region.toLowerCase() === 'norway' ? '신차 시장 점유율 (%)' : '판매량 (백만 대)';
+        charts.regionalSales.update();
+
+        document.querySelectorAll('.region-btn').forEach(btn => {
+            btn.classList.remove('bg-slate-600', 'text-white', 'border-slate-600');
+            btn.classList.add('bg-white', 'text-slate-700', 'border-slate-300');
+        });
+        document.querySelector(`.region-btn[data-region="${region}"]`).classList.add('bg-slate-600', 'text-white', 'border-slate-600');
+    }
+
+    function updateLcaChart() {
+        const region = document.getElementById('lca-region').value;
+        const size = document.getElementById('lca-size').value;
+        const lcaValues = data.lcaData[size][region];
+        charts.lca.data.datasets[0].data = [lcaValues.bev, lcaValues.icev];
+        charts.lca.update();
+    }
+
+    const sections = document.querySelectorAll('.section');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const mobileNav = document.getElementById('mobile-nav');
+
+    function navigateTo(hash) {
+        const targetId = hash.substring(1);
+        sections.forEach(section => {
+            section.classList.toggle('active', section.id === targetId);
+        });
+        navLinks.forEach(link => {
+            link.classList.toggle('active', link.hash === hash);
+        });
+        mobileNav.value = targetId;
+    }
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateTo(e.currentTarget.hash);
+            window.history.pushState(null, null, e.currentTarget.hash);
+        });
+    });
+    
+    mobileNav.addEventListener('change', (e) => {
+        const hash = `#${e.target.value}`;
+        navigateTo(hash);
+        window.history.pushState(null, null, hash);
+    });
+
+    document.querySelectorAll('.region-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            updateRegionalView(button.dataset.region);
+        });
+    });
+
+    document.getElementById('lca-region').addEventListener('change', updateLcaChart);
+    document.getElementById('lca-size').addEventListener('change', updateLcaChart);
+    
+    const toggleICEBtn = document.getElementById('toggleICE');
+    let isIceVisible = false;
+    toggleICEBtn.addEventListener('click', () => {
+        if (isIceVisible) {
+            charts.globalSales.data.datasets.pop();
+            toggleICEBtn.textContent = '내연기관차(ICE) 데이터 보기';
+            toggleICEBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+            toggleICEBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
+        } else {
+            charts.globalSales.data.datasets.push({
+                label: '내연기관차 판매량 (백만 대)',
+                data: data.globalSales.iceSales,
+                borderColor: '#ef4444', // red-500
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                yAxisID: 'y',
+                fill: true,
+                tension: 0.3,
+                borderDash: [5, 5]
+            });
+            toggleICEBtn.textContent = '내연기관차(ICE) 데이터 숨기기';
+            toggleICEBtn.classList.remove('bg-slate-600', 'hover:bg-slate-700');
+            toggleICEBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+        }
+        isIceVisible = !isIceVisible;
+        charts.globalSales.update();
+    });
+
+    createGlobalSalesChart();
+    createRegionalSalesChart();
+    createBatteryPriceChart();
+    createLcaChart();
+    
+    const initialHash = window.location.hash || '#global';
+    navigateTo(initialHash);
+
+    updateRegionalView('china');
+    updateLcaChart();
+});
+</script>
+</body>
+</html>

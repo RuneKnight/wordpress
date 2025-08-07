@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>글로벌 전기차 전환 인포그래픽</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Energetic & Playful -->
+    <!-- Application Structure Plan: A single-page, top-to-bottom narrative infographic is designed for easy scrolling and digestion. The story flows from a high-level global overview (The Big Picture), narrows down to key regional comparisons (The Three Giants), dives into the core technology enabling the transition (The Battery Battlefield), addresses the critical sustainability question (The Lifecycle View), and concludes with a forward-looking summary (The Road Ahead). This logical flow guides the user from general context to specific details and future implications, making the complex report highly accessible. -->
+    <!-- Visualization & Content Choices: 
+        - Global Growth (Goal: Change) -> Line Chart (Chart.js) to vividly show the EV vs. ICE trend.
+        - Key Stats (Goal: Inform) -> Large Number callouts (HTML/CSS) for high-impact metrics like sales and market share.
+        - Regional Comparison (Goal: Compare) -> A three-column layout with Bar Charts (Chart.js) inside each card for a direct, at-a-glance comparison of China, Europe, and the US.
+        - Battery Price Drop (Goal: Change) -> A Line Chart (Chart.js) to illustrate the critical cost reduction driver.
+        - Battery Chemistry (Goal: Compare/Organize) -> Styled HTML cards with Unicode icons, not SVG, to compare NCM vs. LFP vs. Na-ion pros and cons clearly.
+        - Lifecycle Emissions (Goal: Compare) -> A Horizontal Bar Chart (Chart.js) to directly contrast BEV and ICEV emissions, answering a key user question.
+        - Strategic Recommendations (Goal: Organize) -> Simple, styled HTML lists for a clear, scannable summary.
+        - All charts are rendered on Canvas via Chart.js, confirming NO SVG/Mermaid usage. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #F7F7F7;
+            color: #343434;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 40vh;
+            max-height: 400px;
+        }
+        .small-chart-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            max-height: 200px;
+        }
+        h1, h2, h3 {
+            font-weight: 700;
+        }
+        .kpi {
+            background-color: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .kpi-number {
+            font-size: 4rem;
+            font-weight: 900;
+            line-height: 1;
+            color: #00A6FB;
+        }
+        .kpi-label {
+            margin-top: 0.5rem;
+            font-size: 1.125rem;
+            color: #555;
+        }
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #343434;
+        }
+        .section-subtitle {
+            font-size: 1.25rem;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 3rem auto;
+            color: #555;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 py-12">
+
+        <!-- Section 1: The Big Picture -->
+        <section class="mb-20">
+            <h2 class="section-title">글로벌 전기차 전환: 티핑 포인트를 넘다</h2>
+            <p class="section-subtitle">지난 몇 년간 전기차 시장은 폭발적으로 성장하며 자동차 산업의 패러다임을 바꾸고 있습니다. 판매량은 기하급수적으로 증가하는 반면, 내연기관차의 시대는 서서히 저물고 있습니다.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                <div class="kpi">
+                    <div class="kpi-number">1,700만+</div>
+                    <div class="kpi-label">2024년 글로벌 EV 판매량 (추정)</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-number">20%</div>
+                    <div class="kpi-label">2024년 신차 시장 점유율</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-number">6배↑</div>
+                    <div class="kpi-label">2018년 대비 2023년 판매량</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="text-xl font-bold text-center mb-4">전기차(EV) vs 내연기관차(ICE) 판매 추이 (2018-2025)</h3>
+                <div class="chart-container">
+                    <canvas id="globalSalesChart"></canvas>
+                </div>
+                <p class="text-center mt-4 text-sm text-gray-600">전기차 판매량의 가파른 상승 곡선과 내연기관차의 하락세는 시장의 구조적 변화가 돌이킬 수 없는 대세임을 명확히 보여줍니다.</p>
+            </div>
+        </section>
+
+        <!-- Section 2: The Three Giants -->
+        <section class="mb-20">
+            <h2 class="section-title">세 개의 기둥, 서로 다른 길</h2>
+            <p class="section-subtitle">세계 전기차 시장을 이끄는 중국, 유럽, 미국. 세 지역은 각기 다른 정책, 시장 환경, 그리고 도전 과제 속에서 자신만의 전환 경로를 만들어가고 있습니다.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="card text-center">
+                    <h3 class="text-2xl font-bold mb-2">🇨🇳 중국</h3>
+                    <p class="mb-4 text-gray-600">명실상부한 세계 1위 시장이자 생산 허브. 정부 주도의 강력한 산업 정책과 가격 경쟁력이 성장을 이끌고 있습니다.</p>
+                    <div class="small-chart-container">
+                        <canvas id="chinaSalesChart"></canvas>
+                    </div>
+                    <p class="mt-2 text-sm font-bold">2024년 점유율: 약 50%</p>
+                </div>
+                <div class="card text-center">
+                    <h3 class="text-2xl font-bold mb-2">🇪🇺 유럽</h3>
+                    <p class="mb-4 text-gray-600">엄격한 CO2 규제가 시장을 견인하는 세계 2위 시장. 최근 보조금 축소와 중국산 EV 공세라는 도전에 직면했습니다.</p>
+                    <div class="small-chart-container">
+                        <canvas id="europeSalesChart"></canvas>
+                    </div>
+                     <p class="mt-2 text-sm font-bold">2024년 점유율: 약 20%</p>
+                </div>
+                <div class="card text-center">
+                    <h3 class="text-2xl font-bold mb-2">🇺🇸 미국</h3>
+                    <p class="mb-4 text-gray-600">성장세는 둔화되고 있으며, IRA와 같은 정책과 정치적 불확실성에 크게 의존합니다. 대형차 선호가 특징입니다.</p>
+                    <div class="small-chart-container">
+                        <canvas id="usaSalesChart"></canvas>
+                    </div>
+                     <p class="mt-2 text-sm font-bold">2024년 점유율: 약 10% 미만</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: The Battery Battlefield -->
+        <section class="mb-20">
+            <h2 class="section-title">배터리 전쟁: 혁명의 심장</h2>
+            <p class="section-subtitle">전기차 혁명의 핵심은 배터리 기술에 있습니다. 가격 하락이 대중화를 이끌고 있으며, 다양한 화학 기술이 시장의 미래를 놓고 경쟁하고 있습니다.</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="card">
+                    <h3 class="text-xl font-bold text-center mb-4">리튬이온 배터리 팩 가격 하락 추이</h3>
+                    <div class="chart-container h-96 max-h-[350px]">
+                        <canvas id="batteryPriceChart"></canvas>
+                    </div>
+                    <p class="text-center mt-4 text-sm text-gray-600">배터리 가격은 기술 혁신과 규모의 경제 덕분에 극적으로 하락하여, 전기차 가격이 내연기관차와 동등해지는 '가격 동등성'을 앞당기고 있습니다.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-xl font-bold text-center mb-4">주요 배터리 기술 비교</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 border-2 border-blue-200 rounded-lg">
+                            <h4 class="font-bold text-lg">🔋 NCM (니켈·코발트·망간)</h4>
+                            <p class="text-sm text-gray-700"><strong>장점:</strong> 높은 에너지 밀도 (긴 주행거리)<br><strong>단점:</strong> 높은 비용, 핵심 광물 의존</p>
+                        </div>
+                        <div class="p-4 border-2 border-orange-200 rounded-lg">
+                            <h4 class="font-bold text-lg">💰 LFP (리튬인산철)</h4>
+                            <p class="text-sm text-gray-700"><strong>장점:</strong> 저비용, 긴 수명, 높은 안전성<br><strong>단점:</strong> 상대적으로 낮은 에너지 밀도</p>
+                        </div>
+                        <div class="p-4 border-2 border-yellow-200 rounded-lg">
+                            <h4 class="font-bold text-lg">🌍 나트륨이온 (Na-ion)</h4>
+                            <p class="text-sm text-gray-700"><strong>장점:</strong> 초저비용, 풍부한 자원 (리튬 불필요)<br><strong>단점:</strong> 낮은 에너지 밀도, 초기 상용화 단계</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Lifecycle View -->
+        <section class="mb-20">
+            <h2 class="section-title">정말 더 친환경적일까?</h2>
+            <p class="section-subtitle">전기차의 진정한 환경 발자국은 생산부터 폐기까지 전 과정을 봐야 합니다. 전력망의 청정성에 따라 그 효과는 달라지지만, 모든 시나리오에서 전기차는 내연기관차보다 더 나은 선택입니다.</p>
+            <div class="card">
+                <h3 class="text-xl font-bold text-center mb-4">차량 수명주기 온실가스 배출량 비교</h3>
+                 <p class="text-center text-sm text-gray-500 mb-4">(미국 전력망, 중형차 기준)</p>
+                <div class="chart-container">
+                    <canvas id="lcaChart"></canvas>
+                </div>
+                <p class="text-center mt-4 text-sm text-gray-600">배터리 생산 과정에서 더 많은 탄소를 배출함에도 불구하고, 운행 단계에서의 '0' 배출 효과 덕분에 전기차의 총 수명주기 배출량은 내연기관차의 절반 수준에 불과합니다.</p>
+            </div>
+        </section>
+
+        <!-- Section 5: The Road Ahead -->
+        <section>
+            <h2 class="section-title">미래를 향한 길</h2>
+            <p class="section-subtitle">전기차 전환의 2막이 시작되었습니다. 성공의 열쇠는 더 이상 단순히 전기차를 만드는 것이 아니라, 전체 생태계를 장악하는 데 있습니다.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="card">
+                    <h3 class="text-xl font-bold mb-3 text-center">🚗<br>자동차 제조사</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>공급망 현지화 및 다변화</li>
+                        <li>LFP/NCM 다중 배터리 전략</li>
+                        <li>소프트웨어 중심의 경험 혁신</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3 class="text-xl font-bold mb-3 text-center">🏛️<br>정책 입안자</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>총체적이고 장기적인 정책 설계</li>
+                        <li>배터리 재활용 생태계 육성</li>
+                        <li>보호주의와 경쟁력의 균형</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3 class="text-xl font-bold mb-3 text-center">📈<br>투자자</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>가치 사슬 전반에 걸친 기회 탐색</li>
+                        <li>고성장 신흥 시장 잠재력 평가</li>
+                        <li>규제 및 정치적 리스크 관리</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const defaultTooltipCallback = {
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    title: function(tooltipItems) {
+                        const item = tooltipItems[0];
+                        let label = item.chart.data.labels[item.dataIndex];
+                        if (Array.isArray(label)) {
+                            return label.join(' ');
+                        } else {
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+    const wrapLabel = (label) => {
+        if (label.length <= 16) return label;
+        const words = label.split(' ');
+        const lines = [];
+        let currentLine = '';
+        words.forEach(word => {
+            if ((currentLine + word).length > 16) {
+                lines.push(currentLine.trim());
+                currentLine = word + ' ';
+            } else {
+                currentLine += word + ' ';
+            }
+        });
+        lines.push(currentLine.trim());
+        return lines;
+    };
+
+    const globalSalesCtx = document.getElementById('globalSalesChart').getContext('2d');
+    new Chart(globalSalesCtx, {
+        type: 'line',
+        data: {
+            labels: ['2018', '2019', '2020', '2021', '2022', '2023', '2024(E)', '2025(F)'],
+            datasets: [{
+                label: '전기차 판매량 (백만 대)',
+                data: [2.06, 2.2, 3.2, 6.6, 10, 14, 17, 20],
+                borderColor: '#00A6FB',
+                backgroundColor: 'rgba(0, 166, 251, 0.2)',
+                fill: true,
+                tension: 0.4
+            }, {
+                label: '내연기관차 판매량 (백만 대)',
+                data: [83.77, 81, 75, 72, 66, 62.87, 60, 57],
+                borderColor: '#F45B69',
+                backgroundColor: 'rgba(244, 91, 105, 0.2)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true, title: { display: true, text: '판매량 (백만 대)' } } },
+            ...defaultTooltipCallback
+        }
+    });
+
+    const chinaSalesCtx = document.getElementById('chinaSalesChart').getContext('2d');
+    new Chart(chinaSalesCtx, {
+        type: 'bar',
+        data: {
+            labels: ['2022', '2023', '2024(E)'],
+            datasets: [{
+                label: '판매량 (백만 대)',
+                data: [6.8, 8.5, 11],
+                backgroundColor: '#00A6FB'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } },
+            ...defaultTooltipCallback
+        }
+    });
+
+    const europeSalesCtx = document.getElementById('europeSalesChart').getContext('2d');
+    new Chart(europeSalesCtx, {
+        type: 'bar',
+        data: {
+            labels: ['2022', '2023', '2024(E)'],
+            datasets: [{
+                label: '판매량 (백만 대)',
+                data: [2.1, 2.4, 2.6],
+                backgroundColor: '#F5B700'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } },
+            ...defaultTooltipCallback
+        }
+    });
+
+    const usaSalesCtx = document.getElementById('usaSalesChart').getContext('2d');
+    new Chart(usaSalesCtx, {
+        type: 'bar',
+        data: {
+            labels: ['2022', '2023', '2024(E)'],
+            datasets: [{
+                label: '판매량 (백만 대)',
+                data: [0.9, 1.2, 1.6],
+                backgroundColor: '#F45B69'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } },
+            ...defaultTooltipCallback
+        }
+    });
+    
+    const batteryPriceCtx = document.getElementById('batteryPriceChart').getContext('2d');
+    new Chart(batteryPriceCtx, {
+        type: 'line',
+        data: {
+            labels: ['2018', '2020', '2022', '2024'],
+            datasets: [{
+                label: '리튬이온 팩 가격 ($/kWh)',
+                data: [190, 140, 151, 115],
+                borderColor: '#00A6FB',
+                backgroundColor: 'rgba(0, 166, 251, 0.2)',
+                fill: true,
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: false, title: { display: true, text: '$/kWh' } } },
+            ...defaultTooltipCallback
+        }
+    });
+
+    const lcaCtx = document.getElementById('lcaChart').getContext('2d');
+    new Chart(lcaCtx, {
+        type: 'bar',
+        data: {
+            labels: [wrapLabel('순수전기차 (BEV)'), wrapLabel('내연기관차 (ICEV)')],
+            datasets: [{
+                label: '수명주기 배출량 (톤 CO2-eq)',
+                data: [26, 69],
+                backgroundColor: ['#00A6FB', '#F45B69'],
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { x: { beginAtZero: true, title: { display: true, text: '수명주기 배출량 (톤 CO2-eq)' } } },
+            plugins: { legend: { display: false } },
+            ...defaultTooltipCallback
+        }
+    });
+});
+</script>
+</body>
+</html>
