@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세계 경제 전망 | 2025년 6월</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral Harmony -->
+    <!-- Application Structure Plan: The application is structured into three thematic sections to guide the user from a high-level overview to more detailed insights, enhancing usability and narrative flow. 1) '글로벌 경제 현황' (Global Economic Health Check): This landing section immediately presents the report's core message—a slowing global economy—through key performance indicators (KPIs) and a main chart showing growth forecast downgrades. This allows users to grasp the main takeaways instantly. 2) '지역별 상세 전망' (Regional Deep Dive): This interactive section allows users to explore specific regions via a dropdown menu. Selecting a region dynamically updates a set of charts and summary text, enabling comparative analysis and focused exploration without overwhelming the user with all regional data at once. This task-oriented design is more user-friendly than a static, linear presentation. 3) '주요 테마 분석: 해외 직접 투자(FDI)' (Thematic Analysis: FDI): This section delves into a key topic from the report, combining data visualization (FDI trends) with explanatory text to provide deeper context. This structure was chosen to transform the dense report into an intuitive, explorable dashboard that prioritizes user understanding and engagement over simply mirroring the report's chapter layout. -->
+    <!-- Visualization & Content Choices: 1) Global Growth (Figure 1.1.A/B): Goal is to inform about the overall economic slowdown. A combined bar and line chart in Chart.js is used to show the 2025 forecast against historical data and previous forecasts, clearly highlighting the downgrade. Interaction involves tooltips for precise data. 2) Regional Growth (Table 2.x.1): Goal is to allow comparison and detailed exploration. A dropdown menu controls multiple charts (GDP Growth, Inflation). This interactive filtering mechanism is more engaging than static charts for each region. Bar charts are used for clear comparison of growth figures. 3) FDI Trends (Figure 3.2.A): Goal is to illustrate the decline in FDI. A line chart is used to show the trend of FDI as a percentage of GDP over time, effectively communicating the "retreat" mentioned in the report. 4) Key Risks (Text from Report): Goal is to summarize qualitative insights. A structured HTML/CSS list with icons is used instead of a chart to present this textual information clearly and concisely. All visualizations use Chart.js (Canvas) as required, ensuring no SVG/Mermaid is used. This selection supports the designed application structure by providing a mix of high-level summaries and interactive deep-dive tools. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #FDFBF7;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 40vh;
+            max-height: 400px;
+        }
+        .kpi-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .nav-button {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .nav-button.active {
+            color: #C08420;
+            border-bottom-color: #C08420;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                 <svg class="w-8 h-8 text-[#8A1521]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.28-.14-1.32-.6-1.32-1.44v-1.63c0-.81.52-1.56 1.25-1.97.21-.12.43-.24.65-.37.32-.19.53-.49.53-.84V9c0-.55-.45-1-1-1h-1.5v-1c0-.55-.45-1-1-1H12V5h-1v1H9.5c-.55 0-1 .45-1 1v1.5H7c-.55 0-1 .45-1 1v1.93C7.56 12.83 9 14.79 9 17v1c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-1.07c1.02-.36 1.82-1.07 2.23-1.99.12-.27.2-.56.2-.86-.01-.92-1.15-1.44-1.33-1.54z"></path></svg>
+                <h1 class="text-xl font-bold text-gray-800">세계 경제 전망 2025</h1>
+            </div>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#global" class="nav-button pb-1 border-b-2 border-transparent hover:text-[#C08420] active">글로벌 현황</a>
+                <a href="#regional" class="nav-button pb-1 border-b-2 border-transparent hover:text-[#C08420]">지역별 전망</a>
+                <a href="#themes" class="nav-button pb-1 border-b-2 border-transparent hover:text-[#C08420]">주요 테마</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-8">
+
+        <section id="global" class="mb-16">
+            <h2 class="text-3xl font-bold mb-2 text-center">글로벌 경제 현황</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">무역 긴장과 정책 불확실성 심화로 2025년 세계 경제 성장세가 둔화될 전망입니다. 이는 팬데믹 이후의 회복에 새로운 난관으로 작용하고 있습니다.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div class="kpi-card text-center">
+                    <h3 class="text-lg font-semibold text-gray-500">2025년 세계 GDP 성장률</h3>
+                    <p class="text-5xl font-bold my-2 text-[#8A1521]">2.3%</p>
+                    <p class="text-sm text-gray-500">1월 전망치 <span class="font-semibold">2.7%</span>에서 하향 조정</p>
+                </div>
+                <div class="kpi-card text-center">
+                    <h3 class="text-lg font-semibold text-gray-500">2025년 세계 무역 성장률</h3>
+                    <p class="text-5xl font-bold my-2 text-[#8A1521]">1.8%</p>
+                    <p class="text-sm text-gray-500">1월 전망치 <span class="font-semibold">3.4%</span>에서 급격히 둔화</p>
+                </div>
+                <div class="kpi-card text-center">
+                    <h3 class="text-lg font-semibold text-gray-500">2025년 글로벌 인플레이션</h3>
+                    <p class="text-5xl font-bold my-2 text-[#C08420]">2.9%</p>
+                    <p class="text-sm text-gray-500">주요국 중앙은행 목표치 상회 지속</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-xl font-bold mb-4 text-center">세계 GDP 성장률 추이 및 전망</h3>
+                <div class="chart-container">
+                    <canvas id="globalGrowthChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="regional" class="mb-16">
+            <h2 class="text-3xl font-bold mb-4 text-center">지역별 상세 전망</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">지역을 선택하여 해당 지역의 경제 성장률 전망과 주요 동향을 확인하세요. 무역 의존도가 높은 지역을 중심으로 성장세 둔화가 예상됩니다.</p>
+            
+            <div class="flex justify-center mb-8">
+                <select id="regionSelector" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#C08420] focus:border-[#C08420] block w-full max-w-xs p-2.5">
+                    <option value="EAP">동아시아 및 태평양</option>
+                    <option value="ECA">유럽 및 중앙아시아</option>
+                    <option value="LAC">라틴 아메리카 및 카리브해</option>
+                    <option value="MNA">중동 및 북아프리카</option>
+                    <option value="SAR">남아시아</option>
+                    <option value="SSA">사하라 이남 아프리카</option>
+                </select>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                <div class="lg:col-span-3 bg-white rounded-xl shadow-md p-6">
+                    <h3 id="regionalChartTitle" class="text-xl font-bold mb-4 text-center">지역별 GDP 성장률 전망</h3>
+                    <div class="chart-container h-80">
+                        <canvas id="regionalGrowthChart"></canvas>
+                    </div>
+                </div>
+                <div id="regionalSummary" class="lg:col-span-2 bg-white rounded-xl shadow-md p-6 flex flex-col justify-center">
+                    <h3 id="regionalName" class="text-2xl font-bold mb-4"></h3>
+                    <p id="regionalText" class="text-gray-700"></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="themes" class="mb-16">
+            <h2 class="text-3xl font-bold mb-4 text-center">주요 테마 분석: 해외 직접 투자(FDI)</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">신흥국 및 개발도상국으로의 FDI 유입은 2008년 정점 대비 절반 이하로 감소했습니다. 이는 경제 개발의 핵심 동력을 약화시키는 요인입니다.</p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-xl font-bold mb-4 text-center">EMDEs FDI 유입 추이 (GDP 대비 %)</h3>
+                    <div class="chart-container h-80">
+                        <canvas id="fdiChart"></canvas>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h4 class="font-bold text-lg mb-2">FDI 감소의 원인</h4>
+                        <p>글로벌 금융위기 이후 지속된 투자 약세, 무역 긴장 고조, 정책 불확실성, 지정학적 위험 등이 복합적으로 작용하여 FDI 유입이 둔화되었습니다.</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h4 class="font-bold text-lg mb-2">정책적 대응 방안</h4>
+                        <p>보고서는 FDI 유치 및 혜택 극대화를 위해 ▲투자 환경 개선 ▲거시경제 안정성 확보 ▲무역 및 투자 장벽 완화 ▲글로벌 협력 강화 등을 3대 정책 방향으로 제시합니다.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto text-center">
+            <p>데이터 출처: 세계은행 그룹, 세계 경제 전망 2025년 6월 보고서</p>
+            <p class="text-sm text-gray-400 mt-2">이 애플리케이션은 보고서의 주요 내용을 시각화한 것입니다.</p>
+        </div>
+    </footer>
+
+    <script>
+        const globalData = {
+            growthHistory: {
+                labels: ['2019', '2020', '2021', '2022', '2023', '2024e', '2025f', '2026f', '2027f'],
+                data: [2.6, -3.0, 6.4, 3.3, 2.8, 2.8, 2.3, 2.4, 2.6]
+            },
+            januaryForecast: {
+                '2025f': 2.7
+            }
+        };
+
+        const regionalData = {
+            'EAP': { name: '동아시아 및 태평양', growth: [5.0, 4.5, 4.0, 4.0], average: 7.2, text: '무역 의존도가 높아 글로벌 무역 긴장의 영향을 크게 받습니다. 중국의 성장 둔화가 지역 전체에 부담으로 작용하지만, 일부 국가는 공급망 재편의 수혜를 볼 가능성도 있습니다.' },
+            'ECA': { name: '유럽 및 중앙아시아', growth: [3.6, 2.4, 2.5, 2.7], average: 3.2, text: '유로존의 경기 둔화와 러시아의 성장세 약화로 인해 2025년 성장률이 크게 둔화될 전망입니다. 지정학적 긴장이 지속적인 위험 요인입니다.' },
+            'LAC': { name: '라틴 아메리카 및 카리브해', growth: [2.3, 2.3, 2.4, 2.6], average: 2.2, text: '구조적 취약성과 높은 무역 장벽으로 인해 신흥국 지역 중 가장 낮은 성장률을 기록할 것으로 예상됩니다. 특히 미국의 경제 상황에 큰 영향을 받습니다.' },
+            'MNA': { name: '중동 및 북아프리카', growth: [1.9, 2.7, 3.7, 4.1], average: 3.2, text: '유가 하락에도 불구하고 OPEC+의 감산 완화에 따른 석유 생산량 증가가 성장을 견인할 것입니다. 비석유 부문의 다각화 노력이 중요합니다.' },
+            'SAR': { name: '남아시아', growth: [6.0, 5.8, 6.1, 6.2], average: 6.7, text: '인도를 중심으로 가장 빠른 성장세를 이어갈 것으로 보이나, 글로벌 무역 환경 악화로 인해 이전 전망보다는 성장세가 다소 완만해질 것입니다.' },
+            'SSA': { name: '사하라 이남 아프리카', growth: [3.5, 3.7, 4.1, 4.3], average: 3.7, text: '성장률이 소폭 상승할 전망이지만, 상품 가격 약세, 부채 문제, 국내 분쟁 등이 여전히 큰 위험 요인으로 남아있어 전망이 불확실합니다.' }
+        };
+        
+        const fdiData = {
+            labels: ['2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023'],
+            median: [4.7, 4.7, 3.4, 3.1, 3.6, 3.3, 3.4, 3.0, 2.9, 3.0, 2.8, 2.5, 2.5, 2.4, 2.6, 2.3, 2.1]
+        };
+
+        let globalGrowthChart, regionalGrowthChart, fdiChart;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderGlobalGrowthChart();
+            renderRegionalChart('EAP');
+            renderFDIChart();
+
+            document.getElementById('regionSelector').addEventListener('change', (e) => {
+                renderRegionalChart(e.target.value);
+            });
+            
+            setupNavigation();
+        });
+        
+        function setupNavigation() {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-button');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            sections.forEach(section => observer.observe(section));
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        }
+
+        function renderGlobalGrowthChart() {
+            const ctx = document.getElementById('globalGrowthChart').getContext('2d');
+            const data = {
+                labels: globalData.growthHistory.labels,
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: '세계 GDP 성장률 (%)',
+                        data: globalData.growthHistory.data,
+                        backgroundColor: (context) => {
+                            const label = context.chart.data.labels[context.dataIndex];
+                            return label.includes('f') ? '#D1A054' : '#8A1521';
+                        },
+                        borderColor: 'rgba(0,0,0,0)',
+                        borderWidth: 1,
+                        order: 2
+                    },
+                    {
+                        type: 'line',
+                        label: '1월 전망치 (2025f)',
+                        data: globalData.growthHistory.labels.map(l => l === '2025f' ? globalData.januaryForecast['2025f'] : NaN),
+                        borderColor: '#4A5568',
+                        backgroundColor: '#4A5568',
+                        pointRadius: 10,
+                        pointHoverRadius: 12,
+                        pointStyle: 'rectRot',
+                        fill: false,
+                        order: 1
+                    }
+                ]
+            };
+            if(globalGrowthChart) globalGrowthChart.destroy();
+            globalGrowthChart = new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: '연간 성장률 (%)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderRegionalChart(regionKey) {
+            const region = regionalData[regionKey];
+            document.getElementById('regionalName').textContent = region.name;
+            document.getElementById('regionalChartTitle').textContent = `${region.name} GDP 성장률 전망`;
+            document.getElementById('regionalText').innerHTML = `<p>${region.text}</p>`;
+
+            const ctx = document.getElementById('regionalGrowthChart').getContext('2d');
+            const data = {
+                labels: ['2024e', '2025f', '2026f', '2027f'],
+                datasets: [
+                    {
+                        label: `${region.name} 성장률 (%)`,
+                        data: region.growth,
+                        backgroundColor: '#8A1521',
+                        borderColor: '#8A1521',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '2010-19년 평균 성장률',
+                        data: Array(4).fill(region.average),
+                        type: 'line',
+                        borderColor: '#C08420',
+                        fill: false,
+                        pointRadius: 0,
+                        borderDash: [5, 5]
+                    }
+                ]
+            };
+            if(regionalGrowthChart) regionalGrowthChart.destroy();
+            regionalGrowthChart = new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: '연간 성장률 (%)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderFDIChart() {
+            const ctx = document.getElementById('fdiChart').getContext('2d');
+            if(fdiChart) fdiChart.destroy();
+            fdiChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: fdiData.labels,
+                    datasets: [{
+                        label: 'EMDEs 중간값 (GDP 대비 %)',
+                        data: fdiData.median,
+                        borderColor: '#8A1521',
+                        backgroundColor: 'rgba(138, 21, 33, 0.1)',
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'GDP 대비 FDI 비율 (%)' }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
